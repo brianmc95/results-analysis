@@ -21,31 +21,47 @@ omnetpp_df <- read_csv("data/raw_data/WithBeaconing_e2e_delay.csv") %>%
   # Remove the node[] from the node number, just makes things more readable
   mutate_at("node", ~gsub("node", "", .)) %>%
   mutate_at("node", ~gsub("\\[", "", .)) %>%
-  mutate_at("node", ~gsub("\\]", "", .))
+  mutate_at("node", ~gsub("\\]", "", .)) %>%
+  
+  # Remove layer as it isn't necessary I beleieve and complicates the data
+  select(-c(process_id, datetime, layer)) %>%
+  
+  # Spread scalar results values
+  spread(name, value) %>%
+  
+  # Convert columns to integers
+  mutate(node = as.numeric(node)) %>%
+  mutate(repetition = as.numeric(repetition))
 
 types = split(omnetpp_df, omnetpp_df$type) 
-
-all_keep <- c("config_name", "repetition", "datetime")
-
-params_keep <- c("attrname", "attrvalue")
-#par_keep    <- c("attrname", "attrvalue")
-run_keep    <- c("process_id")
-attr_keep   <- c("name")
-
-results_keep <- c("network", "node", "layer", "name")
-sca_keep     <- c("value")
-vec_keep     <- c("vectime", "vecvalue")
-hist_keep    <- c("count", "mean", "stddev", "min", "max", "binedges", "binvalues")
     
-params   <- types$param   %>% select(one_of(all_keep, params_keep))
-runnattr <- types$runattr %>% select(one_of(all_keep, run_keep, params_keep))
-attr     <- types$attr    %>% select(one_of(all_keep, attr_keep, params_keep))
+params_df <- types$param %>% 
+  select_if(~!all(is.na(.))) %>%
+  select(-one_of("type"))
 
-vectors    <- types$vector    %>% select(one_of(all_keep, results_keep, vec_keep))
-histograms <- types$histogram %>% select(one_of(all_keep, results_keep, hist_keep))
-scalars    <- types$scalar    %>% select(one_of(all_keep, results_keep, sca_keep))
+vectors_df <- types$vector    %>%
+  select_if(~!all(is.na(.))) %>%
+  # Convert columns to integers
+  mutate(node = as.numeric(node)) %>%
+  select(-one_of("type"))
+
+histograms_df <- types$histogram %>% 
+  select_if(~!all(is.na(.))) %>%
+  # Convert columns to integers
+  mutate(node = as.numeric(node)) %>%
+  select(-one_of("type"))
+
+# Grab only the scalars
+scalars_df <- types$scalar %>%
+  # Remove the manager node as it does not have interesting information associated with it.
+  filter(node != "manager") %>%
+  # Remove empty columns (not corresponding to this variable type)
+  select_if(~!all(is.na(.))) %>%
+  
+  select(-one_of("type"))
+  
     
 
-rm(omnetpp_df, types, all_keep, params_keep, run_keep, results_keep, sca_keep, vec_keep, hist_keep, attr_keep)
+rm(omnetpp_df, types)
 
 # rm (params, runnattr, attr, vectors, histograms, scalars)
