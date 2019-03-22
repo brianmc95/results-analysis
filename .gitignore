@@ -39,3 +39,4 @@ rsconnect/
 *.csv
 
 .idea/
+.ipynb_checkpoints/
