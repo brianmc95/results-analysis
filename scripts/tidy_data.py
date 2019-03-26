@@ -26,11 +26,12 @@ def parse_vectime_vecvalue(df):
         subdf = df[df["node"] == node]
 
         for index, row in subdf.iterrows():
-            for i in range(len(row.vectime)):
-                new_df["Node"].append(node)
-                new_df["Time"].append(row.vectime[i])
-                new_df["Name"].append(row[2])
-                new_df["Value"].append(row.vecvalue[i])
+            if row.vectime is not None:
+                for i in range(len(row.vectime)):
+                    new_df["Node"].append(node)
+                    new_df["Time"].append(row.vectime[i])
+                    new_df["Name"].append(row[2])
+                    new_df["Value"].append(row.vecvalue[i])
 
     df = pd.DataFrame.from_dict(new_df)
 
