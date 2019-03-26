@@ -37,6 +37,9 @@ rsconnect/
 .Rproj.user
 
 *.csv
+*.sca
+*.vci
+*.vec
 
 .idea/
 .ipynb_checkpoints/

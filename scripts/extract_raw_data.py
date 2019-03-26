@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 import os
+import datetime
 
 
 def extract_results(args):
@@ -30,7 +31,7 @@ def main():
 
     parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
-    raw_data_folder = os.path.join(parent_dir, "data/raw_data/output.csv")
+    raw_data_folder = os.path.join(parent_dir, "data/raw_data/{}-output.csv".format(datetime.datetime.now().strftime("%Y-%m-%d_%H:%M")))
 
     parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to raw_data')
     parser.add_argument("-r", "--results-folder", help="Results folder")
