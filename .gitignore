@@ -43,3 +43,7 @@ rsconnect/
 
 .idea/
 .ipynb_checkpoints/
+
+*.png
+
+**/omnet/**
