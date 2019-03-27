@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import os
 import datetime
+import json
 
 
 def parse_if_number(s):
@@ -24,7 +25,6 @@ def parse_vectime_vecvalue(df):
 
     for node in df.node.unique():
         subdf = df[df["node"] == node]
-
         for index, row in subdf.iterrows():
             if row.vectime is not None:
                 for i in range(len(row.vectime)):
@@ -45,6 +45,8 @@ def tidy_data(args):
         "binvalues": parse_ndarray,
         "vectime"  : parse_ndarray,
         "vecvalue" : parse_ndarray})
+
+    print("Loaded csv into DataFrame")
 
     # It's likely this will change depending on the run/system
     # Might be worth investigating some form of alternative
@@ -84,13 +86,18 @@ def tidy_data(args):
     attr_df = raw_df[raw_df["type"] == "attr"]
     attr_df = attr_df.dropna(axis=1, how="all")
 
+    if args.stats:
+        with open(args.stats) as json_file:
+            data = json.load(json_file)
+            raw_df = raw_df[(raw_df["name"].isin(data["filtered_vectors"])) | (raw_df["name"].isin(data["filtered_scalars"]))]
+
+    scalar_df = raw_df[raw_df["type"] == "scalar"]
+    scalar_df = scalar_df.dropna(axis=1, how="all")
+
     vector_df = raw_df[raw_df["type"] == "vector"]
     vector_df = vector_df.dropna(axis=1, how="all")
 
     vector_df = parse_vectime_vecvalue(vector_df)
-
-    scalar_df = raw_df[raw_df["type"] == "scalar"]
-    scalar_df = scalar_df.dropna(axis=1, how="all")
 
     now = datetime.datetime.now()
     if args.name != now:
@@ -120,6 +127,7 @@ def main():
     parser.add_argument("-r", "--raw-results", help="Raw results file")
     parser.add_argument("-o", "--tidied-results", help="File to save results to", default=processed_data_folder)
     parser.add_argument("-n", "--name", help="Name of simulation results file", default=now.strftime("%Y-%m-%d_%H:%M"))
+    parser.add_argument("-s", "--stats", help="Json file describing stats we are interested in")
     args = parser.parse_args()
 
     tidy_data(args)
