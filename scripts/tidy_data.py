@@ -124,5 +124,6 @@ def main():
 
     tidy_data(args)
 
+
 if __name__ == "__main__":
     main()
