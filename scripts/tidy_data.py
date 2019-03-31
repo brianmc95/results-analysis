@@ -21,21 +21,32 @@ def parse_ndarray(s):
 
 def parse_vectime_vecvalue(df):
 
-    new_df = {"Node": [], "Time": [], "Name": [], "Value": []}
+    new_df = pd.DataFrame(columns=["Node", "Name", "Time", "Value"])
 
-    for node in df.node.unique():
-        subdf = df[df["node"] == node]
-        for index, row in subdf.iterrows():
-            if row.vectime is not None:
-                for i in range(len(row.vectime)):
-                    new_df["Node"].append(node)
-                    new_df["Time"].append(row.vectime[i])
-                    new_df["Name"].append(row[2])
-                    new_df["Value"].append(row.vecvalue[i])
+    names = []
+    nodes = []
 
-    df = pd.DataFrame.from_dict(new_df)
+    count = 1
 
-    return df
+    print("Parsing vector file")
+
+    vectimes = np.array([])
+    vecvalues = np.array([])
+
+    df_len = len(df.index)
+
+    for index, row in df.iterrows():
+        names.append([row[2] for _ in range(len(row.vectime))])
+        nodes.append([row.node for _ in range(len(row.vectime))])
+        vectimes = np.concatenate((vectimes, row.vectime))
+        vecvalues = np.concatenate((vecvalues, row.vecvalue))
+
+        print("Processed row: {} of {}".format(count, df_len))
+        count += 1
+
+    new_df = new_df.append({"Node": nodes, "Name": names, "Time": vectimes, "Value": vecvalues}, ignore_index=True)
+
+    return new_df
 
 
 def tidy_data(args):
