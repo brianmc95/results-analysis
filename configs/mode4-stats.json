@@ -66,7 +66,8 @@
     "rlcDelayUl:mean",
     "rlcThroughputDl:mean",
     "rlcDelayDl:mean",
-    "txRxDistance:mean",
+    "txRxDistanceSCI:mean",
+    "txRxDistanceTB:mean",
     "threshold:mean",
     "tbAndSCINotReceived:sum",
     "tbFailedButSCIReceived:sum",
@@ -143,7 +144,7 @@
     "reception result cache hit"
   ],
 
-  "all_scalars" : [
+  "all_vectors" : [
     "posX:vector",
     "posY:vector",
     "servingCell:vector",
@@ -158,7 +159,8 @@
     "selectedMCS:vector",
     "scisSent:vector",
     "tbsSent:vector",
-    "txRxDistance:vector",
+    "txRxDistanceSCI:vector",
+    "txRxDistanceTB:vector",
     "scisReceived:vector",
     "scisDecoded:vector",
     "scisNotDecoded:vector",
@@ -174,7 +176,7 @@
     "grantBreak:vector"
   ],
 
-  "all_vectors": [
+  "all_scalars": [
     "sentPacketToLowerLayer:count",
     "sentPacketToLowerLayer:sum(packetBytes)",
     "sentPacketToUpperLayer:count",
@@ -212,7 +214,8 @@
     "rlcDelayUl:mean",
     "rlcThroughputDl:mean",
     "rlcDelayDl:mean",
-    "txRxDistance:mean",
+    "txRxDistanceSCI:mean",
+    "txRxDistanceTB:mean",
     "threshold:mean",
     "tbAndSCINotReceived:sum",
     "tbFailedButSCIReceived:sum",
@@ -292,7 +295,8 @@
   "filtered_vectors": [
     "scisSent:vector",
     "tbsSent:vector",
-    "txRxDistance:vector",
+    "txRxDistanceSCI:vector",
+    "txRxDistanceTB:vector",
     "scisReceived:vector",
     "scisDecoded:vector",
     "scisNotDecoded:vector",
