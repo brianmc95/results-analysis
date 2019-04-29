@@ -28,7 +28,6 @@
     "grantBreakSize:vector",
     "maximumCapacity:vector",
     "grantBreak:vector",
-    
     "sentPacketToLowerLayer:count",
     "sentPacketToLowerLayer:sum(packetBytes)",
     "sentPacketToUpperLayer:count",

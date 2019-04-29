@@ -1,0 +1,13 @@
+{
+  "cv2x" : {
+    "project_path": "/home/brian/git_repos/OpenCV2X",
+    "cmake_dir": "/home/brian/git_repos/OpenCV2X/cmake-build-release",
+    "target": "run_simulte-cars",
+    "config_names" : {
+      "Base": 5,
+      "probKeep": 0,
+      "sensingWindow": 0
+    }
+  }
+
+}

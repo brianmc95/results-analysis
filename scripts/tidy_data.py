@@ -21,33 +21,28 @@ def parse_ndarray(s):
 
 def parse_vectime_vecvalue(df):
 
-    new_df = pd.DataFrame(columns=["Node", "Name", "Time", "Value"])
+    print("Parsing Vector file")
+    rows_we_want = df.drop(
+        ["run", "type", "network", "interface", "layer", "scenario", "date", "time", "processId"], axis=1)
+    rows_we_want = rows_we_want.reset_index(drop=True)
 
-    names = []
-    nodes = []
+    lst_col = "vectime"
+    vectime_split = pd.DataFrame({
+        col: np.repeat(rows_we_want[col].values, rows_we_want[lst_col].str.len())
+        for col in rows_we_want.columns.difference([lst_col])}).assign(
+        **{lst_col: np.concatenate(rows_we_want[lst_col].values)})[rows_we_want.columns.tolist()]
 
-    count = 1
+    lst_col = "vecvalue"
+    vecvalue_split = pd.DataFrame({
+        col: np.repeat(rows_we_want[col].values, rows_we_want[lst_col].str.len())
+        for col in rows_we_want.columns.difference([lst_col])}).assign(
+        **{lst_col: np.concatenate(rows_we_want[lst_col].values)})[rows_we_want.columns.tolist()]
 
-    print("Parsing vector file")
+    vecvalue_split["vectime"] = vectime_split["vectime"]
 
-    vectimes = np.array([])
-    vecvalues = np.array([])
+    print("Vector file parsed")
 
-    df_len = len(df.index)
-
-    for index, row in df.iterrows():
-        names.append([row[2] for _ in range(len(row.vectime))])
-        nodes.append([row.node for _ in range(len(row.vectime))])
-        vectimes = np.concatenate((vectimes, row.vectime))
-        vecvalues = np.concatenate((vecvalues, row.vecvalue))
-
-        print("Processed row: {} of {}".format(count, df_len))
-        count += 1
-
-    new_df = new_df.append({"Node": nodes, "Name": names, "Time": vectimes, "Value": vecvalues}, ignore_index=True)
-
-    return new_df
-
+    return vecvalue_split
 
 def tidy_data(args):
     raw_df = pd.read_csv(args.raw_results, converters={
@@ -112,11 +107,13 @@ def tidy_data(args):
 
     now = datetime.datetime.now()
     if args.name != now:
-        directory = "{}/{}-{}".format(args.tidied_results, now.strftime("%Y-%m-%d_%H:%M"), args.name)
+        directory = "{}/{}".format(args.tidied_results, args.name)
     else:
         directory = "{}/{}".format(args.tidied_results, now.strftime("%Y-%m-%d_%H:%M"))
 
     os.mkdir(directory)
+
+    print("Saving processed data into {}".format(directory))
 
     runattr_df.to_csv("{}/{}".format(directory, "runattr.csv"), index=False)
     itervar_df.to_csv("{}/{}".format(directory, "itervar.csv"), index=False)
@@ -132,7 +129,7 @@ def main():
 
     now = datetime.datetime.now()
 
-    processed_data_folder = os.path.join(parent_dir, "data/processed_data/output.csv")
+    processed_data_folder = os.path.join(parent_dir, "data/processed_data")
 
     parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to raw_data')
     parser.add_argument("-r", "--raw-results", help="Raw results file")
