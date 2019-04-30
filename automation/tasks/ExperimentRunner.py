@@ -1,47 +1,116 @@
 import multiprocessing
-import subprocess
-import json
+import logging
+from subprocess import Popen, PIPE, STDOUT
+import time
 import os
 
 
 class ExperimentRunner:
 
-    def __init__(self, config_file, experiment_type):
-        self.experiment_type = experiment_type
+    def __init__(self, config):
         self.processors = multiprocessing.cpu_count()
-        with open(config_file) as config:
-            self.config = json.load(config)
+        self.config = config
+        self.logger = logging.getLogger("multi-process")
 
-    def start_experiment(self, num_processes, config_names):
-        if num_processes > self.processors:
-            print("Too many processes, going to revert to total - 1")
-            num_processes = self.processors - 1
+    def start_experiment(self):
 
-        if __name__ == "__main__":
-            for i in range(num_processes):
-                p = multiprocessing.Process(target=self.run_experiment, args=(self, config_names[i],))
-                p.start()
+        for config in self.config["config_names"]:
 
-    def run_experiment(self, config_name):
+            if self.config["config_names"][config] <= 0:
+                continue
+
+            num_processes = self.config["parallel_processes"]
+            if num_processes > self.processors:
+                print("Too many processes, going to revert to total - 1")
+                num_processes = self.processors - 1
+
+            self.logger.info("Beginning simulation of config: {}, total of {} runs of this configuration".format(config, self.config["config_names"][config]))
+
+            configs = []
+            for _ in range(self.config["config_names"][config]):
+                configs.append(config)
+
+            self.logger.debug("Configurations list: {}".format(configs))
+            number_of_batches = len(configs)//num_processes
+            if number_of_batches == 0:
+                number_of_batches = 1
+
+            if config not in self.config["config_names"]:
+                self.logger.error(
+                    "Config: {} does not exist in config files".format(config))
+                raise Exception("Config: {} does not exist in config files".format(config))
+
+            orig_loc = os.getcwd()
+
+            os.chdir(self.config["cmake_dir"])
+
+            self.logger.debug("Moved into the cmake directory {}".format(os.getcwd()))
+
+            setup_command = ["cmake", "-D", "SCENARIO_CONFIG={}".format(config), "--build", "."]
+
+            process = Popen(setup_command, stdout=PIPE, stderr=STDOUT)
+            with process.stdout:
+                self.log_subprocess_output(process.stdout)
+            exitcode = process.wait()  # 0 means success
+
+            if exitcode != 0:
+                self.logger.exception("Received exit code {} from config setup, exiting".format(exitcode))
+                raise Exception("Received exit code {} from config setup, exiting".format(exitcode))
+
+            os.chdir(orig_loc)
+
+            self.logger.debug("Moved backed to original location {}".format(os.getcwd()))
+
+            self.logger.info("Completed scenario setup")
+
+            i = 0
+            while i < len(configs):
+                if len(configs) < num_processes:
+                    num_processes = len(configs)
+                self.logger.info("Starting up processes, batch {}/{}".format((i//num_processes)+1, number_of_batches))
+                pool = multiprocessing.Pool(processes=num_processes)
+
+                pool.map(self.run_experiment, list(range(num_processes)))
+
+                self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
+
+                i += num_processes
+
+    def log_subprocess_output(self, pipe):
+        for line in iter(pipe.readline, b''):  # b'\n'-separated lines
+            self.logger.debug('Subprocess Line: %r', line)
+
+    def run_experiment(self, wait):
+
         name = multiprocessing.current_process().name
-        if config_name not in self.config:
-            raise Exception("Process: {} with config: {} does not exist in config files".format(name, config_name))
+        self.logger.info("Starting process {}".format(name))
+
+        self.logger.info("Waiting {}s".format(wait))
+        time.sleep(wait)
+        self.logger.info("Wait complete")
 
         orig_loc = os.getcwd()
 
-        os.chdir(self.config[self.experiment_type]["cmake_dir"])
+        os.chdir(self.config["project_path"])
 
-        scenario_config = "SCENARIO_CONFIG={}".format(config_name)
-        setup_command = ["cmake", "-D", scenario_config, "--build", "."]
-        subprocess.run(setup_command, shell=True)
+        self.logger.debug("Moved into the project directory {}".format(os.getcwd()))
 
-        os.chdir(self.config[self.experiment_type]["project_path"])
+        self.logger.info("Beginning simulation run")
 
-        run_command = ["cmake", "--build", self.config[self.experiment_type]["cmake_dir"],
-                       "--target", self.config[self.experiment_type]["target"]]
-        subprocess.run(run_command, shell=True)
+        run_command = ["cmake", "--build", self.config["cmake_dir"], "--target", self.config["target"]]
+        process = Popen(run_command, stdout=PIPE, stderr=STDOUT)
+        with process.stdout:
+            self.log_subprocess_output(process.stdout)
+        exitcode = process.wait()  # 0 means success
+
+        if exitcode != 0:
+            self.logger.error("Non-Zero exit code for simulation run, code is {}".format(exitcode))
+
+        self.logger.info("Completed simulation run.")
 
         os.chdir(orig_loc)
+
+        self.logger.debug("Moved backed to original location {}".format(os.getcwd()))
 
     def update_config(self, config_name, config_variant):
         """
