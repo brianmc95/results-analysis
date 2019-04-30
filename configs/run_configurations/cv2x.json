@@ -7,7 +7,8 @@
       "Base": 5,
       "probKeep": 0,
       "sensingWindow": 0
-    }
+    },
+    "parallel_processes" : 5
   }
 
 }
