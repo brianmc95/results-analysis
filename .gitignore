@@ -47,3 +47,6 @@ rsconnect/
 *.png
 
 **/omnet/**
+
+*.log
+
