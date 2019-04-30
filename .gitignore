@@ -50,3 +50,5 @@ rsconnect/
 
 *.log
 
+__pycache__
+
