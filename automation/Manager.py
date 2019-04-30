@@ -27,7 +27,7 @@ class Manager:
             self.config = json.load(json_file)[self.experiment_type]
 
         if self.experiment:
-            self.runner = ExperimentRunner(self.config)
+            self.runner = ExperimentRunner(self.config, self.experiment_type)
 
         # if self.parse:
         #     self.parser = DataParser(config=self.config)

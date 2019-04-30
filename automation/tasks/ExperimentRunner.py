@@ -2,26 +2,33 @@ import multiprocessing
 import logging
 from subprocess import Popen, PIPE, STDOUT
 import time
+import datetime
 import os
+import re
 
 
 class ExperimentRunner:
 
-    def __init__(self, config):
+    def __init__(self, config, experiment_type):
         self.processors = multiprocessing.cpu_count()
         self.config = config
+        self.experiment_type = experiment_type
         self.logger = logging.getLogger("multi-process")
 
     def start_experiment(self):
+
+        now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
         for config in self.config["config_names"]:
 
             if self.config["config_names"][config] <= 0:
                 continue
 
+            os.mkdir("../data/omnet/{}/{}-{}".format(self.experiment_type, config, now))
+
             num_processes = self.config["parallel_processes"]
             if num_processes > self.processors:
-                print("Too many processes, going to revert to total - 1")
+                self.logger.warn("Too many processes, going to revert to total - 1")
                 num_processes = self.processors - 1
 
             self.logger.info("Beginning simulation of config: {}, total of {} runs of this configuration".format(config, self.config["config_names"][config]))
@@ -74,7 +81,12 @@ class ExperimentRunner:
 
                 self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
 
+                self.store_results(config, i, now)
+
                 i += num_processes
+
+            self.logger.info("Removing {} dir from results".format(config))
+            os.removedirs("../data/omnet/{}/{}".format(self.experiment_type, config))
 
     def log_subprocess_output(self, pipe):
         for line in iter(pipe.readline, b''):  # b'\n'-separated lines
@@ -111,6 +123,31 @@ class ExperimentRunner:
         os.chdir(orig_loc)
 
         self.logger.debug("Moved backed to original location {}".format(os.getcwd()))
+
+    def store_results(self, config, runs_so_far, now):
+        self.logger.info("Moving results for config {} to a known location".format(config))
+        self.logger.info("Current directory {}".format(os.getcwd()))
+
+        pattern = "\d+\."
+        run_num = runs_so_far
+        previous_process = None
+
+        result_files = os.listdir("../data/omnet/{}/{}".format(self.experiment_type, config))
+        result_files.sort()
+
+        for result_file in result_files:
+            self.logger.debug(re.findall(pattern, result_file)[0])
+            if previous_process != re.findall(pattern, result_file)[0]:
+                previous_process = re.findall(pattern, result_file)[0]
+                run_num += 1
+                self.logger.debug("Moving onto next run {}".format(run_num))
+
+            extension = os.path.splitext(result_file)[1]
+            new_loc = "../data/omnet/{}/{}-{}/run-{}{}".format(self.experiment_type, config, now, run_num, extension)
+            result_file = "../data/omnet/{}/{}/{}".format(self.experiment_type, config, result_file)
+
+            os.rename(result_file, new_loc)
+            self.logger.info("Moved file {} to {}".format(result_file, new_loc))
 
     def update_config(self, config_name, config_variant):
         """
