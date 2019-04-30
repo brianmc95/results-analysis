@@ -18,7 +18,6 @@ class Grapher:
         self.markers = [".", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h", "H", "+",
                         "x", "X", "D", "d", "|", "_", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
-
         # JSON file to describe fields of interest
         with open(fields) as fields_file:
             self.fields = json.load(fields_file)

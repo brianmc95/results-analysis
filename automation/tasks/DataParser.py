@@ -7,9 +7,8 @@ import json
 
 class DataParser:
 
-    def __init__(self, output_path, results_folder, scalars=True, vectors=True, stats=None, all_types=False, tidied_results=None):
-        self.output_path = output_path
-        self.results_folder = results_folder
+    def __init__(self, config, scalars=True, vectors=True, stats=None, all_types=False, tidied_results=None):
+        self.config = config
         self.scalars = scalars
         self.vectors = vectors
         self.stats = stats
@@ -82,8 +81,8 @@ class DataParser:
 
         os.chdir(orig_loc)
 
-    def tidy_data(self):
-        raw_df = pd.read_csv(self.output_path, converters={
+    def tidy_data(self, raw_csv):
+        raw_df = pd.read_csv(raw_csv, converters={
             "attrvalue": self.parse_if_number,
             "binedges" : self.parse_ndarray,
             "binvalues": self.parse_ndarray,
