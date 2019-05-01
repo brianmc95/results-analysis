@@ -36,8 +36,8 @@ class Manager:
         if self.experiment:
             self.runner = ExperimentRunner(self.config, self.experiment_type)
 
-        # if self.parse:
-        #     self.parser = DataParser(config=self.config)
+        if self.parse:
+            self.parser = DataParser(self.config, self.experiment_type)
 
         # if self.graph:
         #     self.grapher = Grapher("../configs/fields/cv2x.json")
@@ -67,10 +67,10 @@ class Manager:
             self.logger.info("Experiment option set, moving into start experiment")
             self.config["result-dirs"] = self.runner.start_experiment()
 
-        # if self.parse:
-        #     # This is not yet paralleled
-        #     self.logger.info("Experiment option set, moving into start experiment")
-        #     self.parser.extract_raw_data()
+        if self.parse:
+            # This is not yet paralleled
+            self.logger.info("Parsing option set, moving into start data parsing")
+            self.parser.extract_raw_data(self.config["result-dirs"])
         #
         # if self.graph:
         #     self.logger.info("Experiment option set, moving into start experiment")

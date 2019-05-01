@@ -1,19 +1,25 @@
 import os
-import subprocess
+import multiprocessing
+from subprocess import Popen, PIPE, STDOUT
 import pandas as pd
 import numpy as np
 import json
+import logging
+import re
 
 
 class DataParser:
 
-    def __init__(self, config, scalars=True, vectors=True, stats=None, all_types=False, tidied_results=None):
+    def __init__(self, config, experiment_type, scalars=True, vectors=True, stats=None, all_types=False, tidied_results=None):
         self.config = config
+        self.experiment_type = experiment_type
         self.scalars = scalars
         self.vectors = vectors
         self.stats = stats
         self.all_types = all_types
         self.tidied_results = tidied_results
+        self.processors = multiprocessing.cpu_count()
+        self.logger = logging.getLogger("multi-process")
 
     @staticmethod
     def parse_if_number(s):
@@ -52,34 +58,90 @@ class DataParser:
 
         return vecvalue_split
 
-    def extract_raw_data(self):
+    def log_subprocess_output(self, pipe):
+        for line in iter(pipe.readline, b''):  # b'\n'-separated lines
+            self.logger.debug('Subprocess Line: %r', line)
+
+    def extract_raw_data(self, result_dirs):
         orig_loc = os.getcwd()
+        self.logger.debug("Original path is: {}".format(orig_loc))
 
-        filename = os.path.basename(self.output_path)
-        dirpath = os.path.dirname(self.output_path)
-        if not os.path.isdir(dirpath):
-            os.mkdir(dirpath)
+        for result_dir in result_dirs:
 
-        output_path = os.path.abspath(dirpath)
-        output_file = os.path.join(output_path, filename)
+            if "automation" in orig_loc:
+                raw_results_dir = "../data/raw_data/{}/{}".format(self.experiment_type, result_dir)
+                omnet_results_dir = "../data/omnet/{}/{}".format(self.experiment_type, result_dir)
+            else:
+                raw_results_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, result_dir)
+                omnet_results_dir = "{}/data/omnet/{}/{}".format(orig_loc, self.experiment_type, result_dir)
 
-        os.chdir(self.results_folder)
-        command = "scavetool x"
+            os.makedirs(raw_results_dir)
 
-        if self.scalars:
-            command += " *.sca"
+            os.chdir(omnet_results_dir)
+            self.logger.debug("Moved into {}".format(omnet_results_dir))
 
-        if self.vectors:
-            command += " *.vec"
+            file_names = os.listdir(omnet_results_dir)
+            self.logger.debug(file_names)
 
-        command += " -o "
-        command += output_file
+            # TODO: Improve this it's a bit silly
+            pattern = r"\d+"
+            run_numbers = []
+            for name in file_names:
+                run_num = (re.findall(pattern, name))
+                if len(run_num) <= 0:
+                    continue
+                run_num = run_num[0]
+                if run_num not in run_numbers:
+                    run_numbers.append(run_num)
+            run_numbers.sort()
 
-        print(command)
+            self.logger.info("Run numbers are the following: {}".format(run_numbers))
 
-        subprocess.run(command, shell=True)
+            num_processes = self.config["parallel_processes"]
+            if num_processes > self.processors:
+                self.logger.warn("Too many processes, going to revert to total - 1")
+                num_processes = self.processors - 1
 
-        os.chdir(orig_loc)
+            self.logger.debug("Number of files to parse : {}".format(len(run_numbers)))
+            number_of_batches = len(run_numbers) // num_processes
+            if number_of_batches == 0:
+                number_of_batches = 1
+
+            i = 0
+            while i < len(run_numbers):
+                if len(run_numbers) < num_processes:
+                    num_processes = len(run_numbers)
+                self.logger.info(
+                    "Starting up processes, batch {}/{}".format((i // num_processes) + 1, number_of_batches))
+                pool = multiprocessing.Pool(processes=num_processes)
+
+                pool.map(self.scavefiles, run_numbers[i:i+num_processes])
+
+                self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
+
+                i += num_processes
+
+            for file_name in os.listdir(omnet_results_dir):
+                os.rename("{}/{}".format(omnet_results_dir, file_name), "{}/{}".format(raw_results_dir, file_name))
+
+            os.chdir(orig_loc)
+            self.logger.debug("returned to original directory: {}".format(orig_loc))
+
+    def scavefiles(self, run_number):
+
+        run_command = ["scavetool", "x", "run-{}.sca".format(run_number), "run-{}.vec".format(run_number), "-o",
+                       "run-{}.csv".format(run_number)]
+        self.logger.info(run_command)
+
+        process = Popen(run_command, stdout=PIPE, stderr=STDOUT)
+        with process.stdout:
+            self.log_subprocess_output(process.stdout)
+        exitcode = process.wait()  # 0 means success
+
+        if exitcode != 0:
+            self.logger.warn(
+                "Scavetool exitied with {} code, {}/run-{}.csv may not have been created".format(exitcode, os.getcwd(),
+                                                                                                 run_number))
 
     def tidy_data(self, raw_csv):
         raw_df = pd.read_csv(raw_csv, converters={
