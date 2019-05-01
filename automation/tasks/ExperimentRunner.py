@@ -17,6 +17,7 @@ class ExperimentRunner:
 
     def start_experiment(self):
 
+        result_dirs = []
         now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
         for config in self.config["config_names"]:
@@ -24,7 +25,14 @@ class ExperimentRunner:
             if self.config["config_names"][config] <= 0:
                 continue
 
-            os.mkdir("../data/omnet/{}/{}-{}".format(self.experiment_type, config, now))
+            if "automation" in os.getcwd():
+                output_data_path = "../data/omnet/{}/{}-{}".format(self.experiment_type, config, now)
+            else:
+                output_data_path = "{}/data/omnet/{}/{}-{}".format(os.getcwd(), self.experiment_type, config, now)
+
+            os.mkdir(output_data_path)
+
+            result_dirs.append(output_data_path)
 
             num_processes = self.config["parallel_processes"]
             if num_processes > self.processors:
@@ -86,7 +94,14 @@ class ExperimentRunner:
                 i += num_processes
 
             self.logger.info("Removing {} dir from results".format(config))
-            os.removedirs("../data/omnet/{}/{}".format(self.experiment_type, config))
+
+            if "automation" in os.getcwd():
+                old_output = "../data/omnet/{}/{}".format(self.experiment_type, config)
+            else:
+                old_output = "{}/data/omnet/{}/{}".format(os.getcwd(), self.experiment_type, config)
+            os.removedirs(old_output)
+
+        return result_dirs
 
     def log_subprocess_output(self, pipe):
         for line in iter(pipe.readline, b''):  # b'\n'-separated lines
@@ -132,7 +147,12 @@ class ExperimentRunner:
         run_num = runs_so_far
         previous_process = None
 
-        result_files = os.listdir("../data/omnet/{}/{}".format(self.experiment_type, config))
+        if "automation" in os.getcwd():
+            output_data_path = "../data/omnet"
+        else:
+            output_data_path = "{}/data/omnet".format(os.getcwd())
+
+        result_files = os.listdir("{}/{}/{}".format(output_data_path, self.experiment_type, config))
         result_files.sort()
 
         for result_file in result_files:
@@ -143,8 +163,8 @@ class ExperimentRunner:
                 self.logger.debug("Moving onto next run {}".format(run_num))
 
             extension = os.path.splitext(result_file)[1]
-            new_loc = "../data/omnet/{}/{}-{}/run-{}{}".format(self.experiment_type, config, now, run_num, extension)
-            result_file = "../data/omnet/{}/{}/{}".format(self.experiment_type, config, result_file)
+            new_loc = "{}/{}/{}-{}/run-{}{}".format(output_data_path, self.experiment_type, config, now, run_num, extension)
+            result_file = "{}/{}/{}/{}".format(output_data_path, self.experiment_type, config, result_file)
 
             os.rename(result_file, new_loc)
             self.logger.info("Moved file {} to {}".format(result_file, new_loc))

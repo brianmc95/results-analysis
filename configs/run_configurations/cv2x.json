@@ -8,7 +8,8 @@
       "probKeep": 0,
       "sensingWindow": 0
     },
-    "parallel_processes" : 5
+    "parallel_processes" : 5,
+    "result-dirs": [""]
   }
 
 }

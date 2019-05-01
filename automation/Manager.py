@@ -3,7 +3,7 @@ import argparse
 import os
 import logging.config
 
-#from tasks.DataParser import DataParser
+from tasks.DataParser import DataParser
 from tasks.ExperimentRunner import ExperimentRunner
 #from tasks.Grapher import Grapher
 
@@ -19,11 +19,18 @@ class Manager:
         self.experiment = experiment
         self.parse = parse
         self.graph = graph
-        self.setup_logging()
+
+        if "automation" in os.getcwd():
+            config_path = "../configs/run_configuration/{}.json".format(self.experiment_type)
+            self.setup_logging(default_path="logger/logging.json")
+        else:
+            # Assuming you are running from the root of the project instead, this can throw an error
+            config_path = os.path.join(os.getcwd(), "configs/run_configurations/{}.json".format(self.experiment_type))
+            self.setup_logging()
+
         self.logger = logging.getLogger(__name__)
 
-        # TODO: Is this predetermined or passed in i.e. the config file?
-        with open("../configs/run_configurations/cv2x.json") as json_file:
+        with open(config_path) as json_file:
             self.config = json.load(json_file)[self.experiment_type]
 
         if self.experiment:
@@ -36,7 +43,7 @@ class Manager:
         #     self.grapher = Grapher("../configs/fields/cv2x.json")
 
     @staticmethod
-    def setup_logging(default_path='logger/logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
+    def setup_logging(default_path='automation/logger/logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
         """
         Setup logging configuration
         """
@@ -53,12 +60,12 @@ class Manager:
 
     def run(self):
         """
-        Runs the experiment &/OR parsing &/OR Graphing
+        Runs the experiment &/OR parses data &/OR graphs data
         :return:
         """
         if self.experiment:
             self.logger.info("Experiment option set, moving into start experiment")
-            self.runner.start_experiment()
+            self.config["result-dirs"] = self.runner.start_experiment()
 
         # if self.parse:
         #     # This is not yet paralleled
