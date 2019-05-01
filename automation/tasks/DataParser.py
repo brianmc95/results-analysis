@@ -6,6 +6,7 @@ import numpy as np
 import json
 import logging
 import re
+import datetime
 
 
 class DataParser:
@@ -19,6 +20,7 @@ class DataParser:
         self.all_types = all_types
         self.tidied_results = tidied_results
         self.processors = multiprocessing.cpu_count()
+        self.results = self.config["results"]
         self.logger = logging.getLogger("multi-process")
 
     @staticmethod
@@ -33,9 +35,23 @@ class DataParser:
         return np.fromstring(s, sep=' ') if s else None
 
     @staticmethod
-    def parse_vectime_vecvalue(df):
+    def create_bins(lower_bound, width, quantity):
+        """ create_bins returns an equal-width (distance) partitioning.
+            It returns an ascending list of tuples, representing the intervals.
+            A tuple bins[i], i.e. (bins[i][0], bins[i][1])  with i > 0
+            and i < quantity, satisfies the following conditions:
+                (1) bins[i][0] + width == bins[i][1]
+                (2) bins[i-1][0] + width == bins[i][0] and
+                    bins[i-1][1] + width == bins[i][1]
+        """
+        bins = []
+        for low in range(lower_bound, lower_bound + quantity * width + 1, width):
+            bins.append((low, low + width))
+        return bins
 
-        print("Parsing Vector file")
+    def parse_vectime_vecvalue(self, df):
+
+        self.logger.info("Parsing Vector file")
         rows_we_want = df.drop(
             ["run", "type", "network", "interface", "layer", "scenario", "date", "time", "processId"], axis=1)
         rows_we_want = rows_we_want.reset_index(drop=True)
@@ -54,7 +70,7 @@ class DataParser:
 
         vecvalue_split["vectime"] = vectime_split["vectime"]
 
-        print("Vector file parsed")
+        self.logger.info("Vector file parsed")
 
         return vecvalue_split
 
@@ -143,6 +159,74 @@ class DataParser:
                 "Scavetool exitied with {} code, {}/run-{}.csv may not have been created".format(exitcode, os.getcwd(),
                                                                                                  run_number))
 
+    def bin_fields(self, df, fields, bin_width=10, bin_quantity=49):
+        """
+        Bins multiple dfs into a single dictionary that can be used as an average for multiple fields across multiple
+        runs
+        :param dfs: list of dataframes to bin
+        :param fields: fields to be binned.
+        :param bin_width: width of each bin
+        :param bin_quantity: total number of bins
+        :return:
+        """
+        bins = self.create_bins(lower_bound=0, width=bin_width, quantity=bin_quantity)
+        distances = []
+        overall_fields = {}
+        for interval in bins:
+            upper_b = interval[1]
+            distances.append(upper_b)
+
+        for field in fields:
+            self.logger.info(field)
+            overall_fields[field] = []
+
+        overall_fields["distance"] = distances
+
+        for i in range(len(bins)):
+            lower_b = bins[i][0]
+            upper_b = bins[i][1]
+            fields_temp = df[(df["distance"] >= lower_b) & (df["distance"] < upper_b)]
+            for field in fields:
+                if i < len(overall_fields[field]):
+                    overall_fields[field][i] = (fields_temp[field].mean() + overall_fields[field][i]) / 2
+                else:
+                    overall_fields[field].append(fields_temp[field].mean())
+
+        return overall_fields
+
+    def pdr_calc(self, df):
+        """
+        Calculates Packet Delivery Ratio for a DataFrame based on fields provided in self.fields JSON file.
+        :param df: DataFrame which we will calculate df from.
+        :return: new_df which included pdr in it.
+        """
+
+        new_df = pd.DataFrame()
+
+        decoded = df[df["name"] == self.results["decoded"]]
+        decoded = decoded.reset_index(drop=True)
+        dist = df[df["name"] == self.results["distance"]]
+        dist = dist.reset_index(drop=True)
+
+        new_df["time"] = dist["vectime"]
+        new_df["distance"] = dist["vecvalue"]
+        new_df["decoded"] = decoded["vecvalue"]
+        new_df["node"] = dist["node"]
+
+        for i in range(len(self.results["fails"])):
+            self.logger.debug("Field being binned: {}".format(self.results["fails"][i]))
+            fail_df = df[df["name"] == self.results["fails"][i]]
+            fail_df = fail_df.reset_index(drop=True)
+            new_df[self.results["fails"][i]] = fail_df["vecvalue"]
+            if "total_fails" in new_df:
+                new_df["total_fails"] += fail_df["vecvalue"]
+            else:
+                new_df["total_fails"] = fail_df["vecvalue"]
+
+        new_df["pdr"] = ((new_df["decoded"]) / (new_df["decoded"] + new_df["total_fails"])) * 100
+
+        return new_df
+
     def tidy_data(self, raw_csv):
         raw_df = pd.read_csv(raw_csv, converters={
             "attrvalue": self.parse_if_number,
@@ -151,13 +235,13 @@ class DataParser:
             "vectime"  : self.parse_ndarray,
             "vecvalue" : self.parse_ndarray})
 
-        print("Loaded csv into DataFrame")
+        self.logger.info("Loaded {} as a DataFrame".format(raw_csv))
 
         # It's likely this will change depending on the run/system
         # Might be worth investigating some form of alternative
         # TODO: Sort out some better means of fixing this.
         broken_module = raw_df['module'].str.split('.', 3, expand=True)
-
+        #
         raw_df["network"] = broken_module[0]
         raw_df["node"] = broken_module[1]
         raw_df["interface"] = broken_module[2]
@@ -211,7 +295,7 @@ class DataParser:
 
             os.mkdir(self.tidied_results)
 
-            print("Saving processed data into {}".format(self.tidied_results))
+            self.logger.info("Saving processed data into {}".format(self.tidied_results))
 
             vector_df.to_csv("{}/{}".format(self.tidied_results, "vector.csv"), index=False)
             scalar_df.to_csv("{}/{}".format(self.tidied_results, "scalar.csv"), index=False)
@@ -226,3 +310,89 @@ class DataParser:
             if self.all_types:
                 return vector_df, scalar_df, runattr_df, itervar_df, param_df, attr_df
             return vector_df, scalar_df
+
+    def parse_data(self, results_dirs):
+        combined_results = {}
+
+        for result_dir, config_name in zip(results_dirs, self.config["config_names"]):
+            combined_results[config_name] = {}
+
+            orig_loc = os.getcwd()
+
+            raw_results_dir = "{}/data/raw_data/{}/{}".format(os.getcwd(), self.experiment_type,
+                                                              result_dir)
+
+            self.logger.debug("Moving to results dir: {}".format(raw_results_dir))
+            os.chdir(raw_results_dir)
+
+            runs = os.listdir(raw_results_dir)
+
+            num_processes = self.config["parallel_processes"]
+            if num_processes > multiprocessing.cpu_count():
+                self.logger.warn("Too many processes, going to revert to total - 1")
+                num_processes = multiprocessing.cpu_count() - 1
+
+            self.logger.debug("Number of files to parse : {}".format(len(runs)))
+            number_of_batches = len(runs) // num_processes
+            if number_of_batches == 0:
+                number_of_batches = 1
+
+            i = 0
+            while i < len(runs):
+                if len(runs) < num_processes:
+                    num_processes = len(runs)
+                self.logger.info(
+                    "Starting up processes, batch {}/{}".format((i // num_processes) + 1, number_of_batches))
+                pool = multiprocessing.Pool(processes=num_processes)
+
+                multiple_results = pool.map(self.filter_data, runs[i:i + num_processes])
+
+                combined_results[config_name] = self.combine_results(combined_results[config_name], multiple_results)
+
+                self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
+
+                i += num_processes
+
+            self.logger.debug("Moving back to original location: {}".format(orig_loc))
+            os.chdir(orig_loc)
+
+        now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        processed_file = "{}/data/processed_data/{}-{}.json".format(os.getcwd(), self.experiment_type, now)
+        self.logger.info("Writing processed data to {}".format(processed_file))
+        with open(processed_file, "w") as json_output:
+            json.dump(combined_results, json_output)
+
+    def combine_results(self, combined, results):
+        for result in results:
+            for field in result:
+                if field in combined:
+                    for i in range(len(result[field])):
+                        combined[field][i] = (combined[field][i] + result[field][i]) / 2
+                else:
+                    combined[field] = result[field]
+        return results
+
+    def filter_data(self, raw_data_file):
+        vector_df, scalar_df = self.tidy_data(raw_data_file)
+        del scalar_df
+
+        self.logger.info("Completed tidying of dataframes")
+
+        graphs = self.config["results"]["graphs"]
+        self.logger.info("The data for the following graphs must be prepared {}".format(graphs))
+
+        fields = []
+        if "pdr-dist" in graphs:
+            self.logger.info("Calculating pdr for pdr graph")
+            vector_df = self.pdr_calc(vector_df)
+            fields.append("pdr")
+        if "error-dist" in graphs:
+            for fail in self.config["results"]["fails"]:
+                fields.append(fail)
+            fields.append("decoded")
+
+        self.logger.info("Binning all the necessary information for the graphs")
+        binned_results = self.bin_fields(vector_df, fields)
+
+        self.logger.info("Completed data parsing for this run")
+        return binned_results

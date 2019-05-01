@@ -52,3 +52,5 @@ rsconnect/
 
 __pycache__
 
+**/processed_data/**
+

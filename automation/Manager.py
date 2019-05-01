@@ -5,7 +5,7 @@ import logging.config
 
 from tasks.DataParser import DataParser
 from tasks.ExperimentRunner import ExperimentRunner
-#from tasks.Grapher import Grapher
+from tasks.Grapher import Grapher
 
 
 class Manager:
@@ -13,19 +13,20 @@ class Manager:
     Class designed to manage the whole process of automated experimentation and results analysis
     """
 
-    def __init__(self, experiment_type, experiment, parse, graph):
+    def __init__(self, experiment_type, experiment, scave, parse, graph):
 
         self.experiment_type = experiment_type
         self.experiment = experiment
+        self.scave = scave
         self.parse = parse
         self.graph = graph
 
         if "automation" in os.getcwd():
-            config_path = "../configs/run_configuration/{}.json".format(self.experiment_type)
+            config_path = "../configs/{}.json".format(self.experiment_type)
             self.setup_logging(default_path="logger/logging.json")
         else:
             # Assuming you are running from the root of the project instead, this can throw an error
-            config_path = os.path.join(os.getcwd(), "configs/run_configurations/{}.json".format(self.experiment_type))
+            config_path = os.path.join(os.getcwd(), "configs/{}.json".format(self.experiment_type))
             self.setup_logging()
 
         self.logger = logging.getLogger(__name__)
@@ -36,11 +37,11 @@ class Manager:
         if self.experiment:
             self.runner = ExperimentRunner(self.config, self.experiment_type)
 
-        if self.parse:
+        if self.parse or self.graph:
             self.parser = DataParser(self.config, self.experiment_type)
 
-        # if self.graph:
-        #     self.grapher = Grapher("../configs/fields/cv2x.json")
+        if self.graph:
+            self.grapher = Grapher(self.config, self.experiment_type)
 
     @staticmethod
     def setup_logging(default_path='automation/logger/logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
@@ -67,15 +68,17 @@ class Manager:
             self.logger.info("Experiment option set, moving into start experiment")
             self.config["result-dirs"] = self.runner.start_experiment()
 
-        if self.parse:
+        if self.scave:
             # This is not yet paralleled
-            self.logger.info("Parsing option set, moving into start data parsing")
+            self.logger.info("Scave option set, moving to extract raw data")
             self.parser.extract_raw_data(self.config["result-dirs"])
-        #
-        # if self.graph:
-        #     self.logger.info("Experiment option set, moving into start experiment")
-        #     self.parser.tidy_data()
-        #     self.grapher.
+
+        if self.parse:
+            self.logger.info("Parsing option set, moving to parse raw data")
+            self.parser.parse_data(self.config["result-dirs"])
+
+        if self.graph:
+            self.logger.info("Graph option set, moving into Graphing stage")
 
 
 def str2bool(v):
@@ -92,11 +95,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to raw_data')
     parser.add_argument("-e", "--experiment_type", help="Type of the experiment")
     parser.add_argument("-x", "--experiment", type=str2bool, default=True,  help="Run experiments")
-    parser.add_argument("-p", "--parse", type=str2bool, default=True, help="Extract results from experiments")
-    parser.add_argument("-g", "--graph", type=str2bool, default=True, help="Extract results from experiments")
+    parser.add_argument("-p", "--parse", type=str2bool, default=True, help="Parse results into graphable format")
+    parser.add_argument("-s", "--scave", type=str2bool, default=True, help="Extract results from omnet output")
+    parser.add_argument("-g", "--graph", type=str2bool, default=True, help="Graph results of experiment")
     args = parser.parse_args()
 
-    manager = Manager(args.experiment_type, args.experiment, args.parse, args.graph)
+    manager = Manager(args.experiment_type, args.experiment, args.scave, args.parse, args.graph)
 
     manager.run()
 
