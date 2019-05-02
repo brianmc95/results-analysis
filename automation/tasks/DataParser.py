@@ -277,11 +277,9 @@ class DataParser:
             attr_df = raw_df[raw_df["type"] == "attr"]
             attr_df = attr_df.dropna(axis=1, how="all")
 
-        if self.stats:
-            with open(self.stats) as json_file:
-                data = json.load(json_file)
-                raw_df = raw_df[(raw_df["name"].isin(data["filtered_vectors"])) | (
-                    raw_df["name"].isin(data["filtered_scalars"]))]
+        if "filtered_vectors" in self.results and "filtered_scalars" in self.results:
+            raw_df = raw_df[(raw_df["name"].isin(self.results["filtered_vectors"])) |
+                            (raw_df["name"].isin(self.results["filtered_scalars"]))]
 
         scalar_df = raw_df[raw_df["type"] == "scalar"]
         scalar_df = scalar_df.dropna(axis=1, how="all")
@@ -315,6 +313,7 @@ class DataParser:
         combined_results = {}
 
         for result_dir, config_name in zip(results_dirs, self.config["config_names"]):
+            self.logger.info("Dealing with config: {} of result file: {}".format(result_dir, config_name))
             combined_results[config_name] = {}
 
             orig_loc = os.getcwd()
@@ -361,6 +360,8 @@ class DataParser:
         self.logger.info("Writing processed data to {}".format(processed_file))
         with open(processed_file, "w") as json_output:
             json.dump(combined_results, json_output)
+
+        return processed_file
 
     def combine_results(self, combined, results):
         for result in results:

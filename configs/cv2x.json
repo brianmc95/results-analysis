@@ -9,12 +9,15 @@
       "sensingWindow": 0
     },
     "parallel_processes" : 5,
-    "result-dirs": ["Base-2019-04-30-14:30:44"],
+    "result-dirs": [],
     "results": {
       "graphs": ["pdr-dist", "error-dist"],
+      "compare": {},
+      "individual": [],
       "decoded": "tbsDecoded:vector",
       "distance": "txRxDistanceTB:vector",
       "fails": ["tbFailedButSCIReceived:vector", "tbsFailedDueToNoSCI:vector", "tbFailedHalfDuplex:vector"],
+      "error_labels": ["Failed decoding TB", "No SCI", "Half-Duplex"],
       "filtered_vectors": [
         "scisSent:vector",
         "tbsSent:vector",

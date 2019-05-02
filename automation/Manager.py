@@ -75,10 +75,11 @@ class Manager:
 
         if self.parse:
             self.logger.info("Parsing option set, moving to parse raw data")
-            self.parser.parse_data(self.config["result-dirs"])
+            self.config["result-dirs"] = self.parser.parse_data(self.config["result-dirs"])
 
         if self.graph:
             self.logger.info("Graph option set, moving into Graphing stage")
+            self.grapher.generate_graphs(self.config["result-dirs"])
 
 
 def str2bool(v):
