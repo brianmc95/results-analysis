@@ -18,7 +18,7 @@ class Grapher:
         self.image_format = image_format
         self.figure_store = "{}/data/figures".format(os.getcwd())
         self.results = self.config["results"]
-        self.logger = logging.getLogger("multi-process")
+        self.logger = logging.getLogger("Grapher")
 
         # TODO: Possibly find a prefered order for these
         self.markers = [".", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h", "H", "+",

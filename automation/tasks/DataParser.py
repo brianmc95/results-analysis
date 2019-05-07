@@ -21,7 +21,7 @@ class DataParser:
         self.tidied_results = tidied_results
         self.processors = multiprocessing.cpu_count()
         self.results = self.config["results"]
-        self.logger = logging.getLogger("multi-process")
+        self.logger = logging.getLogger("DataParser")
 
     @staticmethod
     def parse_if_number(s):
@@ -84,12 +84,8 @@ class DataParser:
 
         for result_dir in result_dirs:
 
-            if "automation" in orig_loc:
-                raw_results_dir = "../data/raw_data/{}/{}".format(self.experiment_type, result_dir)
-                omnet_results_dir = "../data/omnet/{}/{}".format(self.experiment_type, result_dir)
-            else:
-                raw_results_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, result_dir)
-                omnet_results_dir = "{}/data/omnet/{}/{}".format(orig_loc, self.experiment_type, result_dir)
+            raw_results_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, result_dir)
+            omnet_results_dir = "{}/data/omnet/{}/{}".format(orig_loc, self.experiment_type, result_dir)
 
             os.makedirs(raw_results_dir)
 
@@ -138,6 +134,10 @@ class DataParser:
                 i += num_processes
 
             for file_name in os.listdir(omnet_results_dir):
+                if ".csv" not in file_name:
+                    continue
+                self.logger.info("Moving file {}/{} to {}/{}".format(omnet_results_dir, file_name,
+                                                                     raw_results_dir, file_name))
                 os.rename("{}/{}".format(omnet_results_dir, file_name), "{}/{}".format(raw_results_dir, file_name))
 
             os.chdir(orig_loc)
@@ -177,7 +177,7 @@ class DataParser:
             distances.append(upper_b)
 
         for field in fields:
-            self.logger.info(field)
+            self.logger.debug("{} being binned".format(field))
             overall_fields[field] = []
 
         overall_fields["distance"] = distances
@@ -214,15 +214,20 @@ class DataParser:
         new_df["node"] = dist["node"]
 
         for i in range(len(self.results["fails"])):
-            self.logger.debug("Field being binned: {}".format(self.results["fails"][i]))
+            self.logger.info("Field being binned: {}".format(self.results["fails"][i]))
             fail_df = df[df["name"] == self.results["fails"][i]]
             fail_df = fail_df.reset_index(drop=True)
+            fail_df = fail_df.fillna(0)
+            if fail_df.empty:
+                self.logger.error("{} does not appear in the overall dataframe".format(self.results["fails"][i]))
+                raise Exception("{} does not appear in the overall dataframe".format(self.results["fails"][i]))
             new_df[self.results["fails"][i]] = fail_df["vecvalue"]
             if "total_fails" in new_df:
                 new_df["total_fails"] += fail_df["vecvalue"]
             else:
                 new_df["total_fails"] = fail_df["vecvalue"]
 
+        self.logger.debug("Calculating pdr for graph")
         new_df["pdr"] = ((new_df["decoded"]) / (new_df["decoded"] + new_df["total_fails"])) * 100
 
         return new_df

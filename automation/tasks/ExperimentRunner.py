@@ -13,7 +13,7 @@ class ExperimentRunner:
         self.processors = multiprocessing.cpu_count()
         self.config = config
         self.experiment_type = experiment_type
-        self.logger = logging.getLogger("multi-process")
+        self.logger = logging.getLogger("ExperimentRunner")
 
     def start_experiment(self):
 
@@ -25,14 +25,11 @@ class ExperimentRunner:
             if self.config["config_names"][config] <= 0:
                 continue
 
-            if "automation" in os.getcwd():
-                output_data_path = "../data/omnet/{}/{}-{}".format(self.experiment_type, config, now)
-            else:
-                output_data_path = "{}/data/omnet/{}/{}-{}".format(os.getcwd(), self.experiment_type, config, now)
+            output_data_path = "{}/data/omnet/{}/{}-{}".format(os.getcwd(), self.experiment_type, config, now)
 
             os.mkdir(output_data_path)
 
-            result_dirs.append(output_data_path)
+            result_dirs.append(os.path.basename(os.path.normpath(output_data_path)))
 
             num_processes = self.config["parallel_processes"]
             if num_processes > self.processors:
@@ -95,12 +92,10 @@ class ExperimentRunner:
 
             self.logger.info("Removing {} dir from results".format(config))
 
-            if "automation" in os.getcwd():
-                old_output = "../data/omnet/{}/{}".format(self.experiment_type, config)
-            else:
-                old_output = "{}/data/omnet/{}/{}".format(os.getcwd(), self.experiment_type, config)
+            old_output = "{}/data/omnet/{}/{}".format(os.getcwd(), self.experiment_type, config)
             os.removedirs(old_output)
 
+        self.logger.info(result_dirs)
         return result_dirs
 
     def log_subprocess_output(self, pipe):
@@ -147,10 +142,7 @@ class ExperimentRunner:
         run_num = runs_so_far
         previous_process = None
 
-        if "automation" in os.getcwd():
-            output_data_path = "../data/omnet"
-        else:
-            output_data_path = "{}/data/omnet".format(os.getcwd())
+        output_data_path = "{}/data/omnet".format(os.getcwd())
 
         result_files = os.listdir("{}/{}/{}".format(output_data_path, self.experiment_type, config))
         result_files.sort()
@@ -163,11 +155,12 @@ class ExperimentRunner:
                 self.logger.debug("Moving onto next run {}".format(run_num))
 
             extension = os.path.splitext(result_file)[1]
-            new_loc = "{}/{}/{}-{}/run-{}{}".format(output_data_path, self.experiment_type, config, now, run_num, extension)
+            new_loc = "{}/{}/{}-{}/run-{}{}".format(output_data_path, self.experiment_type,
+                                                    config, now, run_num, extension)
             result_file = "{}/{}/{}/{}".format(output_data_path, self.experiment_type, config, result_file)
 
             os.rename(result_file, new_loc)
-            self.logger.info("Moved file {} to {}".format(result_file, new_loc))
+            self.logger.debug("Moved file {} to {}".format(result_file, new_loc))
 
     def update_config(self, config_name, config_variant):
         """

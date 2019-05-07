@@ -29,6 +29,7 @@
         "tbsReceived:vector",
         "tbsDecoded:vector",
         "tbsFailedDueToNoSCI:vector",
+        "tbFailedHalfDuplex:vector",
         "tbFailedButSCIReceived:vector"
       ],
       "filtered_scalars": [
@@ -36,6 +37,7 @@
         "tbAndSCINotReceived:sum",
         "tbFailedButSCIReceived:sum",
         "tbsFailedDueToNoSCI:sum",
+        "tbFailedHalfDuplex:sum",
         "tbsDecoded:sum",
         "tbsReceived:sum",
         "tbsSent:sum",

@@ -21,13 +21,9 @@ class Manager:
         self.parse = parse
         self.graph = graph
 
-        if "automation" in os.getcwd():
-            config_path = "../configs/{}.json".format(self.experiment_type)
-            self.setup_logging(default_path="logger/logging.json")
-        else:
-            # Assuming you are running from the root of the project instead, this can throw an error
-            config_path = os.path.join(os.getcwd(), "configs/{}.json".format(self.experiment_type))
-            self.setup_logging()
+        # Assuming you are running from the root of the project instead, this can throw an error
+        config_path = os.path.join(os.getcwd(), "configs/{}.json".format(self.experiment_type))
+        self.setup_logging()
 
         self.logger = logging.getLogger(__name__)
 
@@ -69,7 +65,6 @@ class Manager:
             self.config["result-dirs"] = self.runner.start_experiment()
 
         if self.scave:
-            # This is not yet paralleled
             self.logger.info("Scave option set, moving to extract raw data")
             self.parser.extract_raw_data(self.config["result-dirs"])
 
