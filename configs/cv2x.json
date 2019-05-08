@@ -8,6 +8,7 @@
       "probKeep": 0,
       "sensingWindow": 0
     },
+    "slack-api-token": "",
     "parallel_processes" : 5,
     "result-dirs": [],
     "results": {
