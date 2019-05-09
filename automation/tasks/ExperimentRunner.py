@@ -81,7 +81,10 @@ class ExperimentRunner:
             while i < len(configs):
                 if len(configs) < num_processes:
                     num_processes = len(configs)
-                self.logger.info("Starting up processes, batch {}/{}".format((i//num_processes)+1, number_of_batches))
+
+                self.logger.info("Starting up processes, batch {}/{} of {} processes".format((i//num_processes)+1,
+                                                                                             number_of_batches,
+                                                                                             num_processes))
                 pool = multiprocessing.Pool(processes=num_processes)
 
                 pool.map(self.run_experiment, list(range(num_processes)))

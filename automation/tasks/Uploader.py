@@ -72,15 +72,15 @@ class Uploader:
 
             os.chdir(orig_loc)
             self.logger.debug("Moved to {}".format(os.getcwd()))
-            self.upload_tar_ball(tf)
+            self.upload_tar_ball(tf.name)
 
             self.logger.info("Deleting Tar file")
             os.remove(tf.name)
         self.logger.info("Moving back to original directory: {}".format(os.getcwd()))
 
-    def upload_tar_ball(self, tar_file):
+    def upload_tar_ball(self, tar_file_path):
 
-        self.logger.info("Uploading tarfile: {}".format(os.path.basename(tar_file.name)))
+        self.logger.info("Uploading tarfile: {}".format(os.path.basename(tar_file_path)))
 
         # TODO: Between this method and the figure uploader lots of repeated code, would be better to tidy this.
         found = False
@@ -104,11 +104,11 @@ class Uploader:
                                                                               experiment_folder_id))
 
         # File upload
-        self.logger.info("Beginning the upload of {} to results folder automated-results/raw_results/{}".format(os.path.basename(tar_file.name), self.experiment_type))
+        self.logger.info("Beginning the upload of {} to results folder automated-results/raw_results/{}".format(os.path.basename(tar_file_path), self.experiment_type))
         tarball = self.drive.CreateFile(
             {"parents": [{"kind": "drive#fileLink", "id": experiment_folder_id}],
-             'title': os.path.basename(tar_file.name)})
-        tarball.SetContentFile(tar_file.name)
+             'title': os.path.basename(tar_file_path)})
+        tarball.SetContentFile(tar_file_path)
         tarball.Upload()
 
     def upload_figures(self):
@@ -196,7 +196,8 @@ class Uploader:
 
             self.logger.info("File successfully uploaded")
 
-    def upload_results(self):
+    def upload_results(self, config):
+        self.config = config
         self.logger.info("Beginning the tarring of result files")
         self.tar_results()
         self.upload_figures()

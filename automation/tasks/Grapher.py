@@ -33,6 +33,9 @@ class Grapher:
 
         now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
+        comparison_graphs = []
+        individual_graphs = []
+
         for individual in self.results["individual"]:
             self.logger.info("Config we are graphing {}".format(individual))
             for graph in self.results["graphs"]:
@@ -51,6 +54,8 @@ class Grapher:
 
                     self.errors_dist_individual(data[individual][0]["distance"], data[individual][0]["decoded"],
                                                 errors, self.results["error_labels"], plot_name)
+
+                individual_graphs.append("{}.{}".format(plot_name, self.image_format))
 
         for compare in self.results["compare"]:
             self.logger.info("Comparing {}".format(self.results["compare"][compare]))
@@ -93,6 +98,10 @@ class Grapher:
                         error_labels.append(sub_error_labels)
 
                     self.errors_dist(distances, decoded, decoded_labels, errors, error_labels, plot_name)
+
+                comparison_graphs.append("{}.{}".format(plot_name, self.image_format))
+
+        return individual_graphs, comparison_graphs
 
     def pdr_dist_individual(self, pdr, distances, label, plot_name):
         fig, ax = plt.subplots()

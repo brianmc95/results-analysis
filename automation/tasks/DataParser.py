@@ -143,6 +143,8 @@ class DataParser:
             os.chdir(orig_loc)
             self.logger.debug("returned to original directory: {}".format(orig_loc))
 
+        return result_dirs
+
     def scavefiles(self, run_number):
 
         run_command = ["scavetool", "x", "run-{}.sca".format(run_number), "run-{}.vec".format(run_number), "-o",

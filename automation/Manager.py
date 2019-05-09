@@ -39,17 +39,25 @@ class Manager:
 
         self.channel = channel
 
+        self.phases = 0
+
         if self.experiment:
             self.runner = ExperimentRunner(self.config, self.experiment_type)
+            self.phases += 1
 
-        if self.parse or self.graph:
+        if self.parse or self.scave:
+            self.phases += 1
+            if self.parse and self.scave:
+                self.phases += 1
             self.parser = DataParser(self.config, self.experiment_type)
 
         if self.graph:
             self.grapher = Grapher(self.config, self.experiment_type)
+            self.phases += 1
 
         if self.upload:
             self.uploader = Uploader(self.config, self.experiment_type)
+            self.phases += 1
 
     def send_slack_message(self, message):
         # Sends the response back to the channel
@@ -82,9 +90,14 @@ class Manager:
         Runs the experiment &/OR parses data &/OR graphs data
         :return:
         """
+        current_phase = 1
+
         self.send_slack_message("Beginning experiment: {}".format(self.experiment_type))
 
         if self.experiment:
+
+            self.send_slack_message("Beginning Experiment phase, phase {} of {}".format(current_phase, self.phases))
+
             self.logger.info("Experiment option set, moving into start experiment")
             try:
                 self.config["result-dirs"] = self.runner.start_experiment()
@@ -93,51 +106,75 @@ class Manager:
                 self.send_slack_message("Experiment phase failed")
                 return
 
-            self.send_slack_message("Experiment phase complete")
+            self.send_slack_message("Experiment phase complete, phase {} of {}".format(current_phase, self.phases))
+            current_phase += 1
 
         if self.scave:
+
+            self.send_slack_message("Beginning Scave phase, phase {} of {}".format(current_phase, self.phases))
+
             self.logger.info("Scave option set, moving to extract raw data")
             try:
-                self.parser.extract_raw_data(self.config["result-dirs"])
+                self.config["raw-results"] = self.parser.extract_raw_data(self.config["result-dirs"])
             except Exception as e:
                 self.logger.error("Scave failed with error: {}".format(e))
                 self.send_slack_message("Scave phase failed")
                 return
 
-            self.send_slack_message("Scave phase complete")
+            self.send_slack_message("Scave phase complete, phase {} of {}".format(current_phase, self.phases))
+            current_phase += 1
 
         if self.parse:
+
+            self.send_slack_message("Beginning Parse phase, phase {} of {}".format(current_phase, self.phases))
+
             self.logger.info("Parsing option set, moving to parse raw data")
             try:
-                self.config["result-dirs"] = self.parser.parse_data(self.config["result-dirs"])
+                self.config["processed-results"] = self.parser.parse_data(self.config["result-dirs"])
             except Exception as e:
                 self.logger.error("Parse failed with error: {}".format(e))
                 self.send_slack_message("Parsing phase failed")
                 return
 
-            self.send_slack_message("Parse phase complete")
+            self.send_slack_message("Parse phase complete, phase {} of {}".format(current_phase, self.phases))
+            current_phase += 1
 
         if self.graph:
+
+            self.send_slack_message("Beginning Graph phase, phase {} of {}".format(current_phase, self.phases))
+
             self.logger.info("Graph option set, moving into Graphing stage")
             try:
-                self.grapher.generate_graphs(self.config["result-dirs"])
+                individual_graphs, comparison_graphs = self.grapher.generate_graphs(self.config["processed-results"])
+                self.config["figures"]["individual"] = individual_graphs
+                self.config["figures"]["comparison"] = comparison_graphs
             except Exception as e:
                 self.logger.error("Graph failed with error: {}".format(e))
                 self.send_slack_message("graph phase failed")
                 return
 
-            self.send_slack_message("Graph phase complete")
+            self.send_slack_message("Graph phase complete, phase {} of {}".format(current_phase, self.phases))
+            current_phase += 1
 
         if self.upload:
+
+            self.send_slack_message("Beginning Upload phase, phase {} of {}".format(current_phase, self.phases))
+
             self.logger.info("Uploading data from run")
             try:
-                self.uploader.upload_results()
+                self.uploader.upload_results(self.config)
             except Exception as e:
                 self.logger.error("Upload failed with error: {}".format(e))
                 self.send_slack_message("Upload phase failed")
                 return
 
-            self.send_slack_message("Upload phase complete")
+            self.send_slack_message("Upload phase complete, phase {} of {}".format(current_phase, self.phases))
+            current_phase += 1
+
+        self.logger.info("Experiment {} complete".format(self.experiment_type))
+        self.send_slack_message("Experiment {} complete".format(self.experiment_type))
+
+        return
 
 
 def str2bool(v):
@@ -157,9 +194,11 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--parse", type=str2bool, default=True, help="Parse results into graphable format")
     parser.add_argument("-s", "--scave", type=str2bool, default=True, help="Extract results from omnet output")
     parser.add_argument("-g", "--graph", type=str2bool, default=True, help="Graph results of experiment")
+    parser.add_argument("-u", "--upload", type=str2bool, default=True, help="Upload results of experiment")
     args = parser.parse_args()
 
-    manager = Manager(args.experiment_type, args.experiment, args.scave, args.parse, args.graph, channel=None)
+    manager = Manager(args.experiment_type, args.experiment, args.scave,
+                      args.parse, args.graph, args.upload, channel=None)
 
     manager.run()
 

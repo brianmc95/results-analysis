@@ -29,6 +29,8 @@ class MySlackBot:
         self.EXAMPLE_COMMAND = "run"
         self.MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
 
+        self.experiment_thread = None
+
     @staticmethod
     def setup_logging(default_path='automation/logger/logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
         """
@@ -113,9 +115,9 @@ class MySlackBot:
 
                     manager = Manager(experiment_type, experiment, scave, parse, graph, upload, channel=channel)
 
-                thread = threading.Thread(target=manager.run, args=())
-                thread.daemon = True  # Daemonize thread
-                thread.start()  # Start the execution
+                self.experiment_thread = threading.Thread(target=manager.run, args=())
+                self.experiment_thread.daemon = True  # Daemonize thread
+                self.experiment_thread.start()  # Start the execution
         else:
             # Sends the response back to the channel
             self.slack_client.api_call(
@@ -129,10 +131,31 @@ class MySlackBot:
             self.logger.info("Starter Bot connected and running!")
             # Read bot's user ID by calling Web API method `auth.test`
             self.starterbot_id = self.slack_client.api_call("auth.test")["user_id"]
+
+            running_experiment = False
+
             while True:
+                if self.experiment_thread:
+                    if self.experiment_thread.is_alive():
+                        running_experiment = True
+                        self.logger.debug("Running experiment")
+                    else:
+                        self.logger.info("Experiment complete killing thread")
+                        self.experiment_thread.join()
+                        self.experiment_thread = None
+                        running_experiment = False
+
                 command, channel = self.parse_bot_commands(self.slack_client.rtm_read())
                 if command:
-                    self.handle_command(command, channel)
+                    if not running_experiment:
+                        self.handle_command(command, channel)
+                    else:
+                        # Sends the response back to the channel
+                        self.slack_client.api_call(
+                            "chat.postMessage",
+                            channel=channel,
+                            text="Currently running an experiment, please wait before triggering another"
+                        )
                 time.sleep(self.RTM_READ_DELAY)
         else:
             self.logger.error("Connection failed. Exception traceback printed above.")
