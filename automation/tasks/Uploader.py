@@ -198,5 +198,5 @@ class Uploader:
 
     def upload_results(self):
         self.logger.info("Beginning the tarring of result files")
-        # self.tar_results()
+        self.tar_results()
         self.upload_figures()
