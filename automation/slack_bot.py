@@ -76,8 +76,6 @@ class MySlackBot:
         # Default response is help text for the user
         default_response = "Not sure what you mean. Try *{}*.".format(self.EXAMPLE_COMMAND)
 
-        # Finds and executes the given command, filling in response
-        response = None
         # This is where you start to implement more commands!
         if command.startswith(self.EXAMPLE_COMMAND):
             sub_sections = command.split(" ")
@@ -111,13 +109,20 @@ class MySlackBot:
                     if "graph" in sub_sections or "g" in sub_sections:
                         graph = True
                     if "upload" in sub_sections or "u" in sub_sections:
-                        upload=True
+                        upload = True
 
                     manager = Manager(experiment_type, experiment, scave, parse, graph, upload, channel=channel)
 
                 thread = threading.Thread(target=manager.run, args=())
                 thread.daemon = True  # Daemonize thread
                 thread.start()  # Start the execution
+        else:
+            # Sends the response back to the channel
+            self.slack_client.api_call(
+                "chat.postMessage",
+                channel=channel,
+                text= default_response
+            )
 
     def run_bot(self):
         if self.slack_client.rtm_connect(with_team_state=False):

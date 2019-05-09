@@ -13,7 +13,10 @@
     "result-dirs": [],
     "raw-results": [],
     "processed-results": [],
-    "figures": [],
+    "figures": {
+      "comparison": [],
+      "individual": []
+    },
     "results": {
       "graphs": ["pdr-dist", "error-dist"],
       "compare": {},

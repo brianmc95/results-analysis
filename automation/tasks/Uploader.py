@@ -14,6 +14,15 @@ class Uploader:
 
         self.logger = logging.getLogger("uploader")
 
+        self.gauth = None
+        self.drive = None
+        self.results_id = None
+        self.figures_id = None
+
+        self.drive_setup()
+
+    def drive_setup(self):
+
         self.logger.info("Beginning google authentication")
         self.gauth = GoogleAuth()
         # Try to load saved client credentials
@@ -49,13 +58,14 @@ class Uploader:
 
     def tar_results(self):
         orig_loc = os.getcwd()
+        self.logger.info("Original location: {}".format(orig_loc))
         for tar_ball in self.config["raw-results"]:
 
-            os.chdir("../../data/raw_data/{}/".format(self.experiment_type))
-            self.logger.debug("Moved to {}".format(os.getcwd()))
+            os.chdir("data/raw_data/{}/".format(self.experiment_type))
+            self.logger.info("Moved to {}".format(os.getcwd()))
 
             self.logger.info("Tarring up {} folder".format(tar_ball))
-            tf = tarfile.open("{}.tar.gz".format(tar_ball), mode="w:xz")
+            tf = tarfile.open("{}.tar.xz".format(tar_ball), mode="w:xz")
             tf.add(tar_ball)
             tf.close()
             self.logger.info("Folder: {}, successfully tarred".format(tar_ball))
@@ -68,17 +78,18 @@ class Uploader:
             os.remove(tf.name)
         self.logger.info("Moving back to original directory: {}".format(os.getcwd()))
 
-    def upload_tar_ball(self, tarfile):
+    def upload_tar_ball(self, tar_file):
 
-        self.logger.info("Uploading tarfile: {}".format(os.path.basename(tarfile.name)))
+        self.logger.info("Uploading tarfile: {}".format(os.path.basename(tar_file.name)))
 
         found = False
         file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false".format(self.results_id)}).GetList()
         for raw_results_file in file_list:
-            if raw_results_file["title"] == experiment_type:
+            if raw_results_file["title"] == self.experiment_type:
                 found = True
                 experiment_folder_id = raw_results_file["id"]
-                self.logger.info("Found the experiment folder: {}, id: {}".format(self.experiment_type, experiment_folder_id))
+                self.logger.info("Found the experiment folder: {}, id: {}".format(self.experiment_type,
+                                                                                  experiment_folder_id))
 
         if not found:
             self.logger.info("Experiment {} folder not found creating it.".format(self.experiment_type))
@@ -88,47 +99,103 @@ class Uploader:
                                             "mimeType": "application/vnd.google-apps.folder"})
             folder.Upload()
             experiment_folder_id = folder["id"]
-            self.logger.info("Experiment {} folder created with id {}".format(self.experiment_type, experiment_folder_id))
+            self.logger.info("Experiment {} folder created with id {}".format(self.experiment_type,
+                                                                              experiment_folder_id))
 
         # File upload
-        self.logger.info("Beginning the upload of {} to results folder automated-results/raw_results/{}".format(os.path.basename(tarfile.name), self.experiment_type))
+        self.logger.info("Beginning the upload of {} to results folder automated-results/raw_results/{}".format(os.path.basename(tar_file.name), self.experiment_type))
         tarball = self.drive.CreateFile(
-            {"parents": [{"kind": "drive#fileLink", "id": experiment_folder_id}], 'title': os.path.basename(tarfile.name)})
-        tarball.SetContentFile(results_file)
+            {"parents": [{"kind": "drive#fileLink", "id": experiment_folder_id}],
+             'title': os.path.basename(tar_file.name)})
+        tarball.SetContentFile(tar_file.name)
         tarball.Upload()
 
     def upload_figures(self):
-        pass
+        self.logger.info("Uploading figures")
+
+        found = False
+        file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false".format(self.figures_id)}).GetList()
+        for figures_file in file_list:
+            if figures_file["title"] == self.experiment_type:
+                found = True
+                experiment_folder_id = figures_file["id"]
+                self.logger.info("Found the experiment folder: {}, id: {}".format(self.experiment_type,
+                                                                                  experiment_folder_id))
+
+        if not found:
+            self.logger.info("Experiment {} folder not found creating it.".format(self.experiment_type))
+            # Folder creation
+            folder = self.drive.CreateFile({'title': self.experiment_type,
+                                            "parents": [{"id": self.figures_id}],
+                                            "mimeType": "application/vnd.google-apps.folder"})
+            folder.Upload()
+            experiment_folder_id = folder["id"]
+            self.logger.info("Experiment {} folder created with id {}".format(self.experiment_type,
+                                                                              experiment_folder_id))
+
+        comparison_found = False
+        individual_found = False
+        file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false".format(experiment_folder_id)}).GetList()
+        for exp_file in file_list:
+            if exp_file["title"] == "comparison":
+                comparison_found = True
+                comparison_folder_id = exp_file["id"]
+                self.logger.info("Found the comparison folder id: {}".format(comparison_folder_id))
+            elif exp_file["title"] == "individual":
+                individual_found = True
+                individual_folder_id = exp_file["id"]
+                self.logger.info("Found the comparison folder id: {}".format(individual_folder_id))
+
+        if not comparison_found:
+            self.logger.info("Experiment {} folder not found creating it.".format(self.experiment_type))
+            # Folder creation
+            folder = self.drive.CreateFile({'title': "comparison",
+                                            "parents": [{"id": experiment_folder_id}],
+                                            "mimeType": "application/vnd.google-apps.folder"})
+            folder.Upload()
+            comparison_folder_id = folder["id"]
+            self.logger.info("Comparison folder created with id {}".format(comparison_folder_id))
+
+        if not individual_found:
+            self.logger.info("Experiment {} folder not found creating it.".format(self.experiment_type))
+            # Folder creation
+            folder = self.drive.CreateFile({'title': "individual",
+                                            "parents": [{"id": experiment_folder_id}],
+                                            "mimeType": "application/vnd.google-apps.folder"})
+            folder.Upload()
+            individual_folder_id = folder["id"]
+            self.logger.info("Comparison folder created with id {}".format(individual_folder_id))
+
+        for comparison in self.config["figures"]["comparison"]:
+            figure_path = os.path.join(os.getcwd(), "data/figures/comparison/{}".format(comparison))
+
+            self.logger.info("Beginning the upload of {} to results folder automated-results/figures/{}/comparison".format(
+                os.path.basename(figure_path), self.experiment_type))
+
+            fig = self.drive.CreateFile(
+                {"parents": [{"kind": "drive#fileLink", "id": comparison_folder_id}],
+                 'title': os.path.basename(figure_path)})
+            fig.SetContentFile(figure_path)
+            fig.Upload()
+
+            self.logger.info("File successfully uploaded")
+
+        for individual in self.config["figures"]["individual"]:
+            figure_path = os.path.join(os.getcwd(), "data/figures/individual/{}".format(individual))
+
+            self.logger.info(
+                "Beginning the upload of {} to results folder automated-results/figures/{}/individual".format(
+                    os.path.basename(figure_path), self.experiment_type))
+
+            fig = self.drive.CreateFile(
+                {"parents": [{"kind": "drive#fileLink", "id": individual_folder_id}],
+                 'title': os.path.basename(figure_path)})
+            fig.SetContentFile(figure_path)
+            fig.Upload()
+
+            self.logger.info("File successfully uploaded")
 
     def upload_results(self):
-        self.tar_results()
-
-
-if __name__ == "__main__":
-    results_file = "/home/brian/git_repos/results-analysis/data/raw_data/cv2x/Base-2019-05-02-14:54:06.tar.xz"
-    experiment_type = "cv2x"
-
-    # import json
-    #
-    # config_file = "../../configs/cv2x.json"
-    #
-    # with open(config_file) as json_config:
-    #     config = json.load(json_config)["cv2x"]
-    #     up = Uploader("cv2x", config)
-    #     up.tar_results()
-
-    #
-    # found = False
-    # file_list3 = drive.ListFile({'q': "'{}' in parents and trashed=false".format(figures_id)}).GetList()
-    # for file1 in file_list:
-    #     if file1["title"] == experiment_type:
-    #         found = True
-    #         experiment_folder = file1["id"]
-    #
-    # if not found:
-    #     # Folder creation
-    #     folder = drive.CreateFile({'title': experiment_type,
-    #                               "parents": [{"id": figures_id}],
-    #                               "mimeType": "application/vnd.google-apps.folder"})
-    #     folder.Upload()
-    #     experiment_folder = folder["id"]
+        self.logger.info("Beginning the tarring of result files")
+        # self.tar_results()
+        self.upload_figures()

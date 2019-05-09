@@ -53,6 +53,7 @@ class Manager:
 
     def send_slack_message(self, message):
         # Sends the response back to the channel
+        self.logger.info("Message {} to be sent to channel {}".format(message, self.channel))
         if self.channel:
             self.slack_client.api_call(
                 "chat.postMessage",
@@ -88,10 +89,10 @@ class Manager:
             try:
                 self.config["result-dirs"] = self.runner.start_experiment()
             except Exception as e:
-                self.logger.error("Experiment failed with error")
+                self.logger.error("Experiment failed with error: {}".format(e))
                 self.send_slack_message("Experiment phase failed")
                 return
-                #raise e
+
             self.send_slack_message("Experiment phase complete")
 
         if self.scave:
@@ -99,10 +100,10 @@ class Manager:
             try:
                 self.parser.extract_raw_data(self.config["result-dirs"])
             except Exception as e:
-                self.logger.error("Scave failed with error")
+                self.logger.error("Scave failed with error: {}".format(e))
                 self.send_slack_message("Scave phase failed")
                 return
-                #raise e
+
             self.send_slack_message("Scave phase complete")
 
         if self.parse:
@@ -110,10 +111,10 @@ class Manager:
             try:
                 self.config["result-dirs"] = self.parser.parse_data(self.config["result-dirs"])
             except Exception as e:
-                self.logger.error("Parse failed with error")
+                self.logger.error("Parse failed with error: {}".format(e))
                 self.send_slack_message("Parsing phase failed")
                 return
-                #raise e
+
             self.send_slack_message("Parse phase complete")
 
         if self.graph:
@@ -121,20 +122,21 @@ class Manager:
             try:
                 self.grapher.generate_graphs(self.config["result-dirs"])
             except Exception as e:
-                self.logger.error("Graph failed with error")
+                self.logger.error("Graph failed with error: {}".format(e))
                 self.send_slack_message("graph phase failed")
                 return
-                #raise e
+
             self.send_slack_message("Graph phase complete")
 
         if self.upload:
             self.logger.info("Uploading data from run")
             try:
-                self.uploader.upload()
+                self.uploader.upload_results()
             except Exception as e:
-                self.logger.error("Upload failed with error")
+                self.logger.error("Upload failed with error: {}".format(e))
                 self.send_slack_message("Upload phase failed")
                 return
+
             self.send_slack_message("Upload phase complete")
 
 
