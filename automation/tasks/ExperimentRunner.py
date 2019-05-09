@@ -60,6 +60,8 @@ class ExperimentRunner:
 
             setup_command = ["cmake", "-D", "SCENARIO_CONFIG={}".format(config), "--build", "."]
 
+            self.logger.debug("Command to be run: {}".format(setup_command))
+
             process = Popen(setup_command, stdout=PIPE, stderr=STDOUT)
             with process.stdout:
                 self.log_subprocess_output(process.stdout)
