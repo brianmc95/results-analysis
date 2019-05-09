@@ -3,6 +3,8 @@ import argparse
 import os
 import logging.config
 
+from slackclient import SlackClient
+
 from tasks.DataParser import DataParser
 from tasks.ExperimentRunner import ExperimentRunner
 from tasks.Grapher import Grapher
@@ -13,7 +15,7 @@ class Manager:
     Class designed to manage the whole process of automated experimentation and results analysis
     """
 
-    def __init__(self, experiment_type, experiment, scave, parse, graph):
+    def __init__(self, experiment_type, experiment=True, scave=True, parse=True, graph=True, channel=None):
 
         self.experiment_type = experiment_type
         self.experiment = experiment
@@ -30,6 +32,11 @@ class Manager:
         with open(config_path) as json_file:
             self.config = json.load(json_file)[self.experiment_type]
 
+        slack_api_token = self.config["slack-api-token"]
+        self.slack_client = SlackClient(slack_api_token)
+
+        self.channel = channel
+
         if self.experiment:
             self.runner = ExperimentRunner(self.config, self.experiment_type)
 
@@ -38,6 +45,15 @@ class Manager:
 
         if self.graph:
             self.grapher = Grapher(self.config, self.experiment_type)
+
+    def send_slack_message(self, message):
+        # Sends the response back to the channel
+        if self.channel:
+            self.slack_client.api_call(
+                "chat.postMessage",
+                channel=self.channel,
+                text=message
+            )
 
     @staticmethod
     def setup_logging(default_path='automation/logger/logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
@@ -60,21 +76,51 @@ class Manager:
         Runs the experiment &/OR parses data &/OR graphs data
         :return:
         """
+        self.send_slack_message("Beginning experiment: {}".format(self.experiment_type))
+
         if self.experiment:
             self.logger.info("Experiment option set, moving into start experiment")
-            self.config["result-dirs"] = self.runner.start_experiment()
+            try:
+                self.config["result-dirs"] = self.runner.start_experiment()
+            except Exception as e:
+                self.logger.error("Experiment failed with error")
+                self.send_slack_message("Experiment phase failed")
+                return
+
+            self.send_slack_message("Experiment phase complete")
 
         if self.scave:
             self.logger.info("Scave option set, moving to extract raw data")
-            self.parser.extract_raw_data(self.config["result-dirs"])
+            try:
+                self.parser.extract_raw_data(self.config["result-dirs"])
+            except Exception as e:
+                self.logger.error("Scave failed with error")
+                self.send_slack_message("Scave phase failed")
+                return
+
+            self.send_slack_message("Scave phase complete")
 
         if self.parse:
             self.logger.info("Parsing option set, moving to parse raw data")
-            self.config["result-dirs"] = self.parser.parse_data(self.config["result-dirs"])
+            try:
+                self.config["result-dirs"] = self.parser.parse_data(self.config["result-dirs"])
+            except Exception as e:
+                self.logger.error("Parse failed with error")
+                self.send_slack_message("Parsing phase failed")
+                return
+
+            self.send_slack_message("Parse phase complete")
 
         if self.graph:
             self.logger.info("Graph option set, moving into Graphing stage")
-            self.grapher.generate_graphs(self.config["result-dirs"])
+            try:
+                self.grapher.generate_graphs(self.config["result-dirs"])
+            except Exception as e:
+                self.logger.error("Graph failed with error")
+                self.send_slack_message("graph phase failed")
+                return
+
+            self.send_slack_message("Graph phase complete")
 
 
 def str2bool(v):
@@ -96,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--graph", type=str2bool, default=True, help="Graph results of experiment")
     args = parser.parse_args()
 
-    manager = Manager(args.experiment_type, args.experiment, args.scave, args.parse, args.graph)
+    manager = Manager(args.experiment_type, args.experiment, args.scave, args.parse, args.graph, channel=None)
 
     manager.run()
 
