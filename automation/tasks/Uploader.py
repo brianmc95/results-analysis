@@ -82,6 +82,7 @@ class Uploader:
 
         self.logger.info("Uploading tarfile: {}".format(os.path.basename(tar_file.name)))
 
+        # TODO: Between this method and the figure uploader lots of repeated code, would be better to tidy this.
         found = False
         file_list = self.drive.ListFile({'q': "'{}' in parents and trashed=false".format(self.results_id)}).GetList()
         for raw_results_file in file_list:
