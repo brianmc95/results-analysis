@@ -11,6 +11,9 @@
     "slack-api-token": "",
     "parallel_processes" : 5,
     "result-dirs": [],
+    "raw-results": [],
+    "processed-results": [],
+    "figures": [],
     "results": {
       "graphs": ["pdr-dist", "error-dist"],
       "compare": {},

@@ -8,6 +8,7 @@ from slackclient import SlackClient
 from tasks.DataParser import DataParser
 from tasks.ExperimentRunner import ExperimentRunner
 from tasks.Grapher import Grapher
+from tasks.Uploader import Uploader
 
 
 class Manager:
@@ -15,13 +16,14 @@ class Manager:
     Class designed to manage the whole process of automated experimentation and results analysis
     """
 
-    def __init__(self, experiment_type, experiment=True, scave=True, parse=True, graph=True, channel=None):
+    def __init__(self, experiment_type, experiment=True, scave=True, parse=True, graph=True, upload=True, channel=None):
 
         self.experiment_type = experiment_type
         self.experiment = experiment
         self.scave = scave
         self.parse = parse
         self.graph = graph
+        self.upload = upload
 
         # Assuming you are running from the root of the project instead, this can throw an error
         config_path = os.path.join(os.getcwd(), "configs/{}.json".format(self.experiment_type))
@@ -45,6 +47,9 @@ class Manager:
 
         if self.graph:
             self.grapher = Grapher(self.config, self.experiment_type)
+
+        if self.upload:
+            self.uploader = Uploader(self.config, self.experiment_type)
 
     def send_slack_message(self, message):
         # Sends the response back to the channel
@@ -86,7 +91,7 @@ class Manager:
                 self.logger.error("Experiment failed with error")
                 self.send_slack_message("Experiment phase failed")
                 return
-
+                #raise e
             self.send_slack_message("Experiment phase complete")
 
         if self.scave:
@@ -97,7 +102,7 @@ class Manager:
                 self.logger.error("Scave failed with error")
                 self.send_slack_message("Scave phase failed")
                 return
-
+                #raise e
             self.send_slack_message("Scave phase complete")
 
         if self.parse:
@@ -108,7 +113,7 @@ class Manager:
                 self.logger.error("Parse failed with error")
                 self.send_slack_message("Parsing phase failed")
                 return
-
+                #raise e
             self.send_slack_message("Parse phase complete")
 
         if self.graph:
@@ -119,8 +124,18 @@ class Manager:
                 self.logger.error("Graph failed with error")
                 self.send_slack_message("graph phase failed")
                 return
-
+                #raise e
             self.send_slack_message("Graph phase complete")
+
+        if self.upload:
+            self.logger.info("Uploading data from run")
+            try:
+                self.uploader.upload()
+            except Exception as e:
+                self.logger.error("Upload failed with error")
+                self.send_slack_message("Upload phase failed")
+                return
+            self.send_slack_message("Upload phase complete")
 
 
 def str2bool(v):
