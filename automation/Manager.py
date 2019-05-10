@@ -34,8 +34,9 @@ class Manager:
         with open(config_path) as json_file:
             self.config = json.load(json_file)[self.experiment_type]
 
-        slack_api_token = self.config["slack-api-token"]
-        self.slack_client = SlackClient(slack_api_token)
+        self.slack_api_token = self.config["slack-api-token"]
+        if self.slack_api_token == "":
+            self.slack_client = SlackClient(self.slack_api_token)
 
         self.channel = channel
 
@@ -62,7 +63,7 @@ class Manager:
     def send_slack_message(self, message):
         # Sends the response back to the channel
         self.logger.info("Message {} to be sent to channel {}".format(message, self.channel))
-        if self.channel:
+        if self.channel and self.slack_api_token != "":
             self.slack_client.api_call(
                 "chat.postMessage",
                 channel=self.channel,
