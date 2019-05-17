@@ -11,6 +11,7 @@
 **/omnet/**
 
 *.log
+*.log.[0-9]*
 
 __pycache__
 
