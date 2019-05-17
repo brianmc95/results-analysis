@@ -2,6 +2,7 @@ import json
 import argparse
 import os
 import logging.config
+import time
 
 from slackclient import SlackClient
 
@@ -35,7 +36,7 @@ class Manager:
             self.config = json.load(json_file)[self.experiment_type]
 
         self.slack_api_token = self.config["slack-api-token"]
-        if self.slack_api_token == "":
+        if self.slack_api_token != "":
             self.slack_client = SlackClient(self.slack_api_token)
 
         self.channel = channel
@@ -95,7 +96,11 @@ class Manager:
 
         self.send_slack_message("Beginning experiment: {}".format(self.experiment_type))
 
+        overall_start = time.time()
+
         if self.experiment:
+
+            start = time.time()
 
             self.send_slack_message("Beginning Experiment phase, phase {} of {}".format(current_phase, self.phases))
 
@@ -107,10 +112,15 @@ class Manager:
                 self.send_slack_message("Experiment phase failed")
                 return
 
-            self.send_slack_message("Experiment phase complete, phase {} of {}".format(current_phase, self.phases))
+            end = time.time()
+            elapsed = end - start
+            self.send_slack_message("Experiment phase complete, phase {} of {} in {}s".format(current_phase,
+                                                                                              self.phases, elapsed))
             current_phase += 1
 
         if self.scave:
+
+            start = time.time()
 
             self.send_slack_message("Beginning Scave phase, phase {} of {}".format(current_phase, self.phases))
 
@@ -122,10 +132,15 @@ class Manager:
                 self.send_slack_message("Scave phase failed")
                 return
 
-            self.send_slack_message("Scave phase complete, phase {} of {}".format(current_phase, self.phases))
+            end = time.time()
+            elapsed = end - start
+            self.send_slack_message("Scave phase complete, phase {} of {} in {}s".format(current_phase,
+                                                                                         self.phases, elapsed))
             current_phase += 1
 
         if self.parse:
+
+            start = time.time()
 
             self.send_slack_message("Beginning Parse phase, phase {} of {}".format(current_phase, self.phases))
 
@@ -137,10 +152,15 @@ class Manager:
                 self.send_slack_message("Parsing phase failed")
                 return
 
-            self.send_slack_message("Parse phase complete, phase {} of {}".format(current_phase, self.phases))
+            end = time.time()
+            elapsed = end - start
+            self.send_slack_message("Parse phase complete, phase {} of {} in {}s".format(current_phase,
+                                                                                         self.phases, elapsed))
             current_phase += 1
 
         if self.graph:
+
+            start = time.time()
 
             self.send_slack_message("Beginning Graph phase, phase {} of {}".format(current_phase, self.phases))
 
@@ -154,10 +174,15 @@ class Manager:
                 self.send_slack_message("graph phase failed")
                 return
 
-            self.send_slack_message("Graph phase complete, phase {} of {}".format(current_phase, self.phases))
+            end = time.time()
+            elapsed = end - start
+            self.send_slack_message("Graph phase complete, phase {} of {} in {}s".format(current_phase,
+                                                                                         self.phases, elapsed))
             current_phase += 1
 
         if self.upload:
+
+            start = time.time()
 
             self.send_slack_message("Beginning Upload phase, phase {} of {}".format(current_phase, self.phases))
 
@@ -169,11 +194,16 @@ class Manager:
                 self.send_slack_message("Upload phase failed")
                 return
 
-            self.send_slack_message("Upload phase complete, phase {} of {}".format(current_phase, self.phases))
+            end = time.time()
+            elapsed = end - start
+            self.send_slack_message("Upload phase complete, phase {} of {} in {}s".format(current_phase,
+                                                                                          self.phases, elapsed))
             current_phase += 1
 
+        overall_end = time.time()
+        overall_elapsed = overall_end - overall_start
         self.logger.info("Experiment {} complete".format(self.experiment_type))
-        self.send_slack_message("Experiment {} complete".format(self.experiment_type))
+        self.send_slack_message("Experiment {} complete in {}".format(self.experiment_type, overall_elapsed))
 
         return
 

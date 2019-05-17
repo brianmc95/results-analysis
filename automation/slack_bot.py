@@ -95,7 +95,17 @@ class MySlackBot:
             else:
                 experiment_type = sub_sections[1].lower()
                 if len(sub_sections) == 2:
-                    manager = Manager(experiment_type, channel=channel)
+                    try:
+                        manager = Manager(experiment_type, channel=channel)
+                    except FileNotFoundError:
+                        error_message = "Config {} not found".format(experiment_type)
+                        self.logger.exception(error_message)
+                        self.slack_client.api_call(
+                            "chat.postMessage",
+                            channel=channel,
+                            text=error_message
+                        )
+                        return
                 else:
                     experiment = False
                     scave = False
@@ -113,7 +123,17 @@ class MySlackBot:
                     if "upload" in sub_sections or "u" in sub_sections:
                         upload = True
 
-                    manager = Manager(experiment_type, experiment, scave, parse, graph, upload, channel=channel)
+                    try:
+                        manager = Manager(experiment_type, experiment, scave, parse, graph, upload, channel=channel)
+                    except FileNotFoundError:
+                        error_message = "Config {} not found".format(experiment_type)
+                        self.logger.exception(error_message)
+                        self.slack_client.api_call(
+                            "chat.postMessage",
+                            channel=channel,
+                            text=error_message
+                        )
+                        return
 
                 self.experiment_thread = threading.Thread(target=manager.run, args=())
                 self.experiment_thread.daemon = True  # Daemonize thread
