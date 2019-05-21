@@ -152,6 +152,8 @@ class MySlackBot:
             # Read bot's user ID by calling Web API method `auth.test`
             self.starterbot_id = self.slack_client.api_call("auth.test")["user_id"]
 
+            orig_loc = os.getcwd()
+
             running_experiment = False
 
             while True:
@@ -164,6 +166,8 @@ class MySlackBot:
                         self.experiment_thread.join()
                         self.experiment_thread = None
                         running_experiment = False
+                        # Ensures that if we leave a run in an unknown state we always return to our original path.
+                        os.chdir(orig_loc)
 
                 command, channel = self.parse_bot_commands(self.slack_client.rtm_read())
                 if command:
