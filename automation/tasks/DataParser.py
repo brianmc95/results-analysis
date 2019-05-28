@@ -6,7 +6,6 @@ import numpy as np
 import json
 import logging
 import re
-import datetime
 
 
 class DataParser:
@@ -82,17 +81,19 @@ class DataParser:
         orig_loc = os.getcwd()
         self.logger.debug("Original path is: {}".format(orig_loc))
 
+        results_folders = []
+
         for result_dir in result_dirs:
 
-            raw_results_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, result_dir)
-            omnet_results_dir = "{}/data/omnet/{}/{}".format(orig_loc, self.experiment_type, result_dir)
+            folder_name = os.path.basename(result_dir)
+            raw_results_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, folder_name)
 
             os.makedirs(raw_results_dir)
 
-            os.chdir(omnet_results_dir)
-            self.logger.debug("Moved into {}".format(omnet_results_dir))
+            os.chdir(result_dir)
+            self.logger.debug("Moved into {}".format(result_dir))
 
-            file_names = os.listdir(omnet_results_dir)
+            file_names = os.listdir(result_dir)
             self.logger.debug(file_names)
 
             # TODO: Improve this it's a bit silly
@@ -133,17 +134,19 @@ class DataParser:
 
                 i += num_processes
 
-            for file_name in os.listdir(omnet_results_dir):
+            for file_name in os.listdir(result_dir):
                 if ".csv" not in file_name:
                     continue
-                self.logger.info("Moving file {}/{} to {}/{}".format(omnet_results_dir, file_name,
+                self.logger.info("Moving file {}/{} to {}/{}".format(result_dir, file_name,
                                                                      raw_results_dir, file_name))
-                os.rename("{}/{}".format(omnet_results_dir, file_name), "{}/{}".format(raw_results_dir, file_name))
+                os.rename("{}/{}".format(result_dir, file_name), "{}/{}".format(raw_results_dir, file_name))
 
             os.chdir(orig_loc)
             self.logger.debug("returned to original directory: {}".format(orig_loc))
 
-        return result_dirs
+            results_folders.append(raw_results_dir)
+
+        return results_folders
 
     def scavefiles(self, run_number):
 
@@ -316,22 +319,32 @@ class DataParser:
                 return vector_df, scalar_df, runattr_df, itervar_df, param_df, attr_df
             return vector_df, scalar_df
 
-    def parse_data(self, results_dirs):
+    def parse_data(self, results_dirs, now):
         combined_results = {}
 
-        for result_dir, config_name in zip(results_dirs, self.config["config_names"]):
-            self.logger.info("Dealing with config: {} of result file: {}".format(result_dir, config_name))
+        configs = []
+        for config in self.config["config_names"]:
+            config_data = self.config["config_names"][config]
+            if config_data["repeat"] != 0:
+                if len(config_data["naming"]) > 0:
+                    for name in config_data["naming"]:
+                        configs.append(name)
+                else:
+                    configs.append(config)
+
+        for result_dir, config_name in zip(results_dirs, configs):
+
+            folder_name = os.path.basename(result_dir)
+
+            self.logger.info("Dealing with config: {} of result folder: {}".format(config_name, folder_name))
             combined_results[config_name] = {}
 
             orig_loc = os.getcwd()
 
-            raw_results_dir = "{}/data/raw_data/{}/{}".format(os.getcwd(), self.experiment_type,
-                                                              result_dir)
+            self.logger.debug("Moving to results dir: {}".format(result_dir))
+            os.chdir(result_dir)
 
-            self.logger.debug("Moving to results dir: {}".format(raw_results_dir))
-            os.chdir(raw_results_dir)
-
-            runs = os.listdir(raw_results_dir)
+            runs = os.listdir(result_dir)
 
             num_processes = self.config["parallel_processes"]
             if num_processes > multiprocessing.cpu_count():
@@ -362,7 +375,6 @@ class DataParser:
             self.logger.debug("Moving back to original location: {}".format(orig_loc))
             os.chdir(orig_loc)
 
-        now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         processed_file = "{}/data/processed_data/{}-{}.json".format(os.getcwd(), self.experiment_type, now)
         self.logger.info("Writing processed data to {}".format(processed_file))
         with open(processed_file, "w") as json_output:
