@@ -1,7 +1,6 @@
 import numpy as np
 import logging
 import json
-import datetime
 import os
 
 import matplotlib.pyplot as plt
@@ -24,14 +23,12 @@ class Grapher:
         self.markers = [".", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h", "H", "+",
                         "x", "X", "D", "d", "|", "_", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
-    def generate_graphs(self, results_file):
+    def generate_graphs(self, results_file, now):
 
         self.logger.info("Beginning graphing of result file: {}".format(results_file))
 
         with open(results_file) as results_json:
             data = json.load(results_json)
-
-        now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
         comparison_graphs = []
         individual_graphs = []
@@ -70,7 +67,7 @@ class Grapher:
                     distances = []
 
                     for config in self.results["compare"][compare]:
-                        labels.append("{}: PDR".format(config))
+                        labels.append("PDR: {}".format(config))
                         pdrs.append(data[config][0]["pdr"])
                         distances = data[config][0]["distance"]
 
