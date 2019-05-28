@@ -3,6 +3,7 @@ import argparse
 import os
 import logging.config
 import time
+import datetime
 
 from slackclient import SlackClient
 
@@ -98,6 +99,8 @@ class Manager:
 
         overall_start = time.time()
 
+        now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+
         if self.experiment:
 
             start = time.time()
@@ -106,7 +109,8 @@ class Manager:
 
             self.logger.info("Experiment option set, moving into start experiment")
             try:
-                self.config["result-dirs"] = self.runner.start_experiment()
+                self.config["result-dirs"] = self.runner.start_experiment(now)
+                self.logger.info("result-dirs: {}".format(self.config["result-dirs"]))
             except Exception as e:
                 self.logger.error("Experiment failed with error: {}".format(e))
                 self.send_slack_message("Experiment phase failed")
@@ -127,6 +131,7 @@ class Manager:
             self.logger.info("Scave option set, moving to extract raw data")
             try:
                 self.config["raw-results"] = self.parser.extract_raw_data(self.config["result-dirs"])
+                self.logger.info("raw-results: {}".format(self.config["raw-results"]))
             except Exception as e:
                 self.logger.error("Scave failed with error: {}".format(e))
                 self.send_slack_message("Scave phase failed")
@@ -146,7 +151,8 @@ class Manager:
 
             self.logger.info("Parsing option set, moving to parse raw data")
             try:
-                self.config["processed-results"] = self.parser.parse_data(self.config["result-dirs"])
+                self.config["processed-results"] = self.parser.parse_data(self.config["raw-results"], now)
+                self.logger.info("processed-results: {}".format(self.config["processed-results"]))
             except Exception as e:
                 self.logger.error("Parse failed with error: {}".format(e))
                 self.send_slack_message("Parsing phase failed")
@@ -166,9 +172,11 @@ class Manager:
 
             self.logger.info("Graph option set, moving into Graphing stage")
             try:
-                individual_graphs, comparison_graphs = self.grapher.generate_graphs(self.config["processed-results"])
+                individual_graphs, comparison_graphs = self.grapher.generate_graphs(self.config["processed-results"], now)
                 self.config["figures"]["individual"] = individual_graphs
                 self.config["figures"]["comparison"] = comparison_graphs
+                self.logger.info("figures, individual: {}".format(individual_graphs))
+                self.logger.info("figures, comparison: {}".format(comparison_graphs))
             except Exception as e:
                 self.logger.error("Graph failed with error: {}".format(e))
                 self.send_slack_message("graph phase failed")
