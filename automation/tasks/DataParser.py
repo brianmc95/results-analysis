@@ -88,7 +88,7 @@ class DataParser:
             folder_name = os.path.basename(result_dir)
             raw_results_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, folder_name)
 
-            os.makedirs(raw_results_dir)
+            os.makedirs(raw_results_dir, exist_ok=True)
 
             os.chdir(result_dir)
             self.logger.debug("Moved into {}".format(result_dir))
@@ -390,7 +390,7 @@ class DataParser:
                         combined[field][i] = (combined[field][i] + result[field][i]) / 2
                 else:
                     combined[field] = result[field]
-        return results
+        return combined
 
     def filter_data(self, raw_data_file):
         vector_df, scalar_df = self.tidy_data(raw_data_file)
@@ -413,6 +413,8 @@ class DataParser:
 
         self.logger.info("Binning all the necessary information for the graphs")
         binned_results = self.bin_fields(vector_df, fields)
+
+        del vector_df
 
         self.logger.info("Completed data parsing for this run")
         return binned_results

@@ -217,6 +217,10 @@ class ExperimentRunner:
             if config_name.lower() in omnet_name.lower():
                 omnet_conf_name = omnet_name
 
+        if "params" not in self.config["config_names"][config_name]:
+            # No params to change no need to continue
+            return
+
         for update_param in self.config["config_names"][config_name]["params"]:
             self.logger.debug("Param to upate the config {}".format(update_param))
             for param in self.configParser[omnet_conf_name]:
