@@ -237,87 +237,103 @@ class DataParser:
 
         return new_df
 
-    def tidy_data(self, raw_csv):
-        raw_df = pd.read_csv(raw_csv, converters={
+    def stream_groupby_csv(file, key, agg, agg_args, chunk_size=1e6):
+
+        # Tell pandas to read the data in chunks
+        chunks = pd.read_csv(file, chunksize=chunk_size)
+
+        results = []
+        orphans = pd.DataFrame()
+
+        for chunk in chunks:
+            # Add the previous orphans to the chunk
+            chunk = pd.concat((orphans, chunk))
+
+            # Determine which rows are orphans
+            last_val = chunk[key].iloc[-1]
+            is_orphan = chunk[key] == last_val
+
+            # Put the new orphans aside
+            chunk, orphans = chunk[~is_orphan], chunk[is_orphan]
+
+            # Perform the aggregation and store the results
+            result = agg(chunk, agg_args)
+            results.append(result)
+
+        return pd.concat(results)
+
+    def tidy_data(self, raw_csv, key="module", chunk_size=10000):
+
+        # Tell pandas to read the data in chunks
+        chunks = pd.read_csv(raw_csv, chunksize=chunk_size, converters={
             "attrvalue": self.parse_if_number,
             "binedges" : self.parse_ndarray,
             "binvalues": self.parse_ndarray,
             "vectime"  : self.parse_ndarray,
-            "vecvalue" : self.parse_ndarray})
+            "vecvalue" : self.parse_ndarray},
+        )
 
-        self.logger.info("Loaded {} as a DataFrame".format(raw_csv))
+        results = []
+        orphans = pd.DataFrame()
 
-        # It's likely this will change depending on the run/system
-        # Might be worth investigating some form of alternative
-        # TODO: Sort out some better means of fixing this.
-        broken_module = raw_df['module'].str.split('.', 3, expand=True)
-        #
-        raw_df["network"] = broken_module[0]
-        raw_df["node"] = broken_module[1]
-        raw_df["interface"] = broken_module[2]
-        raw_df["layer"] = broken_module[3]
+        chunk_num = 1
 
-        raw_df = raw_df.drop("module", axis=1)
+        for chunk in chunks:
 
-        # Remove junk from common node names
-        raw_df.node = raw_df.node.str.replace("node", "")
-        raw_df.node = raw_df.node.str.replace("[", "")
-        raw_df.node = raw_df.node.str.replace("]", "")
-        raw_df.node = raw_df.node.str.replace("car", "")
+            # Add the previous orphans to the chunk
+            chunk = pd.concat((orphans, chunk))
 
-        # This will always remain the same for all runs.
-        broken_run = raw_df['run'].str.split('-', 4, expand=True)
+            # Determine which rows are orphans
+            last_val = chunk[key].iloc[-1]
+            is_orphan = chunk[key] == last_val
 
-        raw_df["scenario"] = broken_run[0]
-        raw_df["run"] = broken_run[1]
-        raw_df["date"] = broken_run[2]
-        raw_df["time"] = broken_run[3]
-        raw_df["processId"] = broken_run[4]
+            # Put the new orphans aside
+            chunk, orphans = chunk[~is_orphan], chunk[is_orphan]
 
-        if self.all_types:
-            runattr_df = raw_df[raw_df["type"] == "runattr"]
-            runattr_df = runattr_df.dropna(axis=1, how="all")
+            self.logger.info("Loaded chunk {} of {} as a DataFrame".format(chunk_num, raw_csv))
 
-            itervar_df = raw_df[raw_df["type"] == "itervar"]
-            itervar_df = itervar_df.dropna(axis=1, how="all")
+            # It's likely this will change depending on the run/system
+            # Might be worth investigating some form of alternative
+            # TODO: Sort out some better means of fixing this.
+            broken_module = chunk['module'].str.split('.', 3, expand=True)
+            #
+            chunk["network"] = broken_module[0]
+            chunk["node"] = broken_module[1]
+            chunk["interface"] = broken_module[2]
+            chunk["layer"] = broken_module[3]
 
-            param_df = raw_df[raw_df["type"] == "param"]
-            param_df = param_df.dropna(axis=1, how="all")
+            chunk = chunk.drop("module", axis=1)
 
-            attr_df = raw_df[raw_df["type"] == "attr"]
-            attr_df = attr_df.dropna(axis=1, how="all")
+            # Remove junk from common node names
+            chunk.node = chunk.node.str.replace("node", "")
+            chunk.node = chunk.node.str.replace("[", "")
+            chunk.node = chunk.node.str.replace("]", "")
+            chunk.node = chunk.node.str.replace("car", "")
 
-        if "filtered_vectors" in self.results and "filtered_scalars" in self.results:
-            raw_df = raw_df[(raw_df["name"].isin(self.results["filtered_vectors"])) |
-                            (raw_df["name"].isin(self.results["filtered_scalars"]))]
+            # This will always remain the same for all runs.
+            broken_run = chunk['run'].str.split('-', 4, expand=True)
 
-        scalar_df = raw_df[raw_df["type"] == "scalar"]
-        scalar_df = scalar_df.dropna(axis=1, how="all")
+            chunk["scenario"] = broken_run[0]
+            chunk["run"] = broken_run[1]
+            chunk["date"] = broken_run[2]
+            chunk["time"] = broken_run[3]
+            chunk["processId"] = broken_run[4]
 
-        vector_df = raw_df[raw_df["type"] == "vector"]
-        vector_df = vector_df.dropna(axis=1, how="all")
+            if "filtered_vectors" in self.results and "filtered_scalars" in self.results:
+                chunk = chunk[(chunk["name"].isin(self.results["filtered_vectors"])) |
+                                (chunk["name"].isin(self.results["filtered_scalars"]))]
 
-        vector_df = self.parse_vectime_vecvalue(vector_df)
+            vector_df = chunk[chunk["type"] == "vector"]
+            vector_df = vector_df.dropna(axis=1, how="all")
 
-        if self.tidied_results:
+            vector_df = self.parse_vectime_vecvalue(vector_df)
 
-            os.mkdir(self.tidied_results)
+            # Perform the aggregation and store the results
+            results.append(vector_df)
 
-            self.logger.info("Saving processed data into {}".format(self.tidied_results))
+            chunk_num += 1
 
-            vector_df.to_csv("{}/{}".format(self.tidied_results, "vector.csv"), index=False)
-            scalar_df.to_csv("{}/{}".format(self.tidied_results, "scalar.csv"), index=False)
-
-            if self.all_types:
-                runattr_df.to_csv("{}/{}".format(self.tidied_results, "runattr.csv"), index=False)
-                itervar_df.to_csv("{}/{}".format(self.tidied_results, "itervar.csv"), index=False)
-                param_df.to_csv("{}/{}".format(self.tidied_results, "params.csv"), index=False)
-                attr_df.to_csv("{}/{}".format(self.tidied_results, "attr.csv"), index=False)
-
-        else:
-            if self.all_types:
-                return vector_df, scalar_df, runattr_df, itervar_df, param_df, attr_df
-            return vector_df, scalar_df
+        return pd.concat(results)
 
     def parse_data(self, results_dirs, now):
         combined_results = {}
