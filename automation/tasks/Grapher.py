@@ -33,6 +33,8 @@ class Grapher:
         comparison_graphs = []
         individual_graphs = []
 
+        pdr_field = self.results["decoded"].replace(":vector", "")
+
         for individual in self.results["individual"]:
             self.logger.info("Config we are graphing {}".format(individual))
             for graph in self.results["graphs"]:
@@ -41,15 +43,15 @@ class Grapher:
                 self.logger.info("Generating graph: {}".format(plot_name))
 
                 if graph == "pdr-dist":
-                    self.pdr_dist_individual(data[individual][0]["pdr"], data[individual][0]["distance"],
+                    self.pdr_dist_individual(data[individual][pdr_field], data[individual]["distance"],
                                              "PDR", plot_name)
 
                 elif graph == "error-dist":
                     errors = []
                     for error in self.results["fails"]:
-                        errors.append(data[individual][0][error])
+                        errors.append(data[individual][error])
 
-                    self.errors_dist_individual(data[individual][0]["distance"], data[individual][0]["decoded"],
+                    self.errors_dist_individual(data[individual]["distance"], data[individual][pdr_field],
                                                 errors, self.results["error_labels"], plot_name)
 
                 individual_graphs.append("{}.{}".format(plot_name, self.image_format))
@@ -68,7 +70,7 @@ class Grapher:
 
                     for config in self.results["compare"][compare]:
                         labels.append("PDR: {}".format(config))
-                        pdrs.append(data[config][0]["pdr"])
+                        pdrs.append(data[config][0][pdr_field])
                         distances = data[config][0]["distance"]
 
                     self.pdr_dist(pdrs, distances, labels, plot_name)
@@ -82,7 +84,7 @@ class Grapher:
                     errors = []
 
                     for config in self.results["compare"][compare]:
-                        decoded.append(data[config][0]["decoded"])
+                        decoded.append(data[config][0][pdr_field])
                         decoded_labels.append("{}: decoded".format(config))
                         distances = data[config][0]["distance"]
 
@@ -117,8 +119,8 @@ class Grapher:
         ax.legend(loc='lower right')
         ax.grid()
 
-        ax.set_ylim([0, 100])
-        plt.yticks(np.arange(0, 101, step=10))
+        ax.set_ylim([0, 1])
+        plt.yticks(np.arange(0, 1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
         plt.xticks(np.arange(0, (max(distances) + 1), step=50))
