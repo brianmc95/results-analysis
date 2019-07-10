@@ -6,15 +6,15 @@
     "target": "run_simulte-cars",
     "config_names" : {
       "Base": {
-        "repeat": 0
+        "repeat": 5
       },
       "probKeep": {
         "repeat": 5,
         "params": {
           "probResourceKeep": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
         },
-        "naming":["Prob-%0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
-          "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-%80"]
+        "naming":["Prob-0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
+          "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8"]
       },
       "sensingWindow": {
         "repeat": 5,
@@ -27,7 +27,7 @@
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
-    "result-dirs": [],
+    "result-dirs": [""],
     "raw-results": [],
     "processed-results": "",
     "figures": {
@@ -37,19 +37,34 @@
     "results": {
       "graphs": ["pdr-dist", "error-dist"],
       "compare": {
-        "probResourceKeep": ["Prob-%0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
-          "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-%80"],
+      },
+      "comp" : {
+        "probResourceKeep": ["Prob-0.0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
+          "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8"],
         "selectionWindow": ["Pstep-100", "Pstep-90", "Pstep-80", "Pstep-70", "Pstep-60", "Pstep-50",
           "Pstep-40", "Pstep-30", "Pstep-20", "Pstep-10"]
       },
-      "individual": ["Prob-%0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
-        "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-%80",
+      "individual": ["Base", "Prob-0.0", "Prob-0.1", "Prob-0.2", "Prob-0.3",
+        "Prob-0.4", "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8",
         "Pstep-100", "Pstep-90", "Pstep-80", "Pstep-70", "Pstep-60",
         "Pstep-50", "Pstep-40", "Pstep-30", "Pstep-20", "Pstep-10"],
-      "decoded": "tbsDecoded:vector",
-      "distance": "txRxDistanceTB:vector",
-      "fails": ["tbFailedButSCIReceived:vector", "tbsFailedDueToNoSCI:vector", "tbFailedHalfDuplex:vector"],
+      "decoded": "tbsDecoded",
+      "distance": "txRxDistanceTB",
+      "fails": ["tbFailedButSCIReceived", "tbsFailedDueToNoSCI", "tbFailedHalfDuplex"],
       "error_labels": ["Failed decoding TB", "No SCI", "Half-Duplex"],
+      "merging": [
+        "txRxDistanceSCI:vector",
+        "txRxDistanceTB:vector",
+        "scisReceived:vector",
+        "scisDecoded:vector",
+        "scisNotDecoded:vector",
+        "sciFailedHalfDuplex:vector",
+        "tbsReceived:vector",
+        "tbsDecoded:vector",
+        "tbsFailedDueToNoSCI:vector",
+        "tbFailedHalfDuplex:vector",
+        "tbFailedButSCIReceived:vector"
+      ],
       "filtered_vectors": [
         "scisSent:vector",
         "tbsSent:vector",
@@ -58,6 +73,7 @@
         "scisReceived:vector",
         "scisDecoded:vector",
         "scisNotDecoded:vector",
+        "sciFailedHalfDuplex:vector",
         "tbsReceived:vector",
         "tbsDecoded:vector",
         "tbsFailedDueToNoSCI:vector",
