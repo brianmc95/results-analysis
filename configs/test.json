@@ -1,0 +1,78 @@
+{
+  "test" : {
+    "project_path": "/home/brian/git_repos/OpenCV2X",
+    "cmake_dir": "/home/brian/git_repos/OpenCV2X/build",
+    "omnetpp_ini": "/home/brian/git_repos/OpenCV2X/scenarios/cars/omnetpp.ini",
+    "target": "run_simulte-cars",
+    "config_names" : {
+      "Base": {
+        "repeat": 1
+      }
+    },
+    "slack-api-token": "sUkPgnCBDCqiRkbWGJVWwbHs",
+    "parallel_processes" : 1,
+    "result-dirs": [""],
+    "raw-results": [],
+    "processed-results": "",
+    "figures": {
+      "comparison": [],
+      "individual": []
+    },
+    "results": {
+      "graphs": ["pdr-dist", "error-dist"],
+      "compare": {
+      },
+      "comp" : {
+      },
+      "individual": ["Base"],
+      "decoded": "tbsDecoded",
+      "distance": "txRxDistanceTB",
+      "fails": ["tbFailedButSCIReceived", "tbsFailedDueToNoSCI", "tbFailedHalfDuplex"],
+      "error_labels": ["Failed decoding TB", "No SCI", "Half-Duplex"],
+      "merging": [
+        "txRxDistanceSCI:vector",
+        "txRxDistanceTB:vector",
+        "scisReceived:vector",
+        "scisDecoded:vector",
+        "scisNotDecoded:vector",
+        "sciFailedHalfDuplex:vector",
+        "tbsReceived:vector",
+        "tbsDecoded:vector",
+        "tbsFailedDueToNoSCI:vector",
+        "tbFailedHalfDuplex:vector",
+        "tbFailedButSCIReceived:vector"
+      ],
+      "filtered_vectors": [
+        "scisSent:vector",
+        "tbsSent:vector",
+        "txRxDistanceSCI:vector",
+        "txRxDistanceTB:vector",
+        "scisReceived:vector",
+        "scisDecoded:vector",
+        "scisNotDecoded:vector",
+        "sciFailedHalfDuplex:vector",
+        "tbsReceived:vector",
+        "tbsDecoded:vector",
+        "tbsFailedDueToNoSCI:vector",
+        "tbFailedHalfDuplex:vector",
+        "tbFailedButSCIReceived:vector"
+      ],
+      "filtered_scalars": [
+        "txRxDistance:mean",
+        "tbAndSCINotReceived:sum",
+        "tbFailedButSCIReceived:sum",
+        "tbsFailedDueToNoSCI:sum",
+        "tbFailedHalfDuplex:sum",
+        "tbsDecoded:sum",
+        "tbsReceived:sum",
+        "tbsSent:sum",
+        "scisSent:sum",
+        "scisNotDecoded:sum",
+        "scisDecoded:sum",
+        "scisReceived:sum",
+        "cbr:mean"
+      ]
+    }
+  }
+
+}

@@ -33,7 +33,7 @@ class ExperimentRunner:
 
             output_data_path = "{}/data/omnet/{}/{}-{}".format(os.getcwd(), self.experiment_type, config, now)
 
-            os.mkdir(output_data_path)
+            os.makedirs(output_data_path, exist_ok=True)
 
             num_processes = self.config["parallel_processes"]
             if num_processes > self.processors:
@@ -170,6 +170,8 @@ class ExperimentRunner:
 
         result_files = os.listdir("{}/{}/{}".format(output_data_path, self.experiment_type, config))
         result_files.sort()
+
+        new_loc = ""
 
         for result_file in result_files:
 

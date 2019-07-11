@@ -29,12 +29,11 @@ class Manager:
         # Assuming you are running from the root of the project instead, this can throw an error
         config_path = os.path.join(os.getcwd(), "configs/{}.json".format(self.experiment_type))
 
-        if verbose:
-            self.setup_logging(default_level=logging.DEBUG)
-
+        self.setup_logging(verbose=verbose)
         self.logger = logging.getLogger(__name__)
 
-        self.logger.setLevel(logging.DEBUG)
+        if verbose:
+            self.logger.setLevel(logging.DEBUG)
 
         with open(config_path) as json_file:
             self.config = json.load(json_file)[self.experiment_type]
@@ -74,18 +73,16 @@ class Manager:
             )
 
     @staticmethod
-    def setup_logging(default_path='automation/logger/logging.json', default_level=logging.INFO, env_key='LOG_CFG'):
+    def setup_logging(default_path='automation/logger/logging.json', default_level=logging.INFO, verbose=False):
         """
         Setup logging configuration
         """
         path = default_path
-        value = os.getenv(env_key, None)
-        if value:
-            path = value
         if os.path.exists(path):
             with open(path, 'rt') as f:
                 config = json.load(f)
-                config["handlers"]["console"]["level"] = "DEBUG"
+                if verbose:
+                    config["handlers"]["console"]["level"] = "DEBUG"
             logging.config.dictConfig(config)
         else:
             logging.basicConfig(level=default_level)
