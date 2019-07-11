@@ -90,6 +90,12 @@ class Manager:
         else:
             logging.basicConfig(level=default_level)
 
+    @staticmethod
+    def timer(start, end):
+        hours, rem = divmod(end - start, 3600)
+        minutes, seconds = divmod(rem, 60)
+        return "{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds)
+
     def run(self):
         """
         Runs the experiment &/OR parses data &/OR graphs data
@@ -119,8 +125,8 @@ class Manager:
                 return
 
             end = time.time()
-            elapsed = round(end - start)
-            self.send_slack_message("Experiment phase complete, phase {} of {} in {}s".format(current_phase,
+            elapsed = self.timer(start, end)
+            self.send_slack_message("Experiment phase complete, phase {} of {} in {}".format(current_phase,
                                                                                               self.phases, elapsed))
             current_phase += 1
 
@@ -140,8 +146,8 @@ class Manager:
                 return
 
             end = time.time()
-            elapsed = round(end - start)
-            self.send_slack_message("Parse phase complete, phase {} of {} in {}s".format(current_phase,
+            elapsed = self.timer(start, end)
+            self.send_slack_message("Parse phase complete, phase {} of {} in {}".format(current_phase,
                                                                                          self.phases, elapsed))
             current_phase += 1
 
@@ -164,8 +170,8 @@ class Manager:
                 return
 
             end = time.time()
-            elapsed = round(end - start)
-            self.send_slack_message("Graph phase complete, phase {} of {} in {}s".format(current_phase,
+            elapsed = self.timer(start, end)
+            self.send_slack_message("Graph phase complete, phase {} of {} in {}".format(current_phase,
                                                                                          self.phases, elapsed))
             current_phase += 1
 
@@ -184,13 +190,13 @@ class Manager:
                 return
 
             end = time.time()
-            elapsed = round(end - start)
-            self.send_slack_message("Upload phase complete, phase {} of {} in {}s".format(current_phase,
+            elapsed = self.timer(start, end)
+            self.send_slack_message("Upload phase complete, phase {} of {} in {}".format(current_phase,
                                                                                           self.phases, elapsed))
             current_phase += 1
 
         overall_end = time.time()
-        overall_elapsed = round(overall_end - overall_start)
+        overall_elapsed = self.timer(overall_start, overall_end)
         self.logger.info("Experiment {} complete".format(self.experiment_type))
         self.send_slack_message("Experiment {} complete in {}".format(self.experiment_type, overall_elapsed))
 
