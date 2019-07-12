@@ -3,6 +3,7 @@ import multiprocessing
 from subprocess import Popen, PIPE
 import pandas as pd
 import numpy as np
+import traceback
 import json
 import logging
 import re
@@ -193,7 +194,7 @@ class DataParser:
         os.makedirs(temp_unsorted_dir, exist_ok=True)
         os.makedirs(temp_sorted_dir, exist_ok=True)
 
-        self.logger.debug("Splitting file {} into parts".format(temp_file_pt.name))
+        self.logger.info("Splitting file {} into parts".format(temp_file_pt.name))
 
         split_command = "split -l 2500000 {} {}/temp_csv_".format(temp_file_pt.name, temp_unsorted_dir)
 
@@ -204,13 +205,13 @@ class DataParser:
         all_splits = os.listdir(temp_unsorted_dir)
         num_splits = len(all_splits)
 
-        self.logger.debug("Splitting complete, split temp_file: {} into {} files".format(temp_file_pt.name, num_splits))
+        self.logger.info("Splitting complete, split temp_file: {} into {} files".format(temp_file_pt.name, num_splits))
 
         split = 1
         for file_to_sort in all_splits:
-            self.logger.debug("Sorting split: {} of {}".format(split, num_splits))
+            self.logger.info("Sorting split: {} of {}".format(split, num_splits))
             sort_split_commands = "sort -t ',' -n -k2,2 -s -o {}/{} {}/{}".format(temp_sorted_dir, file_to_sort, temp_unsorted_dir, file_to_sort)
-            self.logger.info("Sorting splits command: {}".format(sort_split_commands))
+            self.logger.debug("Sorting splits command: {}".format(sort_split_commands))
 
             # Need to delete all the temp things then when I write the file back into my temp_file
             process = Popen(sort_split_commands, shell=True, stdout=PIPE)
@@ -218,16 +219,16 @@ class DataParser:
 
             split += 1
 
-        self.logger.debug("Merging split files into single sorted csv file")
+        self.logger.info("Merging split files into single sorted csv file")
 
         fully_sorted_command = "sort -t ',' -n -k2,2 -m -s -o {} {}/temp_csv*".format(temp_file_pt.name, temp_sorted_dir)
-        self.logger.info("Sorting merge command: {}".format(fully_sorted_command))
+        self.logger.debug("Sorting merge command: {}".format(fully_sorted_command))
 
         # Need to delete all the temp things then when I write the file back into my temp_file
         process = Popen(fully_sorted_command, shell=True, stdout=PIPE)
         process.wait()
 
-        self.logger.debug("Merging complete")
+        self.logger.info("Merging complete")
 
         # Delete the temporary directory.
         shutil.rmtree(temp_unsorted_dir)
@@ -419,7 +420,7 @@ class DataParser:
         return overall_fields
 
     def parse_data(self, results_dirs, now):
-        combined_results = {}
+        combined_results = {"Failed": {}}
 
         configs = []
         for config in self.config["config_names"]:
@@ -469,6 +470,15 @@ class DataParser:
 
                 multiple_results = pool.starmap(self.filter_data, zip(runs[i:i + num_processes], repeat(config_name), repeat(now), repeat(orig_loc)))
 
+                for j in range(len(multiple_results)):
+                    if multiple_results[j] is None:
+                        del multiple_results[j]
+                        run = runs[i + j]
+                        if config_name in combined_results["Failed"]:
+                            combined_results["Failed"][config_name].append(run)
+                        else:
+                            combined_results["Failed"][config_name] = [run]
+
                 combined_results[config_name] = self.combine_results(combined_results[config_name], multiple_results)
 
                 self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
@@ -502,7 +512,7 @@ class DataParser:
 
         temp_file_name = run_num + ".csv"
 
-        self.logger.debug("File being parsed: {}".format(temp_file_name))
+        self.logger.info("File being parsed: {}".format(temp_file_name))
 
         output_csv_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, config_name)
 
@@ -514,6 +524,9 @@ class DataParser:
 
         vector_df = self.tidy_data(temp_file_name, raw_data_file, self.results["filtered_vectors"],
                                    self.results["merging"], output_csv, run_num)
+
+        if vector_df is None:
+            return None
 
         self.logger.info("Completed tidying of dataframes")
 
@@ -543,7 +556,7 @@ class DataParser:
         self.logger.info("Completed data parsing for this run")
         return binned_results
 
-    def tidy_data(self, temp_file, real_vector_path, json_fields, merging_vectors, output_csv, run_num):
+    def tidy_data(self, temp_file, vector_path, json_fields, merging_vectors, output_csv, run_num):
         temp_file_pt = open(temp_file, "w+")
 
         # Simply remove the :vector part of vector names from both sets of vectors.
@@ -562,33 +575,38 @@ class DataParser:
             json_fields = self.remove_vectors(json_fields)
             merging_vectors = self.remove_vectors(merging_vectors)
 
-        self.logger.debug("Beginning parsing of vector file: {}".format(real_vector_path))
+        self.logger.info("Beginning parsing of vector file: {}".format(vector_path))
 
         # Read the file and retrieve the list of vectors
-        vector_names = self.read_vector_file(temp_file_pt, real_vector_path, json_fields)
+        vector_names = self.read_vector_file(temp_file_pt, vector_path, json_fields)
 
-        self.logger.debug("Finished parsing of vector file: {}".format(real_vector_path))
+        self.logger.info("Finished parsing of vector file: {}".format(vector_path))
 
         # Ensure we are at the start of the file for sorting
         temp_file_pt.seek(0)
 
         # Splits and sorts individual elements of the overall file
-        self.logger.debug("Beginning the split and sorting of vector file")
+        self.logger.info("Beginning the split and sorting of vector file")
         self.sort_csv_result(temp_file_pt, run_num)
-        self.logger.debug("Split and sort complete")
+        self.logger.info("Split and sort complete")
 
         # Writes the top line of the temporary file used to store the DF
         temp_file_pt = self.write_top_line(temp_file_pt, vector_names, run_num)
-        self.logger.debug("Wrote the top line of the parsed csv file")
+        self.logger.info("Wrote the top line of the parsed csv file")
 
         temp_file_pt.seek(0)
         # Read the sorted file in chunks and create an overall_df from it.
-        self.logger.debug("Beginning the parsing of the vector file into condensed format")
-        over_all_df = self.parse_csv_chunks(temp_file_pt, merging_vectors, key="EventNumber")
-        self.logger.debug("Vector file parsed into condensed format and available to be worked on.")
+        try:
+            self.logger.info("Beginning the parsing of the vector file into condensed format")
+            over_all_df = self.parse_csv_chunks(temp_file_pt, merging_vectors, key="EventNumber")
+            self.logger.info("Vector file parsed into condensed format and available to be worked on.")
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            self.logger.warning("Appears that {} has failed to be parsed".format(vector_path))
+            return None
 
         # Write this out as our raw_results file
-        over_all_df.to_csv(output_csv, index=False)
+        over_all_df.to_csv(output_csv, index=False) 
         self.logger.info("Writing out the parsed vector file to: {}".format(output_csv))
 
         # Remove our temporary file.
