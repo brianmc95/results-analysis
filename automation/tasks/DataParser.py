@@ -575,12 +575,12 @@ class DataParser:
             json_fields = self.remove_vectors(json_fields)
             merging_vectors = self.remove_vectors(merging_vectors)
 
-        self.logger.info("Beginning parsing of vector file: {}".format(real_vector_path))
+        self.logger.info("Beginning parsing of vector file: {}".format(vector_path))
 
         # Read the file and retrieve the list of vectors
         vector_names = self.read_vector_file(temp_file_pt, vector_path, json_fields)
 
-        self.logger.info("Finished parsing of vector file: {}".format(real_vector_path))
+        self.logger.info("Finished parsing of vector file: {}".format(vector_path))
 
         # Ensure we are at the start of the file for sorting
         temp_file_pt.seek(0)
