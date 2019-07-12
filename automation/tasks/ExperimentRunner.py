@@ -119,7 +119,6 @@ class ExperimentRunner:
 
                 current_conf += 1
 
-        self.logger.info(result_dirs)
         return result_dirs
 
     def log_subprocess_output(self, pipe):

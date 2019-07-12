@@ -8,10 +8,10 @@ import json
 import logging
 import re
 from itertools import repeat
-
 import tempfile
 import csv
 import shutil
+
 
 class DataParser:
 
@@ -520,7 +520,7 @@ class DataParser:
 
         output_csv = "{}/{}-{}.csv".format(output_csv_dir, run_num, now)
 
-        self.logger.debug("Raw output file: {}".format(output_csv))
+        self.logger.info("Raw output file: {}".format(output_csv))
 
         vector_df = self.tidy_data(temp_file_name, raw_data_file, self.results["filtered_vectors"],
                                    self.results["merging"], output_csv, run_num)
@@ -575,12 +575,12 @@ class DataParser:
             json_fields = self.remove_vectors(json_fields)
             merging_vectors = self.remove_vectors(merging_vectors)
 
-        self.logger.info("Beginning parsing of vector file: {}".format(vector_path))
+        self.logger.info("Beginning parsing of vector file: {}".format(real_vector_path))
 
         # Read the file and retrieve the list of vectors
         vector_names = self.read_vector_file(temp_file_pt, vector_path, json_fields)
 
-        self.logger.info("Finished parsing of vector file: {}".format(vector_path))
+        self.logger.info("Finished parsing of vector file: {}".format(real_vector_path))
 
         # Ensure we are at the start of the file for sorting
         temp_file_pt.seek(0)
@@ -606,7 +606,7 @@ class DataParser:
             return None
 
         # Write this out as our raw_results file
-        over_all_df.to_csv(output_csv, index=False) 
+        over_all_df.to_csv(output_csv, index=False)
         self.logger.info("Writing out the parsed vector file to: {}".format(output_csv))
 
         # Remove our temporary file.
