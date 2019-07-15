@@ -471,6 +471,9 @@ class DataParser:
 
                 combined_results[config_name] = self.combine_results(combined_results[config_name], multiple_results)
 
+                pool.close()
+                pool.join()
+
                 self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
 
                 i += num_processes

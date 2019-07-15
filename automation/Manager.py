@@ -125,6 +125,8 @@ class Manager:
             elapsed = self.timer(start, end)
             self.send_slack_message("Experiment phase complete, phase {} of {} in {}".format(current_phase,
                                                                                               self.phases, elapsed))
+            self.logger.info("Experiment phase complete, phase {} of {} in {}".format(current_phase,
+                                                                                      self.phases, elapsed))
             current_phase += 1
 
         if self.parse:
@@ -145,7 +147,9 @@ class Manager:
             end = time.time()
             elapsed = self.timer(start, end)
             self.send_slack_message("Parse phase complete, phase {} of {} in {}".format(current_phase,
-                                                                                         self.phases, elapsed))
+                                                                                        self.phases, elapsed))
+            self.logger.info("Parse phase complete, phase {} of {} in {}".format(current_phase,
+                                                                                 self.phases, elapsed))
             current_phase += 1
 
         if self.graph:
@@ -169,7 +173,9 @@ class Manager:
             end = time.time()
             elapsed = self.timer(start, end)
             self.send_slack_message("Graph phase complete, phase {} of {} in {}".format(current_phase,
-                                                                                         self.phases, elapsed))
+                                                                                        self.phases, elapsed))
+            self.logger.info("Graph phase complete, phase {} of {} in {}".format(current_phase,
+                                                                                 self.phases, elapsed))
             current_phase += 1
 
         if self.upload:
@@ -189,7 +195,9 @@ class Manager:
             end = time.time()
             elapsed = self.timer(start, end)
             self.send_slack_message("Upload phase complete, phase {} of {} in {}".format(current_phase,
-                                                                                          self.phases, elapsed))
+                                                                                         self.phases, elapsed))
+            self.logger.info("Upload phase complete, phase {} of {} in {}".format(current_phase,
+                                                                                  self.phases, elapsed))
             current_phase += 1
 
         overall_end = time.time()
