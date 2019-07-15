@@ -3,6 +3,7 @@ import multiprocessing
 from subprocess import Popen, PIPE
 import pandas as pd
 import numpy as np
+import traceback
 import json
 import logging
 import re
@@ -193,7 +194,7 @@ class DataParser:
         os.makedirs(temp_unsorted_dir, exist_ok=True)
         os.makedirs(temp_sorted_dir, exist_ok=True)
 
-        self.logger.debug("Splitting file {} into parts".format(temp_file_pt.name))
+        self.logger.info("Splitting file {} into parts".format(temp_file_pt.name))
 
         split_command = "split -l 2500000 {} {}/temp_csv_".format(temp_file_pt.name, temp_unsorted_dir)
 
@@ -227,7 +228,7 @@ class DataParser:
         process = Popen(fully_sorted_command, shell=True, stdout=PIPE)
         process.wait()
 
-        self.logger.debug("Merging complete")
+        self.logger.info("Merging complete")
 
         # Delete the temporary directory.
         shutil.rmtree(temp_unsorted_dir)
@@ -419,7 +420,7 @@ class DataParser:
         return overall_fields
 
     def parse_data(self, results_dirs, now):
-        combined_results = {}
+        combined_results = {"Failed": {}}
 
         configs = []
         for config in self.config["config_names"]:
@@ -468,6 +469,15 @@ class DataParser:
                 pool = multiprocessing.Pool(processes=num_processes)
 
                 multiple_results = pool.starmap(self.filter_data, zip(runs[i:i + num_processes], repeat(config_name), repeat(now), repeat(orig_loc)))
+
+                for j in range(len(multiple_results)):
+                    if multiple_results[j] is None:
+                        del multiple_results[j]
+                        run = runs[i + j]
+                        if config_name in combined_results["Failed"]:
+                            combined_results["Failed"][config_name].append(run)
+                        else:
+                            combined_results["Failed"][config_name] = [run]
 
                 combined_results[config_name] = self.combine_results(combined_results[config_name], multiple_results)
 
@@ -518,6 +528,9 @@ class DataParser:
         vector_df = self.tidy_data(temp_file_name, raw_data_file, self.results["filtered_vectors"],
                                    self.results["merging"], output_csv, run_num)
 
+        if vector_df is None:
+            return None
+
         self.logger.info("Completed tidying of dataframes")
 
         graphs = self.config["results"]["graphs"]
@@ -546,7 +559,7 @@ class DataParser:
         self.logger.info("Completed data parsing for this run")
         return binned_results
 
-    def tidy_data(self, temp_file, real_vector_path, json_fields, merging_vectors, output_csv, run_num):
+    def tidy_data(self, temp_file, vector_path, json_fields, merging_vectors, output_csv, run_num):
         temp_file_pt = open(temp_file, "w+")
 
         # Simply remove the :vector part of vector names from both sets of vectors.
@@ -565,12 +578,12 @@ class DataParser:
             json_fields = self.remove_vectors(json_fields)
             merging_vectors = self.remove_vectors(merging_vectors)
 
-        self.logger.info("Beginning parsing of vector file: {}".format(real_vector_path))
+        self.logger.info("Beginning parsing of vector file: {}".format(vector_path))
 
         # Read the file and retrieve the list of vectors
-        vector_names = self.read_vector_file(temp_file_pt, real_vector_path, json_fields)
+        vector_names = self.read_vector_file(temp_file_pt, vector_path, json_fields)
 
-        self.logger.info("Finished parsing of vector file: {}".format(real_vector_path))
+        self.logger.info("Finished parsing of vector file: {}".format(vector_path))
 
         # Ensure we are at the start of the file for sorting
         temp_file_pt.seek(0)
@@ -586,9 +599,14 @@ class DataParser:
 
         temp_file_pt.seek(0)
         # Read the sorted file in chunks and create an overall_df from it.
-        self.logger.info("Beginning the parsing of the vector file into condensed format")
-        over_all_df = self.parse_csv_chunks(temp_file_pt, merging_vectors, key="EventNumber")
-        self.logger.info("Vector file parsed into condensed format and available to be worked on.")
+        try:
+            self.logger.info("Beginning the parsing of the vector file into condensed format")
+            over_all_df = self.parse_csv_chunks(temp_file_pt, merging_vectors, key="EventNumber")
+            self.logger.info("Vector file parsed into condensed format and available to be worked on.")
+        except Exception as e:
+            self.logger.error(traceback.format_exc())
+            self.logger.warning("Appears that {} has failed to be parsed".format(vector_path))
+            return None
 
         # Write this out as our raw_results file
         over_all_df.to_csv(output_csv, index=False)
