@@ -161,6 +161,9 @@ class DataParser:
 
             elif vector_res_line_pattern.match(line):
                 parsed_vec = self.parse_vector_line(line)
+                # If the previous step fails then we can simply continue to the next line ignoring this line.
+                if parsed_vec is None:
+                    continue
                 vector_id = parsed_vec[0]
                 if vector_id in vector_dict:
                     # Write out to a csv file correctly
@@ -181,7 +184,7 @@ class DataParser:
             # check for the vector
             if vector_id in vector_dict:
                 # If we have it create the csv line and write it our
-                csv_line = self.write_out(vector_names, vector_dict)
+                csv_line = self.prepare_csv_line(vector_names, vector_dict, vector_id, parsed_vec)
                 output_writer.writerow(csv_line)
 
         # Close our vector file.
