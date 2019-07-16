@@ -4,6 +4,7 @@ import os
 import json
 import logging.config
 import threading
+import argparse
 from slackclient import SlackClient
 
 from Manager import Manager
@@ -11,12 +12,12 @@ from Manager import Manager
 
 class MySlackBot:
 
-    def __init__(self):
+    def __init__(self, slack_config="slack_api.json"):
         # instantiate Slack client
-        with open("configs/cv2x.json") as json_file:
+        with open(slack_config) as json_file:
             config = json.load(json_file)
 
-        slack_api_token = config["cv2x"]["slack-api-token"]
+        slack_api_token = config["slack-api-token"]
 
         self.setup_logging()
         self.logger = logging.getLogger("slackbot")
@@ -183,5 +184,13 @@ class MySlackBot:
 
 
 if __name__ == "__main__":
-    mybot = MySlackBot()
+    parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to raw_data')
+    parser.add_argument("-s", "--slack-config", help="Path to slack config file containing slack api token")
+    args = parser.parse_args()
+
+    if args.slack_config is not None:
+        mybot = MySlackBot(args.slack_config)
+    else:
+        mybot = MySlackBot()
+
     mybot.run_bot()
