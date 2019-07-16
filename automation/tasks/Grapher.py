@@ -70,8 +70,8 @@ class Grapher:
 
                     for config in self.results["compare"][compare]:
                         labels.append("PDR: {}".format(config))
-                        pdrs.append(data[config][0][pdr_field])
-                        distances = data[config][0]["distance"]
+                        pdrs.append(data[config][pdr_field])
+                        distances = data[config]["distance"]
 
                     self.pdr_dist(pdrs, distances, labels, plot_name)
 
@@ -84,15 +84,15 @@ class Grapher:
                     errors = []
 
                     for config in self.results["compare"][compare]:
-                        decoded.append(data[config][0][pdr_field])
+                        decoded.append(data[config][pdr_field])
                         decoded_labels.append("{}: decoded".format(config))
-                        distances = data[config][0]["distance"]
+                        distances = data[config]["distance"]
 
                         sub_errors = []
                         sub_error_labels = []
                         for i in range(len(self.results["fails"])):
                             sub_error_labels.append("{}: {}".format(config, self.results["error_labels"][i]))
-                            sub_errors.append(data[config][0][self.results["fails"][i]])
+                            sub_errors.append(data[config][self.results["fails"][i]])
                         errors.append(sub_errors)
                         error_labels.append(sub_error_labels)
 
@@ -123,7 +123,7 @@ class Grapher:
         plt.yticks(np.arange(0, 1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
 
         fig.suptitle(plot_name, fontsize=12)
         fig.savefig("{}/individual/{}.{}".format(self.figure_store, plot_name, self.image_format))
@@ -159,7 +159,7 @@ class Grapher:
         plt.yticks(np.arange(0, 1.1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
 
         fig.suptitle(plot_name, fontsize=12)
         fig.savefig("{}/individual/{}.{}".format(self.figure_store, plot_name, self.image_format))
@@ -185,11 +185,11 @@ class Grapher:
         ax.legend(loc='lower right')
         ax.grid()
 
-        ax.set_ylim([0, 100])
-        plt.yticks(np.arange(0, 101, step=10))
+        ax.set_ylim([0, 1])
+        plt.yticks(np.arange(0, 1.1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
 
         fig.suptitle(plot_name, fontsize=12)
         fig.savefig("{}/comparison/{}.{}".format(self.figure_store, plot_name, self.image_format))
@@ -228,6 +228,6 @@ class Grapher:
         plt.yticks(np.arange(0, 1.1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
 
         fig.savefig("{}/comparison/{}.{}".format(self.figure_store, plot_name, self.image_format))

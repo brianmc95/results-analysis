@@ -82,7 +82,7 @@ class MySlackBot:
         if command.startswith(self.EXAMPLE_COMMAND):
             sub_sections = command.split(" ")
             if sub_sections[1].lower() == "help" or sub_sections[1].lower() == "h":
-                response = "Command is of the following structure: run configuration name {experiment} {parse} {scave} {graph}"
+                response = "Command is of the following structure: run configuration {name} {experiment/x} {parse/p} {graph/g}"
                 self.logger.info("Prepared the following response: {}".format(response))
 
                 # Sends the response back to the channel
@@ -108,14 +108,11 @@ class MySlackBot:
                         return
                 else:
                     experiment = False
-                    scave = False
                     parse = False
                     graph = False
                     upload = False
                     if "experiment" in sub_sections or "x" in sub_sections:
                         experiment = True
-                    if "scave" in sub_sections or "s" in sub_sections:
-                        scave = True
                     if "parse" in sub_sections or "p" in sub_sections:
                         parse = True
                     if "graph" in sub_sections or "g" in sub_sections:
@@ -124,7 +121,7 @@ class MySlackBot:
                         upload = True
 
                     try:
-                        manager = Manager(experiment_type, experiment, scave, parse, graph, upload, channel=channel)
+                        manager = Manager(experiment_type, experiment, parse, graph, upload, channel=channel)
                     except FileNotFoundError:
                         error_message = "Config {} not found".format(experiment_type)
                         self.logger.exception(error_message)

@@ -61,13 +61,17 @@ class DataParser:
 
         return vector_num, vector_line_dict
 
-    @staticmethod
-    def parse_vector_line(line):
+    def parse_vector_line(self, line):
         # Simple function to split a vector line and convert to floats.
-        split_nums = line.split()
-        for i in range(len(split_nums)):
-            split_nums[i] = float(split_nums[i])
-        return split_nums
+        try:
+            split_nums = line.split()
+            for i in range(len(split_nums)):
+                split_nums[i] = float(split_nums[i])
+            return split_nums
+        except Exception as e:
+            self.logger.warning("Line failed to be parsed: {}".format(line))
+            self.logger.warning("Split line: {}".format(split_nums))
+            self.logger.error(traceback.format_exc())
 
     @staticmethod
     def prepare_csv_line(vector_names, vector_dict, vector_id, parsed_vec):
@@ -470,16 +474,18 @@ class DataParser:
 
                 multiple_results = pool.starmap(self.filter_data, zip(runs[i:i + num_processes], repeat(config_name), repeat(now), repeat(orig_loc)))
 
+                valid_results = []
                 for j in range(len(multiple_results)):
                     if multiple_results[j] is None:
-                        del multiple_results[j]
                         run = runs[i + j]
                         if config_name in combined_results["Failed"]:
                             combined_results["Failed"][config_name].append(run)
                         else:
                             combined_results["Failed"][config_name] = [run]
+                    else:
+                        valid_results.append(multiple_results[j])
 
-                combined_results[config_name] = self.combine_results(combined_results[config_name], multiple_results)
+                combined_results[config_name] = self.combine_results(combined_results[config_name], valid_results)
 
                 pool.close()
                 pool.join()
@@ -525,8 +531,14 @@ class DataParser:
 
         self.logger.info("Raw output file: {}".format(output_csv))
 
-        vector_df = self.tidy_data(temp_file_name, raw_data_file, self.results["filtered_vectors"],
-                                   self.results["merging"], output_csv, run_num)
+        try:
+
+            vector_df = self.tidy_data(temp_file_name, raw_data_file, self.results["filtered_vectors"],
+                                       self.results["merging"], output_csv, run_num)
+        except Exception as e:
+            self.logger.warning("Vector file: {} failed to be parsed".format(raw_data_file))
+            self.logger.error(traceback.format_exc())
+            return None
 
         if vector_df is None:
             return None

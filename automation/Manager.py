@@ -4,6 +4,7 @@ import os
 import logging.config
 import time
 import datetime
+import traceback
 
 from slackclient import SlackClient
 
@@ -140,6 +141,7 @@ class Manager:
                 self.config["processed-results"] = self.parser.parse_data(self.config["result-dirs"], now)
                 self.logger.info("processed-results: {}".format(self.config["processed-results"]))
             except Exception as e:
+                self.logger.error(traceback.format_exc())
                 self.logger.error("Parse failed with error: {}".format(e))
                 self.send_slack_message("Parsing phase failed")
                 return
@@ -166,6 +168,7 @@ class Manager:
                 self.logger.info("figures, individual: {}".format(individual_graphs))
                 self.logger.info("figures, comparison: {}".format(comparison_graphs))
             except Exception as e:
+                self.logger.error(traceback.format_exc())
                 self.logger.error("Graph failed with error: {}".format(e))
                 self.send_slack_message("graph phase failed")
                 return
