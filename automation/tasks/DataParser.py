@@ -50,9 +50,10 @@ class DataParser:
         nodeID = int(match.group().strip("[]"))
         vector_name = split_line[3]
         vector_name = vector_name.split(":")[0]
-        if "ETV" in split_line[4]:
+        if len(split_line) == 5 and "ETV" in split_line[4]:
             ETV = True
         else:
+            print(split_line)
             ETV = False
 
         vector_line_dict["nodeID"] = nodeID
