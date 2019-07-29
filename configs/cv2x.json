@@ -27,7 +27,7 @@
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
-    "result-dirs": [""],
+    "result-dirs": [],
     "raw-results": [],
     "processed-results": "",
     "figures": {
@@ -52,19 +52,6 @@
       "distance": "txRxDistanceTB",
       "fails": ["tbFailedButSCIReceived", "tbsFailedDueToNoSCI", "tbFailedHalfDuplex"],
       "error_labels": ["Failed decoding TB", "No SCI", "Half-Duplex"],
-      "merging": [
-        "txRxDistanceSCI:vector",
-        "txRxDistanceTB:vector",
-        "scisReceived:vector",
-        "scisDecoded:vector",
-        "scisNotDecoded:vector",
-        "sciFailedHalfDuplex:vector",
-        "tbsReceived:vector",
-        "tbsDecoded:vector",
-        "tbsFailedDueToNoSCI:vector",
-        "tbFailedHalfDuplex:vector",
-        "tbFailedButSCIReceived:vector"
-      ],
       "filtered_vectors": [
         "scisSent:vector",
         "tbsSent:vector",
@@ -78,7 +65,10 @@
         "tbsDecoded:vector",
         "tbsFailedDueToNoSCI:vector",
         "tbFailedHalfDuplex:vector",
-        "tbFailedButSCIReceived:vector"
+        "tbFailedButSCIReceived:vector",
+        "missedTransmission",
+        "grantBreakMissedTrans",
+        "grantBreakSize"
       ],
       "filtered_scalars": [
         "txRxDistance:mean",
