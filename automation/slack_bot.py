@@ -147,8 +147,8 @@ class MySlackBot:
     def run_bot(self):
         if self.slack_client.rtm_connect(with_team_state=False):
             self.logger.info("Starter Bot connected and running!")
-            # Read bot's user ID by calling Web API method `auth.test`
-            self.starterbot_id = self.slack_client.api_call("auth.test")["user_id"]
+            # Read bot's user ID by calling Web API method `auth.long-test`
+            self.starterbot_id = self.slack_client.api_call("auth.long-test")["user_id"]
 
             orig_loc = os.getcwd()
 

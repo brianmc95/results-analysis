@@ -1,8 +1,6 @@
 import os
 import multiprocessing
-from subprocess import Popen, PIPE
 import pandas as pd
-import numpy as np
 import json
 import logging
 import re
@@ -10,7 +8,6 @@ from itertools import repeat
 
 import tempfile
 import csv
-import shutil
 
 class DataParser:
 
@@ -260,6 +257,9 @@ class DataParser:
 
                 multiple_results = pool.starmap(self.filter_data, zip(runs[i:i + num_processes], repeat(config_name), repeat(now), repeat(orig_loc)))
 
+                pool.close()
+                pool.join()
+
                 combined_results[config_name] = self.combine_results(combined_results[config_name], multiple_results)
 
                 self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
@@ -356,21 +356,39 @@ class DataParser:
         # Ensure we are at the start of the file for sorting
         temp_file_pt.seek(0)
 
-        over_all_df = pd.read_csv(temp_file_pt)
+        orphans = pd.DataFrame()
 
-        # Parse the vector file to ensure it is formatted correclty.
-        over_all_df['seq'] = over_all_df.groupby(["EventNumber", "StatisticName"]).cumcount()
-        over_all_df = over_all_df.pivot_table("Value", ["EventNumber", "Time", "NodeID", "seq"], "StatisticName")
-        over_all_df.reset_index(inplace=True)
-        over_all_df = over_all_df.drop(["seq"], axis=1)
+        # Tell pandas to read the data in chunks
+        chunks = pd.read_csv(temp_file_pt, chunksize=1e6)
 
-        # Write this out as our raw_results file
-        over_all_df.to_csv(output_csv, index=False)
+        first_chunk = True
+
+        for chunk in chunks:
+            # Add the previous orphans to the chunk
+            chunk = pd.concat((orphans, chunk))
+
+            # Determine which rows are orphans
+            last_val = chunk["NodeID"].iloc[-1]
+            is_orphan = chunk["NodeID"] == last_val
+
+            # Put the new orphans aside
+            chunk, orphans = chunk[~is_orphan], chunk[is_orphan]
+
+            # Parse the vector file to ensure it is formatted correclty.
+            chunk['seq'] = chunk.groupby(["EventNumber", "StatisticName"]).cumcount()
+            chunk = chunk.pivot_table("Value", ["EventNumber", "Time", "NodeID", "seq"], "StatisticName")
+            chunk.reset_index(inplace=True)
+            chunk = chunk.drop(["seq"], axis=1)
+
+            chunk.to_csv(output_csv, mode="a", index=False, header=first_chunk)
+
+            first_chunk = False
+
         self.logger.info("Wrote out the parsed vector file to: {}".format(output_csv))
 
         # Remove our temporary file.
         os.remove(temp_file_pt.name)
         self.logger.debug("Removed the temporary file")
 
-        return over_all_df
+        return pd.read_csv(output_csv)
 
