@@ -60,13 +60,17 @@ class DataParser:
 
         return vector_num, vector_line_dict
 
-    @staticmethod
-    def parse_vector_line(line):
+    def parse_vector_line(self, line):
         # Simple function to split a vector line and convert to floats.
-        split_nums = line.split()
-        for i in range(len(split_nums)):
-            split_nums[i] = float(split_nums[i])
-        return split_nums
+        try:
+            line = bytes(line, 'utf-8').decode('utf-8', 'ignore')
+            split_nums = line.split()
+            for i in range(len(split_nums)):
+                split_nums[i] = float(split_nums[i])
+            return split_nums
+        except ValueError as e:
+            self.logger.error("Line: {} could not be converted due to bad encoding".format(line))
+            return
 
     @staticmethod
     def prepare_csv_line(vector_dict, vector_id, parsed_vec):
@@ -168,11 +172,11 @@ class DataParser:
         for line in iter(pipe.readline, b''):  # b'\n'-separated lines
             self.logger.debug('Subprocess Line: %r', line)
 
-    def bin_fields(self, df, fields, bin_width=10, bin_quantity=100):
+    def bin_fields(self, df, fields, bin_width=10, bin_quantity=49):
         """
         Bins multiple dfs into a single dictionary that can be used as an average for multiple fields across multiple
         runs
-        :param dfs: list of dataframes to bin
+        :param df: dataframe to bin
         :param fields: fields to be binned.
         :param bin_width: width of each bin
         :param bin_quantity: total number of bins

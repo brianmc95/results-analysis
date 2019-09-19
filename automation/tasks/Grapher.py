@@ -119,11 +119,11 @@ class Grapher:
         ax.legend(loc='lower right')
         ax.grid()
 
-        ax.set_ylim([0, 1])
+        ax.set_ylim([0, 1.1])
         plt.yticks(np.arange(0, 1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
         fig.suptitle(plot_name, fontsize=12)
         fig.savefig("{}/individual/{}.{}".format(self.figure_store, plot_name, self.image_format))
@@ -155,11 +155,11 @@ class Grapher:
         ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
         ax.grid()
 
-        ax.set_ylim([0, 1])
+        ax.set_ylim([0, 1.1])
         plt.yticks(np.arange(0, 1.1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
         fig.suptitle(plot_name, fontsize=12)
         fig.savefig("{}/individual/{}.{}".format(self.figure_store, plot_name, self.image_format))
@@ -185,14 +185,15 @@ class Grapher:
         ax.legend(loc='lower right')
         ax.grid()
 
-        ax.set_ylim([0, 1])
+        ax.set_ylim([0, 1.1])
         plt.yticks(np.arange(0, 1.1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
         fig.suptitle(plot_name, fontsize=12)
         fig.savefig("{}/comparison/{}.{}".format(self.figure_store, plot_name, self.image_format))
+        plt.close(fig)
 
     def errors_dist(self, distances, decoded, decoded_labels, errors, error_labels, plot_name):
 
@@ -228,6 +229,7 @@ class Grapher:
         plt.yticks(np.arange(0, 1.1, step=.1))
 
         ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=100))
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
         fig.savefig("{}/comparison/{}.{}".format(self.figure_store, plot_name, self.image_format))
+        plt.close(fig)

@@ -19,7 +19,8 @@ class Manager:
     Class designed to manage the whole process of automated experimentation and results analysis
     """
 
-    def __init__(self, experiment_type, experiment=True, parse=True, graph=True, upload=True, verbose=False, channel=None):
+    def __init__(self, experiment_type, experiment=True, parse=True, graph=True,
+                 upload=True, verbose=False, channel=None, slack_token=None):
 
         self.experiment_type = experiment_type
         self.experiment = experiment
@@ -39,8 +40,8 @@ class Manager:
         with open(config_path) as json_file:
             self.config = json.load(json_file)[self.experiment_type]
 
-        self.slack_api_token = self.config["slack-api-token"]
-        if self.slack_api_token != "":
+        self.slack_api_token = slack_token
+        if self.slack_api_token is not None:
             self.slack_client = SlackClient(self.slack_api_token)
 
         self.channel = channel
