@@ -17,11 +17,11 @@ class MySlackBot:
         with open(slack_config) as json_file:
             config = json.load(json_file)
 
-        slack_api_token = config["slack-api-token"]
+        self.slack_api_token = config["slack-api-token"]
 
         self.setup_logging()
         self.logger = logging.getLogger("slackbot")
-        self.slack_client = SlackClient(slack_api_token)
+        self.slack_client = SlackClient(self.slack_api_token)
         # starterbot's user ID in Slack: value is assigned after the bot starts up
         self.starterbot_id = None
 
@@ -97,7 +97,7 @@ class MySlackBot:
                 experiment_type = sub_sections[1].lower()
                 if len(sub_sections) == 2:
                     try:
-                        manager = Manager(experiment_type, channel=channel)
+                        manager = Manager(experiment_type, channel=channel, slack_token=self.slack_api_token)
                     except FileNotFoundError:
                         error_message = "Config {} not found".format(experiment_type)
                         self.logger.exception(error_message)
@@ -122,7 +122,7 @@ class MySlackBot:
                         upload = True
 
                     try:
-                        manager = Manager(experiment_type, experiment, parse, graph, upload, channel=channel)
+                        manager = Manager(experiment_type, experiment, parse, graph, upload, channel=channel, slack_token=self.slack_api_token)
                     except FileNotFoundError:
                         error_message = "Config {} not found".format(experiment_type)
                         self.logger.exception(error_message)
@@ -147,8 +147,8 @@ class MySlackBot:
     def run_bot(self):
         if self.slack_client.rtm_connect(with_team_state=False):
             self.logger.info("Starter Bot connected and running!")
-            # Read bot's user ID by calling Web API method `auth.test`
-            self.starterbot_id = self.slack_client.api_call("auth.test")["user_id"]
+            # Read bot's user ID by calling Web API method `auth.long-test`
+            self.starterbot_id = self.slack_client.api_call("auth.long-test")["user_id"]
 
             orig_loc = os.getcwd()
 

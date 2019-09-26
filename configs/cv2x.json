@@ -9,32 +9,42 @@
         "repeat": 8,
         "naming": ["CBR"]
       },
+      "DCC": {
+        "repeat": 0,
+        "params": {
+          "withDccRestriction": ["true", "false"]
+        },
+        "naming": ["DCC-Enabled", "DCC-Disabled"]
+      },
+      "nonPeriodic":
+      {
+        "repeat": 0,
+        "naming": ["non-periodic"]
+      },
+      "mixedPeriod": {
+        "repeat": 0,
+        "params": {
+          "pStep": [50, 100]
+        },
+        "naming": ["Pstep-50", "Pstep-100"]
+      },
       "probKeep": {
         "repeat": 0,
         "params": {
           "probResourceKeep": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
         },
-        "naming":["Prob-0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
-          "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8"]
+        "naming":["Prob-0.0", "Prob-0.1", "Prob-0.2","Prob-0.3", "Prob-0.4", "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8"]
       },
       "sensingWindow": {
         "repeat": 0,
         "params": {
-          "pStep": [90, 80, 70, 60, 50, 40, 30, 20, 10]
+          "pStep": [10, 20, 30, 40, 50, 60, 70, 80, 90]
         },
-        "naming": ["Pstep-90", "Pstep-80", "Pstep-70", "Pstep-60", "Pstep-50",
-          "Pstep-40", "Pstep-30", "Pstep-20", "Pstep-10"]
-      },
-      "mixedPeriod": {
-        "repeat": 0,
-        "params": {
-          "pStep": [100,50]
-        },
-        "naming": ["Pstep-100", "Pstep-50"]
+        "naming": ["Pstep-10", "Pstep-20", "Pstep-30", "Pstep-40", "Pstep-50", "Pstep-60", "Pstep-70", "Pstep-80", "Pstep-90"]
       }
     },
     "slack-api-token": "",
-    "parallel_processes" : 4,
+    "parallel_processes" : 5,
     "result-dirs": [],
     "raw-results": [],
     "processed-results": "",
@@ -46,16 +56,7 @@
       "graphs": ["pdr-dist"],
       "compare": {
       },
-      "comp" : {
-        "probResourceKeep": ["Prob-0.0", "Prob-0.1", "Prob-0.2", "Prob-0.3", "Prob-0.4",
-          "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8"],
-        "selectionWindow": ["Pstep-100", "Pstep-90", "Pstep-80", "Pstep-70", "Pstep-60", "Pstep-50",
-          "Pstep-40", "Pstep-30", "Pstep-20", "Pstep-10"]
-      },
-      "individual": ["Base", "Prob-0.0", "Prob-0.1", "Prob-0.2", "Prob-0.3",
-        "Prob-0.4", "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8",
-        "Pstep-100", "Pstep-90", "Pstep-80", "Pstep-70", "Pstep-60",
-        "Pstep-50", "Pstep-40", "Pstep-30", "Pstep-20", "Pstep-10"],
+      "individual": [],
       "decoded": "tbDecoded",
       "distance": "txRxDistanceTB",
       "fails": ["tbFailedButSCIReceived", "tbFailedDueToNoSCI", "tbFailedHalfDuplex"],
@@ -81,7 +82,7 @@
         "tbFailedDueToInterference",
         "sciFailedDueToProp",
         "sciFailedDueToInterference",
-	"cbr"
+        "cbr"
       ],
       "filtered_scalars": [
         "txRxDistance:mean",

@@ -123,8 +123,12 @@ class ExperimentRunner:
         return result_dirs
 
     def log_subprocess_output(self, pipe):
+        count = 0
         for line in iter(pipe.readline, b''):  # b'\n'-separated lines
-            self.logger.debug('Subprocess Line: %r', line)
+            count += 1
+            if count >= 100 and "Event" in str(line):
+                self.logger.info('Subprocess Line: %r', line)
+                count = 0
 
     def run_experiment(self, wait):
 
