@@ -9,6 +9,7 @@ from itertools import repeat
 import tempfile
 import csv
 
+
 class DataParser:
 
     def __init__(self, config, experiment_type, scalars=True, vectors=True, stats=None, all_types=False, tidied_results=None):
