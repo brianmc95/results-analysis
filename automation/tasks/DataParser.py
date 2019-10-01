@@ -357,12 +357,11 @@ class DataParser:
         # Ensure we are at the start of the file for sorting
         temp_file_pt.seek(0)
 
+        results = []
         orphans = pd.DataFrame()
 
         # Tell pandas to read the data in chunks
         chunks = pd.read_csv(temp_file_pt, chunksize=1e6)
-
-        first_chunk = True
 
         for chunk in chunks:
             # Add the previous orphans to the chunk
@@ -381,15 +380,17 @@ class DataParser:
             chunk.reset_index(inplace=True)
             chunk = chunk.drop(["seq"], axis=1)
 
-            chunk.to_csv(output_csv, mode="a", index=False, header=first_chunk)
-
-            first_chunk = False
+            results.append(chunk)
 
         self.logger.info("Wrote out the parsed vector file to: {}".format(output_csv))
 
         # Remove our temporary file.
         os.remove(temp_file_pt.name)
-        self.logger.debug("Removed the temporary file")
+        self.logger.info("Removed the temporary file")
 
-        return pd.read_csv(output_csv)
+        resulting_df = pd.concat(results, sort=False)
+
+        resulting_df.to_csv(output_csv)
+
+        return resulting_df
 
