@@ -390,7 +390,7 @@ class DataParser:
 
         resulting_df = pd.concat(results, sort=False)
 
-        resulting_df.to_csv(output_csv)
+        resulting_df.to_csv(output_csv, index=False)
 
         return resulting_df
 
