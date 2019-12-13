@@ -76,8 +76,8 @@
         "tbFailedButSCIReceived",
         "missedTransmission",
         "generatedGrants",
-	    "selectedSubchannelIndex",
-	    "selectedNumSubchannels",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
         "grantBreak",
         "grantBreakMissedTrans",
         "grantBreakSize",
@@ -91,9 +91,12 @@
         "senderID",
         "subchannelsUsedToSend",
         "subchannelSent",
-	    "grantStartTime",
-	    "selectedSubchannelIndex",
-	    "selectedNumSubchannels"
+        "grantStartTime",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "posX",
+        "posY",
+        "interPacketDelay"
       ],
       "filtered_scalars": [
         "txRxDistance",
