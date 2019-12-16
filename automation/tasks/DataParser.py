@@ -8,6 +8,7 @@ from natsort import natsorted
 import shutil
 import tempfile
 import csv
+import numpy as np
 
 
 class DataParser:
@@ -85,7 +86,7 @@ class DataParser:
         csv_line = [node_id, time, vector_name, value]
         return csv_line, time
 
-    def csv_pivot(self, directory):
+    def csv_pivot(self, directory, stats):
         orig_loc = os.getcwd()
         os.chdir(directory)
 
@@ -94,7 +95,7 @@ class DataParser:
         header = True
         for csv_file in csv_files:
             if ".csv" in csv_file:
-                self.logger.debug("Dealing with chunk file: {}".format(csv_file))
+                self.logger.debug("Pivoting chunk file: {}".format(csv_file))
                 chunk_df = pd.read_csv(csv_file)
 
                 chunk_df = chunk_df.infer_objects()
@@ -106,6 +107,15 @@ class DataParser:
                 chunk_df = chunk_df.pivot_table("Value", ["Time", "NodeID", "seq"], "StatisticName")
                 chunk_df.reset_index(inplace=True)
                 chunk_df = chunk_df.drop(["seq"], axis=1)
+
+                # Ensure all fields correctly filled
+                for field in stats:
+                    if field not in chunk_df.columns:
+                        chunk_df[field] = np.nan
+
+                # Ensure the order of the files is also correct
+                chunk_df = chunk_df.reindex(sorted(chunk_df.columns), axis=1)
+
                 chunk_df.to_csv(csv_file, index=False, header=header)
                 header = False
 
@@ -123,7 +133,7 @@ class DataParser:
         csv_files = natsorted(csv_files)
         for csv_file in csv_files:
             if ".csv" in csv_file and csv_file != outfile:
-                self.logger.debug("Dealing with chunk file: {}".format(csv_file))
+                self.logger.debug("Merging chunk file: {} into {}".format(csv_file, outfile))
                 shutil.copyfileobj(open(csv_file, 'rb'), destination)
                 os.remove(csv_file)
         destination.close()
@@ -378,10 +388,6 @@ class DataParser:
 
         run_num = raw_data_file.split(".")[0]
 
-        temp_file_name = run_num + ".csv"
-
-        self.logger.info("File being parsed: {}".format(temp_file_name))
-
         output_csv_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, config_name)
 
         os.makedirs(output_csv_dir, exist_ok=True)
@@ -390,16 +396,14 @@ class DataParser:
 
         self.logger.info("Raw output file: {}".format(output_csv))
 
-        self.tidy_data(temp_file_name, raw_data_file, self.results["filtered_vectors"], output_csv)
+        self.tidy_data(raw_data_file, self.results["filtered_vectors"], output_csv)
 
         self.logger.info("Completed tidying of dataframes")
 
         # TODO: Need to develop a new mechanism for creating the results, currently read in whole file which is too much
         # Memory, instead read each in chunks and complete all results from there. Finally merging all the files results
 
-    def tidy_data(self, temp_file, real_vector_path, json_fields, output_csv):
-        temp_file_pt = open(temp_file, "w+")
-
+    def tidy_data(self, real_vector_path, json_fields, output_csv):
         # Simply remove the :vector part of vector names from both sets of vectors.
         found_vector = False
         for field in json_fields:
@@ -410,6 +414,8 @@ class DataParser:
         if found_vector:
             json_fields = self.remove_vectors(json_fields)
 
+        self.logger.debug(json_fields)
+
         self.logger.info("Beginning parsing of vector file: {}".format(real_vector_path))
 
         # Read the vector file into a csv file
@@ -417,7 +423,7 @@ class DataParser:
         self.read_vector_file(output_csv, real_vector_path, json_fields)
 
         self.logger.info("File read, begin pivoting csv file: {}".format(real_vector_path))
-        self.csv_pivot(chunk_folder)
+        self.csv_pivot(chunk_folder, json_fields)
 
         self.logger.info("Pivot complete, consolidate chunk files for {}".format(output_csv))
         self.combine_files(chunk_folder, output_csv)
