@@ -1,7 +1,7 @@
 {
   "cv2x" : {
     "project_path": "/home/brian/git_repos/OpenCV2X",
-    "cmake_dir": "/home/brian/git_repos/OpenCV2X/cmake-build-release",
+    "cmake_dir": "/home/brian/git_repos/OpenCV2X/build",
     "omnetpp_ini": "/home/brian/git_repos/OpenCV2X/scenarios/cars/omnetpp.ini",
     "target": "run_simulte-cars",
     "config_names" : {
@@ -11,21 +11,20 @@
       "DCC": {
         "repeat": 0,
         "params": {
-          "withDccRestriction": ["true", "false"]
+          "withDccRestriction": ["true"]
         },
-        "naming": ["DCC-Enabled", "DCC-Disabled"]
+        "naming": ["DCC-Enabled"]
+      },
+      "PacketDropping": {
+	"repeat": 0,
+	"params": {
+	  "reselectAfter": [1, 2, 5, 9, 1000]
+	},
+	"naming": ["After-1", "After-2", "After-5", "After-9", "After-1000"]
       },
       "nonPeriodic":
       {
-        "repeat": 0,
-        "naming": ["non-periodic"]
-      },
-      "mixedPeriod": {
-        "repeat": 0,
-        "params": {
-          "pStep": [50, 100]
-        },
-        "naming": ["Pstep-50", "Pstep-100"]
+        "repeat": 0
       },
       "probKeep": {
         "repeat": 0,
@@ -33,19 +32,14 @@
           "probResourceKeep": [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
         },
         "naming":["Prob-0.0", "Prob-0.1", "Prob-0.2","Prob-0.3", "Prob-0.4", "Prob-0.5", "Prob-0.6", "Prob-0.7", "Prob-0.8"]
-      },
-      "sensingWindow": {
-        "repeat": 0,
-        "params": {
-          "pStep": [10, 20, 30, 40, 50, 60, 70, 80, 90]
-        },
-        "naming": ["Pstep-10", "Pstep-20", "Pstep-30", "Pstep-40", "Pstep-50", "Pstep-60", "Pstep-70", "Pstep-80", "Pstep-90"]
       }
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
-    "result-dirs": [],
-    "raw-results": [],
+    "result-dirs": [
+    ],
+    "raw-results": [
+    ],
     "processed-results": "",
     "figures": {
       "comparison": [],
