@@ -5,6 +5,7 @@ from subprocess import Popen, PIPE, STDOUT
 import time
 import os
 import re
+import random
 
 
 class ExperimentRunner:
@@ -146,7 +147,8 @@ class ExperimentRunner:
             self.logger.info("Wait complete")
 
         self.run_number += wait
-        self.update_run_number(self.run_number)
+
+        self.update_run_number(random.randint(0, 99999))
 
         orig_loc = os.getcwd()
 
