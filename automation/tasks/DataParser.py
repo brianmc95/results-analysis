@@ -25,6 +25,10 @@ class DataParser:
         self.results = self.config["results"]
         self.logger = logging.getLogger("DataParser")
 
+        # Patterns which identify vector declaration lines and result lines
+        self.vector_dec_line_pattern = re.compile("^vector")
+        self.vector_res_line_pattern = re.compile("^\d+")
+
     # Additions
 
     @staticmethod
@@ -83,7 +87,7 @@ class DataParser:
             time = parsed_vec[1]
             value = parsed_vec[2]
 
-        csv_line = [node_id, time, vector_name, value]
+        csv_line = {"NodeID": node_id, "Time": time, "StatisticName": vector_name, "Value": value}
         return csv_line, time
 
     def csv_pivot(self, directory, stats):
@@ -153,12 +157,12 @@ class DataParser:
         # Create the chunk file and create a csv writer which uses it
         self.logger.debug("Setting up new chunk: {}".format(chunk_name))
         temp_file_pt = open(chunk_name, "w+")
-        output_writer = csv.writer(temp_file_pt, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        output_writer.writerow(title_line)
+        output_writer = csv.DictWriter(temp_file_pt, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, fieldnames=title_line)
+        output_writer.writeheader()
 
         return temp_file_pt, output_writer
 
-    def read_vector_file(self, output_file, vector_path, stats, chunk_size=1e+8):
+    def read_vector_file(self, output_file, vector_path, stats, chunk_size=4e+8):
         """
         chunk_size: the time between different files 1.5s as default
         """
@@ -172,15 +176,11 @@ class DataParser:
         last_time = -1
         current_chunk_index = 0
 
-        # Patterns which identify vector declaration lines and result lines
-        vector_dec_line_pattern = re.compile("^vector")
-        vector_res_line_pattern = re.compile("^\d+")
-
         vector_file = open(vector_path, "r")
 
         # Stores lines appearing before their declaration. Files are oddly formatted, this is purely safety ensuring we
         # don't accidentally miss anything.
-        early_vectors = tempfile.NamedTemporaryFile(mode="r+")
+        # early_vectors = tempfile.NamedTemporaryFile(mode="r+")
 
         # Prepare and write out first line format NodeID, EventNumber, Time, Stat1, Stat2, Stat3, ...
         title_line = ["NodeID", "Time", "StatisticName", "Value"]
@@ -188,8 +188,44 @@ class DataParser:
         temp_file_pt, writer = self.setup_chunk_writer(output_file, current_chunk_index, title_line)
         chunk_info["CurrentChunk"] = {"file": temp_file_pt, "writer": writer}
 
-        for line in vector_file:
-            if vector_dec_line_pattern.match(line):
+        # Read 100,000 lines
+        tmp_lines = vector_file.readlines(100000)
+        while tmp_lines:
+            new_lines, old_lines, time = self.process_chunk([line for line in tmp_lines], vector_dict,
+                                                            no_interest_vectors, stats, last_time, chunk_times)
+
+            chunk_info["CurrentChunk"]["writer"].writerows(new_lines)
+            if chunk_info["CurrentChunk"]["file"].tell() >= chunk_size:
+                self.logger.debug("Time ending this chunk:{}".format(time))
+
+                # This chunk is old and as such can be placed into the previous chunks
+                chunk_info[time] = {"file": chunk_info["CurrentChunk"]["file"],
+                                    "writer": chunk_info["CurrentChunk"]["writer"]}
+                chunk_times.append(time)
+                last_time = time
+                current_chunk_index += 1
+
+                # This file is at max size, create a new writer
+                temp_file_pt, writer = self.setup_chunk_writer(output_file, current_chunk_index, title_line)
+                # Update current chunk writer to point at this new one.
+                chunk_info["CurrentChunk"] = {"file": temp_file_pt, "writer": writer}
+
+            if old_lines:
+                for chunk_time in old_lines:
+                    chunk_info[chunk_time]["writer"].writerows(old_lines[chunk_time])
+            # Read the next 100,000 lines
+            tmp_lines = vector_file.readlines(100000)
+
+        vector_file.close()
+
+    def process_chunk(self, lines, vector_dict, no_interest_vectors, stats, last_time, chunk_times):
+
+        new_lines = []
+        old_lines = {}
+        max_time = -1
+
+        for line in lines:
+            if self.vector_dec_line_pattern.match(line):
                 # if line matches a vector declaration, parse the vector description
                 vector_num, vec_dict = self.parse_vector_desc_line(line)
                 if vector_num is None and vec_dict is None:
@@ -201,7 +237,7 @@ class DataParser:
                     # Mark this as a vector we don't care about.
                     no_interest_vectors[vector_num] = None
 
-            elif vector_res_line_pattern.match(line):
+            elif self.vector_res_line_pattern.match(line):
                 # {"nodeID": None, "vectorName": None, "ETV": True} This is what it looks like
                 parsed_vec = self.parse_vector_line(line)
                 # If the previous step fails then we can simply continue to the next line ignoring this line.
@@ -213,48 +249,43 @@ class DataParser:
                     csv_line, time = self.prepare_csv_line(vector_dict, vector_id, parsed_vec)
 
                     if time > last_time:
-                        chunk_info["CurrentChunk"]["writer"].writerow(csv_line)
-                        if chunk_info["CurrentChunk"]["file"].tell() >= chunk_size:
-                            self.logger.debug("Time ending this chunk:{}".format(time))
+                        new_lines.append(csv_line)
+                        if time > max_time:
+                            max_time = time
 
-                            # This chunk is old and as such can be placed into the previous chunks
-                            chunk_info[time] = {"file": chunk_info["CurrentChunk"]["file"],
-                                                "writer": chunk_info["CurrentChunk"]["writer"]}
-                            chunk_times.append(time)
-                            last_time = time
-                            current_chunk_index += 1
-
-                            # This file is at max size, create a new writer
-                            temp_file_pt, writer = self.setup_chunk_writer(output_file, current_chunk_index, title_line)
-                            # Update current chunk writer to point at this new one.
-                            chunk_info["CurrentChunk"] = {"file": temp_file_pt, "writer": writer}
                     if time <= last_time:
                         for chunk_time in chunk_times:
                             if time < chunk_time:
-                                chunk_info[chunk_time]["writer"].writerow(csv_line)
+                                if chunk_time in old_lines:
+                                    old_lines[chunk_time].append(csv_line)
+                                else:
+                                    old_lines[chunk_time] = [csv_line]
+
                 else:
                     if vector_id not in no_interest_vectors:
                         # Write the line out in case we found it before declaration. Only if it is of possible interest.
-                        early_vectors.write(line)
+                        self.logger.warning("There was a line which appeared in the wrong place: {}".format(line))
+                        # early_vectors.write(line)
 
         # Rewind the early vectors file so we can search it for missed vectors
-        early_vectors.seek(0)
-
-        for line in early_vectors:
-            self.logger.info("We have early vectors")
-            # Parse the line again.
-            parsed_vec = self.parse_vector_line(line)
-            vector_id = parsed_vec[0]
-            # check for the vector
-            if vector_id in vector_dict:
-                # If we have it create the csv line and write it our
-                csv_line, time = self.prepare_csv_line(vector_dict, vector_id, parsed_vec)
-                for chunk_time in chunk_times:
-                    if time < chunk_time:
-                        chunk_info[chunk_time]["writer"].writerow(csv_line)
+        # early_vectors.seek(0)
+        #
+        # for line in early_vectors:
+        #     self.logger.info("We have early vectors")
+        #     # Parse the line again.
+        #     parsed_vec = self.parse_vector_line(line)
+        #     vector_id = parsed_vec[0]
+        #     # check for the vector
+        #     if vector_id in vector_dict:
+        #         # If we have it create the csv line and write it our
+        #         csv_line, time = self.prepare_csv_line(vector_dict, vector_id, parsed_vec)
+        #         for chunk_time in chunk_times:
+        #             if time < chunk_time:
+        #                 chunk_info[chunk_time]["writer"].writerow(csv_line)
 
         # Close our vector file.
-        vector_file.close()
+
+        return new_lines, old_lines, max_time
 
     @staticmethod
     def create_bins(lower_bound, width, quantity):
