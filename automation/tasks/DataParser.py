@@ -6,7 +6,6 @@ import re
 from itertools import repeat
 from natsort import natsorted
 import shutil
-import tempfile
 import csv
 import numpy as np
 
@@ -178,10 +177,6 @@ class DataParser:
 
         vector_file = open(vector_path, "r")
 
-        # Stores lines appearing before their declaration. Files are oddly formatted, this is purely safety ensuring we
-        # don't accidentally miss anything.
-        # early_vectors = tempfile.NamedTemporaryFile(mode="r+")
-
         # Prepare and write out first line format NodeID, EventNumber, Time, Stat1, Stat2, Stat3, ...
         title_line = ["NodeID", "Time", "StatisticName", "Value"]
 
@@ -265,25 +260,6 @@ class DataParser:
                     if vector_id not in no_interest_vectors:
                         # Write the line out in case we found it before declaration. Only if it is of possible interest.
                         self.logger.warning("There was a line which appeared in the wrong place: {}".format(line))
-                        # early_vectors.write(line)
-
-        # Rewind the early vectors file so we can search it for missed vectors
-        # early_vectors.seek(0)
-        #
-        # for line in early_vectors:
-        #     self.logger.info("We have early vectors")
-        #     # Parse the line again.
-        #     parsed_vec = self.parse_vector_line(line)
-        #     vector_id = parsed_vec[0]
-        #     # check for the vector
-        #     if vector_id in vector_dict:
-        #         # If we have it create the csv line and write it our
-        #         csv_line, time = self.prepare_csv_line(vector_dict, vector_id, parsed_vec)
-        #         for chunk_time in chunk_times:
-        #             if time < chunk_time:
-        #                 chunk_info[chunk_time]["writer"].writerow(csv_line)
-
-        # Close our vector file.
 
         return new_lines, old_lines, max_time
 
@@ -430,9 +406,6 @@ class DataParser:
         self.tidy_data(raw_data_file, self.results["filtered_vectors"], output_csv)
 
         self.logger.info("Completed tidying of dataframes")
-
-        # TODO: Need to develop a new mechanism for creating the results, currently read in whole file which is too much
-        # Memory, instead read each in chunks and complete all results from there. Finally merging all the files results
 
     def tidy_data(self, real_vector_path, json_fields, output_csv):
         # Simply remove the :vector part of vector names from both sets of vectors.
