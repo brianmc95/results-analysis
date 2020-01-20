@@ -12,7 +12,8 @@ import numpy as np
 
 class DataParser:
 
-    def __init__(self, config, experiment_type, scalars=True, vectors=True, stats=None, all_types=False, tidied_results=None):
+    def __init__(self, config, experiment_type, scalars=True, vectors=True, stats=None, all_types=False,
+                 tidied_results=None):
         self.config = config
         self.experiment_type = experiment_type
         self.scalars = scalars
@@ -156,7 +157,8 @@ class DataParser:
         # Create the chunk file and create a csv writer which uses it
         self.logger.debug("Setting up new chunk: {}".format(chunk_name))
         temp_file_pt = open(chunk_name, "w+")
-        output_writer = csv.DictWriter(temp_file_pt, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, fieldnames=title_line)
+        output_writer = csv.DictWriter(temp_file_pt, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL,
+                                       fieldnames=title_line)
         output_writer.writeheader()
 
         return temp_file_pt, output_writer
@@ -361,6 +363,7 @@ class DataParser:
                 number_of_batches = 1
 
             i = 0
+            results = []
             while i < len(runs):
                 if len(runs) < num_processes:
                     num_processes = len(runs)
@@ -368,7 +371,11 @@ class DataParser:
                     "Starting up processes, batch {}/{}".format((i // num_processes) + 1, number_of_batches))
                 pool = multiprocessing.Pool(processes=num_processes)
 
-                pool.starmap(self.filter_data, zip(runs[i:i + num_processes], repeat(config_name), repeat(now), repeat(orig_loc)))
+                results.append(pool.starmap(self.filter_data,
+                                            zip(runs[i:i + num_processes],
+                                                repeat(config_name),
+                                                repeat(now),
+                                                repeat(orig_loc))))
 
                 pool.close()
                 pool.join()
@@ -395,11 +402,11 @@ class DataParser:
 
         run_num = raw_data_file.split(".")[0]
 
-        output_csv_dir = "{}/data/raw_data/{}/{}".format(orig_loc, self.experiment_type, config_name)
+        output_csv_dir = "{}/data/parsed_data/{}/{}-{}".format(orig_loc, self.experiment_type, config_name, now)
 
         os.makedirs(output_csv_dir, exist_ok=True)
 
-        output_csv = "{}/{}-{}.csv".format(output_csv_dir, run_num, now)
+        output_csv = "{}/run-{}.csv".format(output_csv_dir, run_num)
 
         self.logger.info("Raw output file: {}".format(output_csv))
 
@@ -433,4 +440,3 @@ class DataParser:
         self.combine_files(chunk_folder, output_csv)
 
         self.logger.info("Finished parsing of vector file: {}".format(real_vector_path))
-

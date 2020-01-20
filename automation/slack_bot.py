@@ -184,7 +184,7 @@ class MySlackBot:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to raw_data')
+    parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to parsed_data')
     parser.add_argument("-s", "--slack-config", help="Path to slack config file containing slack api token")
     args = parser.parse_args()
 

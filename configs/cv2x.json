@@ -36,11 +36,15 @@
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
-    "result-dirs": [
+    "omnet-result-dirs": [
+
     ],
-    "raw-results": [
+    "parsed-result-dir": [
+
     ],
-    "processed-results": "",
+    "processed-result-dir": [
+
+    ],
     "figures": {
       "comparison": [],
       "individual": []
