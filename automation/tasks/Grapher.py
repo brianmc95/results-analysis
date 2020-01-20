@@ -1,5 +1,4 @@
 import logging
-import json
 import os
 import math
 import multiprocessing
@@ -28,186 +27,117 @@ class Grapher:
         self.markers = [".", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P", "*", "h", "H", "+",
                         "x", "X", "D", "d", "|", "_", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
-        # TODO: Add option to change this
-        self.p = .95
+        self.p = self.results["confidence-interval"]
 
     def generate_graphs(self, results_file, now):
 
         self.logger.info("Beginning graphing of result file: {}".format(results_file))
 
-        self.prepare_results(results_file, now)
+        # if not self.config["processed-results-dir"]:
+        self.config["processed-result-dir"] = self.prepare_results(results_file, now)
 
-        exit(0)
+        for graph_title in self.results["graph-configurations"]:
+            self.logger.info("Graphing configuration: {}".format(graph_title))
+            folders_for_comparison = []
+            configurations = []
+            for configuration in self.results["graph-configurations"][graph_title]:
+                for folder in self.config["processed-result-dir"]:
+                    if configuration in folder:
+                        folders_for_comparison.append(folder)
+                        configurations.append(configuration)
 
-        with open(results_file) as results_json:
-            data = json.load(results_json)
-
-        comparison_graphs = []
-        individual_graphs = []
-
-        pdr_field = self.results["decoded"].replace(":vector", "")
-
-        for individual in self.results["individual"]:
-            self.logger.info("Config we are graphing {}".format(individual))
             for graph in self.results["graphs"]:
+                if graph in ["PDR-SCI", "PDR-TB", "IPG"]:
+                    self.distance_graph(folders_for_comparison, graph, graph_title, configurations, now)
+                elif graph == "CBR":
+                    self.cbr_graph(folders_for_comparison, graph, graph_title, configurations, now)
 
-                plot_name = "{}-{}-{}-{}".format(self.experiment_type, individual, graph, now)
-                self.logger.info("Generating graph: {}".format(plot_name))
+    def distance_graph(self, folders, graph, comparison, configurations, now):
+        means = []
+        cis = []
+        distances = []
+        for folder, config in zip(folders, configurations):
+            df = pd.read_csv("{}/{}.csv".format(folder, graph))
+            means.append(list(df["Mean"]))
+            cis.append(list(df["Confidence-Interval"]))
+            distances = (list(range(0, df.shape[0] * 10, 10)))
 
-                if graph == "pdr-dist":
-                    self.pdr_dist_individual(data[individual][pdr_field], data[individual]["distance"],
-                                             "PDR", plot_name)
+        if graph in ["PDR-SCI", "PDR-TB"]:
+            self.dist_graph(means, distances, configurations,
+                            "{}-{}".format(graph, comparison), ylabel="Packet Delivery Rate %", now=now,
+                            confidence_intervals=cis, show=False, store=True)
+        elif graph == "IPG":
+            self.dist_graph(means, distances, configurations,
+                            "{}-{}".format(graph, comparison), ylabel="Inter-Packet Gap (ms)", now=now,
+                            legend_pos="upper left", confidence_intervals=cis, show=False, store=True)
 
-                elif graph == "error-dist":
-                    errors = []
-                    for error in self.results["fails"]:
-                        errors.append(data[individual][error])
+    def cbr_graph(self, folders, comparison, graph, configurations, now):
+        # Might change this to time based graph but CBR is fine for now
+        times = []
+        cbr = []
+        cis = []
+        for folder, config in zip(folders, configurations):
+            df = pd.read_csv("{}/CBR.csv".format(folder))
+            times.append(list(df["Time"]))
+            cbr.append(list(df["Mean"]))
+            cis.append(list(df["Confidence-Interval"]))
 
-                    self.errors_dist_individual(data[individual]["distance"], data[individual][pdr_field],
-                                                errors, self.results["error_labels"], plot_name)
+        self.cbr_plot(cbr, times, "{}-{}".format(graph, comparison), configurations, now=now,
+                      confidence_intervals=cis, show=False, store=True)
 
-                individual_graphs.append("{}.{}".format(plot_name, self.image_format))
-
-        for compare in self.results["compare"]:
-            self.logger.info("Comparing {}".format(self.results["compare"][compare]))
-            for graph in self.results["graphs"]:
-
-                plot_name = "{}-{}-{}-{}".format(self.experiment_type, compare, graph, now)
-                self.logger.info("Generating graph: {}".format(plot_name))
-
-                if graph == "pdr-dist":
-                    pdrs = []
-                    labels = []
-                    distances = []
-
-                    for config in self.results["compare"][compare]:
-                        labels.append("PDR: {}".format(config))
-                        pdrs.append(data[config][pdr_field])
-                        distances = data[config]["distance"]
-
-                    self.pdr_dist(pdrs, distances, labels, plot_name)
-
-                elif graph == "error-dist":
-
-                    decoded = []
-                    decoded_labels = []
-                    error_labels = []
-                    distances = []
-                    errors = []
-
-                    for config in self.results["compare"][compare]:
-                        decoded.append(data[config][pdr_field])
-                        decoded_labels.append("{}: decoded".format(config))
-                        distances = data[config]["distance"]
-
-                        sub_errors = []
-                        sub_error_labels = []
-                        for i in range(len(self.results["fails"])):
-                            sub_error_labels.append("{}: {}".format(config, self.results["error_labels"][i]))
-                            sub_errors.append(data[config][self.results["fails"][i]])
-                        errors.append(sub_errors)
-                        error_labels.append(sub_error_labels)
-
-                    self.errors_dist(distances, decoded, decoded_labels, errors, error_labels, plot_name)
-
-                comparison_graphs.append("{}.{}".format(plot_name, self.image_format))
-
-        return individual_graphs, comparison_graphs
-
-    def pdr_dist_individual(self, pdr, distances, label, plot_name):
+    def dist_graph(self, means, distances, labels, plot_name, ylabel, now, legend_pos="lower left",
+                   confidence_intervals=None, show=True, store=False):
         fig, ax = plt.subplots()
 
-        if self.use_markers:
-            ax.plot(distances, pdr, label=label, marker=self.markers[0], markevery=3)
+        for i in range(len(means)):
+            if confidence_intervals:
+                ax.errorbar(distances, means[i], yerr=confidence_intervals[i], label=labels[i])
+            else:
+                ax.plot(distances, means[i], label=labels[i])
 
-        elif self.use_line_types:
-            # TODO: figure out the line types thing
-            ax.plot(distances, pdr, label=label)
-
-        else:
-            ax.plot(distances, pdr, label=label)
-
-        ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
-        ax.legend(loc='lower right')
-        ax.grid()
-
-        ax.set_ylim([0, 1.1])
-        plt.yticks(np.arange(0, 1, step=.1))
+        ax.set(xlabel='Distance (m)', ylabel=ylabel)
+        ax.legend(loc=legend_pos)
+        ax.tick_params(direction='in')
 
         ax.set_xlim([0, (max(distances) + 1)])
         plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
         fig.suptitle(plot_name, fontsize=12)
-        fig.savefig("{}/individual/{}.{}".format(self.figure_store, plot_name, self.image_format))
 
-    def errors_dist_individual(self, distances, decoded, errors, error_labels, plot_name):
+        if show:
+            fig.show()
 
+        if store:
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
+        plt.close(fig)
+
+    def cbr_plot(self, cbr, times, plot_name, labels, now, confidence_intervals=None, show=True, store=False):
         fig, ax = plt.subplots()
 
-        if self.use_markers:
-            ax.plot(distances, decoded, label="Decoded", marker=self.markers[0], markevery=3)
+        for i in range(len(cbr)):
+            if confidence_intervals:
+                ax.errorbar(times[i], cbr[i], yerr=confidence_intervals[i], label=labels[i])
+            else:
+                ax.plot(times[i], cbr[i], label=labels[i])
 
-            for i in range(len(errors)):
-                ax.plot(distances, errors[i], label=error_labels[i], marker=self.markers[i+1], markevery=3)
+        ax.legend(loc='upper left')
+        ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
+        ax.tick_params(direction='in')
 
-        elif self.use_line_types:
-            ax.plot(distances, decoded, label="Decoded")
-
-            for i in range(len(errors)):
-                ax.plot(distances, errors[i], label=error_labels[i])
-
-        else:
-            ax.plot(distances, decoded, label="Decoded")
-
-            for i in range(len(errors)):
-                ax.plot(distances, errors[i], label=error_labels[i])
-
-        ax.legend(loc='center left')
-
-        ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
-        ax.grid()
-
-        ax.set_ylim([0, 1.1])
-        plt.yticks(np.arange(0, 1.1, step=.1))
-
-        ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+        ax.set_ylim([0, 100])
+        plt.yticks(np.arange(0, 101, step=10))
 
         fig.suptitle(plot_name, fontsize=12)
-        fig.savefig("{}/individual/{}.{}".format(self.figure_store, plot_name, self.image_format))
 
-    def pdr_dist(self, pdrs, distances, labels, plot_name):
+        if show:
+            fig.show()
 
-        fig, ax = plt.subplots()
-
-        if self.use_markers:
-            for i in range(len(pdrs)):
-                ax.plot(distances, pdrs[i], label=labels[i], marker=self.markers[i], markevery=3)
-
-        elif self.use_line_types:
-            # TODO: figure out the line types thing
-            for i in range(len(pdrs)):
-                ax.plot(distances, pdrs[i], label=labels[i])
-
-        else:
-            for i in range(len(pdrs)):
-                ax.plot(distances, pdrs[i], label=labels[i])
-
-        ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
-        ax.legend(loc='lower right')
-        ax.grid()
-
-        ax.set_ylim([0, 1.1])
-        plt.yticks(np.arange(0, 1.1, step=.1))
-
-        ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
-
-        fig.suptitle(plot_name, fontsize=12)
-        fig.savefig("{}/comparison/{}.{}".format(self.figure_store, plot_name, self.image_format))
+        if store:
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
         plt.close(fig)
 
     def errors_dist(self, distances, decoded, decoded_labels, errors, error_labels, plot_name):
+        # TODO: Update to allow such graphing to be automatically configured.
 
         fig, ax = plt.subplots()
 
@@ -243,7 +173,7 @@ class Grapher:
         ax.set_xlim([0, (max(distances) + 1)])
         plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
-        fig.savefig("{}/comparison/{}.{}".format(self.figure_store, plot_name, self.image_format))
+        fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
         plt.close(fig)
 
     def prepare_results(self, results, now):
@@ -253,6 +183,7 @@ class Grapher:
             self.logger.warning("Too many processes, going to revert to total - 1")
             num_processes = multiprocessing.cpu_count() - 1
 
+        processed_results = []
         for folder in results:
             config_name = folder.split("/")[-1]
             self.logger.debug("Generating results from folder: {}".format(folder))
@@ -269,7 +200,7 @@ class Grapher:
                     num_processes = len(files)
                 pool = multiprocessing.Pool(processes=num_processes)
 
-                folder_results.append(pool.starmap(self.generate_results, zip(files[i: i+num_processes])))
+                folder_results.append(pool.starmap(self.generate_results, zip(files[i: i + num_processes])))
 
                 pool.close()
                 pool.join()
@@ -292,6 +223,9 @@ class Grapher:
                 else:
                     self.across_run_results(folder_results, stat, output_csv_dir, "txRxDistanceTB")
 
+            processed_results.append(output_csv_dir)
+        return processed_results
+
     def generate_results(self, output_csv):
 
         self.logger.info("Generating results for file: {}".format(output_csv))
@@ -306,19 +240,20 @@ class Grapher:
         for chunk in pd.read_csv(output_csv, chunksize=10 ** 6):
 
             # SCI PDR calculation
-            pdr_sci_agg = self.stat_distance(pdr_sci_agg, chunk, "sciDecoded", "txRxDistanceSCI")
+            pdr_sci_agg = self.stat_distance(pdr_sci_agg, chunk, "sciDecoded", "txRxDistanceSCI", True)
 
             # TB PDR calculation
-            pdr_tb_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecoded", "txRxDistanceTB")
+            pdr_tb_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecoded", "txRxDistanceTB", True)
 
             # IPG calculation
-            ipg_agg = self.stat_distance(ipg_agg, chunk, "interPacketDelay", "txRxDistanceTB")
+            ipg_agg = self.stat_distance(ipg_agg, chunk, "interPacketDelay", "txRxDistanceTB", False)
 
             # CBR calculation doesn't aggregate the same way as the above so dealt with separately
             cbr_df = chunk[chunk["cbr"].notnull()]
             cbr_df = cbr_df[["Time", "cbr"]]
             cbr_df = cbr_df.groupby("Time").agg({"cbr": [np.mean, np.std, "count"]})
             cbr_df.columns = cbr_df.columns.droplevel()
+            cbr_df = cbr_df.apply(lambda x: x * 100, axis=1)
 
             if cbr_agg.empty:
                 cbr_agg = cbr_df
@@ -333,7 +268,7 @@ class Grapher:
 
         return results
 
-    def stat_distance(self, agg_df, df, stat, distance):
+    def stat_distance(self, agg_df, df, stat, distance, percentage):
 
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
@@ -345,10 +280,13 @@ class Grapher:
         # Get the mean, std, count for each distance
         distance_df = distance_df.groupby(
             pd.cut(distance_df[distance], np.arange(0, max_distance, 10))).agg(
-            {stat: [np.mean, np.std, "count"]})
+            {stat: [np.mean, "count"]})
 
         # Remove over head column
         distance_df.columns = distance_df.columns.droplevel()
+
+        if percentage:
+            distance_df = distance_df.apply(lambda x: x * 100, axis=1)
 
         if agg_df.empty:
             agg_df = distance_df
@@ -356,39 +294,40 @@ class Grapher:
             # combine_chunks
             agg_df = pd.merge(agg_df, distance_df, on=distance, how='outer')
             agg_df = agg_df.apply(self.combine_line, axis=1, result_type='expand')
-            agg_df = agg_df.rename({0: "mean", 1: "std", 2: "count"}, axis='columns')
+            agg_df = agg_df.rename({0: "mean", 1: "count"}, axis='columns')
 
         return agg_df
 
     @staticmethod
     def combine_line(line):
         mean_a = line["mean_x"]
-        std_a = line["std_x"]
         count_a = line["count_x"]
 
         mean_b = line["mean_y"]
-        std_b = line["std_y"]
         count_b = line["count_y"]
 
-        ex_a = mean_a * count_a
-        ex_b = mean_b * count_b
-        ex_squared_a = ((std_a ** 2) * (count_a - 1)) + ((ex_a ** 2) / count_a)
-        ex_squared_b = ((std_b ** 2) * (count_b - 1)) + ((ex_b ** 2) / count_b)
+        if np.isnan(mean_a) and np.isnan(mean_b):
+            return [mean_a, count_a]
+        elif np.isnan(mean_a) and not np.isnan(mean_b):
+            return [mean_b, count_b]
+        elif np.isnan(mean_b) and not np.isnan(mean_a):
+            return [mean_a, count_a]
+        else:
+            ex_a = mean_a * count_a
+            ex_b = mean_b * count_b
 
-        tx = ex_a + ex_b
-        txx = ex_squared_a + ex_squared_b
-        tn = count_a + count_b
+            tx = ex_a + ex_b
+            tn = count_a + count_b
 
-        overall_mean = tx / tn
-        overall_std = math.sqrt((txx - tx ** 2 / tn) / (tn - 1))
-        overall_count = tn
+            overall_mean = tx / tn
+            overall_count = tn
 
-        return [overall_mean, overall_std, overall_count]
+            return [overall_mean, overall_count]
 
     def across_run_results(self, results, stat, output_csv_dir, merge_col):
 
         df = pd.DataFrame()
-        self.logger.info("Statistic of interest: {}".format(stat))
+        self.logger.debug("Statistic of interest: {}".format(stat))
         for i in range(len(results)):
             if df.empty:
                 df = results[i][stat]

@@ -163,12 +163,7 @@ class Manager:
 
             self.logger.info("Graph option set, moving into Graphing stage")
             try:
-                individual_graphs, comparison_graphs = self.grapher.generate_graphs(self.config["parsed-result-dir"],
-                                                                                    now)
-                self.config["figures"]["individual"] = individual_graphs
-                self.config["figures"]["comparison"] = comparison_graphs
-                self.logger.info("figures, individual: {}".format(individual_graphs))
-                self.logger.info("figures, comparison: {}".format(comparison_graphs))
+                self.grapher.generate_graphs(self.config["parsed-result-dir"], now)
             except Exception as e:
                 self.logger.error(traceback.format_exc())
                 self.logger.error("Graph failed with error: {}".format(e))
