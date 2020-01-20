@@ -45,19 +45,11 @@
     "processed-result-dir": [
 
     ],
-    "figures": {
-      "comparison": [],
-      "individual": []
-    },
     "results": {
-      "graphs": ["pdr-dist"],
-      "compare": {
+      "graphs": ["PDR-SCI" , "PDR-TB", "IPG", "CBR"],
+      "confidence-interval": 0.95,
+      "graph-configurations": {
       },
-      "individual": [],
-      "decoded": "tbDecoded",
-      "distance": "txRxDistanceTB",
-      "fails": ["tbFailedButSCIReceived", "tbFailedDueToNoSCI", "tbFailedHalfDuplex"],
-      "error_labels": ["Failed decoding TB", "No SCI", "Half-Duplex"],
       "filtered_vectors": [
         "sciSent",
         "tbSent",
