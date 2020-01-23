@@ -43,13 +43,14 @@ class Grapher:
             configurations = []
             for configuration in self.results["graph-configurations"][graph_title]:
                 for folder in self.config["processed-result-dir"]:
-                    config_name = folder.split("/")[-1][:-9]
+                    config_name = folder.split("/")[-1][:-20]
                     if configuration == config_name:
                         folders_for_comparison.append(folder)
                         configurations.append(configuration)
 
             for graph in self.results["graphs"]:
                 if graph in ["PDR-SCI", "PDR-TB", "IPG"]:
+                    self.logger.info("Config: {} Graph: {}".format(graph_title, graph))
                     self.distance_graph(folders_for_comparison, graph, graph_title, configurations, now)
                 elif graph == "CBR":
                     self.cbr_graph(folders_for_comparison, graph, graph_title, configurations, now)
