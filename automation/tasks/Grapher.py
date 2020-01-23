@@ -28,13 +28,14 @@ class Grapher:
                         "x", "X", "D", "d", "|", "_", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
         self.p = self.results["confidence-interval"]
+        self.confidence_intervals = self.results["graph-confidence-interval"]
 
-    def generate_graphs(self, results_file, now):
+    def generate_graphs(self, result_folders, now):
 
-        self.logger.info("Beginning graphing of result file: {}".format(results_file))
+        self.logger.info("Beginning graphing of result file: {}".format(result_folders))
 
-        # if not self.config["processed-results-dir"]:
-        self.config["processed-result-dir"] = self.prepare_results(results_file, now)
+        if not self.config["processed-result-dir"]:
+            self.config["processed-result-dir"] = self.prepare_results(result_folders, now)
 
         for graph_title in self.results["graph-configurations"]:
             self.logger.info("Graphing configuration: {}".format(graph_title))
@@ -42,7 +43,8 @@ class Grapher:
             configurations = []
             for configuration in self.results["graph-configurations"][graph_title]:
                 for folder in self.config["processed-result-dir"]:
-                    if configuration in folder:
+                    config_name = folder.split("/")[-1][:-9]
+                    if configuration == config_name:
                         folders_for_comparison.append(folder)
                         configurations.append(configuration)
 
@@ -52,131 +54,7 @@ class Grapher:
                 elif graph == "CBR":
                     self.cbr_graph(folders_for_comparison, graph, graph_title, configurations, now)
 
-    def distance_graph(self, folders, graph, comparison, configurations, now):
-        means = []
-        cis = []
-        distances = []
-        for folder, config in zip(folders, configurations):
-            df = pd.read_csv("{}/{}.csv".format(folder, graph))
-            means.append(list(df["Mean"]))
-            cis.append(list(df["Confidence-Interval"]))
-            distances = (list(range(0, df.shape[0] * 10, 10)))
-
-        if graph in ["PDR-SCI", "PDR-TB"]:
-            self.dist_graph(means, distances, configurations,
-                            "{}-{}".format(graph, comparison), ylabel="Packet Delivery Rate %", now=now,
-                            confidence_intervals=cis, show=False, store=True)
-        elif graph == "IPG":
-            self.dist_graph(means, distances, configurations,
-                            "{}-{}".format(graph, comparison), ylabel="Inter-Packet Gap (ms)", now=now,
-                            legend_pos="upper left", confidence_intervals=cis, show=False, store=True)
-
-    def cbr_graph(self, folders, comparison, graph, configurations, now):
-        # Might change this to time based graph but CBR is fine for now
-        times = []
-        cbr = []
-        cis = []
-        for folder, config in zip(folders, configurations):
-            df = pd.read_csv("{}/CBR.csv".format(folder))
-            times.append(list(df["Time"]))
-            cbr.append(list(df["Mean"]))
-            cis.append(list(df["Confidence-Interval"]))
-
-        self.cbr_plot(cbr, times, "{}-{}".format(graph, comparison), configurations, now=now,
-                      confidence_intervals=cis, show=False, store=True)
-
-    def dist_graph(self, means, distances, labels, plot_name, ylabel, now, legend_pos="lower left",
-                   confidence_intervals=None, show=True, store=False):
-        fig, ax = plt.subplots()
-
-        for i in range(len(means)):
-            if confidence_intervals:
-                ax.errorbar(distances, means[i], yerr=confidence_intervals[i], label=labels[i])
-            else:
-                ax.plot(distances, means[i], label=labels[i])
-
-        ax.set(xlabel='Distance (m)', ylabel=ylabel)
-        ax.legend(loc=legend_pos)
-        ax.tick_params(direction='in')
-
-        ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
-
-        fig.suptitle(plot_name, fontsize=12)
-
-        if show:
-            fig.show()
-
-        if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
-        plt.close(fig)
-
-    def cbr_plot(self, cbr, times, plot_name, labels, now, confidence_intervals=None, show=True, store=False):
-        fig, ax = plt.subplots()
-
-        for i in range(len(cbr)):
-            if confidence_intervals:
-                ax.errorbar(times[i], cbr[i], yerr=confidence_intervals[i], label=labels[i])
-            else:
-                ax.plot(times[i], cbr[i], label=labels[i])
-
-        ax.legend(loc='upper left')
-        ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
-        ax.tick_params(direction='in')
-
-        ax.set_ylim([0, 100])
-        plt.yticks(np.arange(0, 101, step=10))
-
-        fig.suptitle(plot_name, fontsize=12)
-
-        if show:
-            fig.show()
-
-        if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
-        plt.close(fig)
-
-    def errors_dist(self, distances, decoded, decoded_labels, errors, error_labels, plot_name):
-        # TODO: Update to allow such graphing to be automatically configured.
-
-        fig, ax = plt.subplots()
-
-        if self.use_markers:
-            for i in range(len(decoded)):
-                ax.plot(distances, decoded[i], label=decoded_labels[i], marker=self.markers[i], markevery=3)
-
-                for j in range(len(errors[i])):
-                    ax.plot(distances, errors[i][j], label=error_labels[i][j], marker=self.markers[i + j])
-
-        elif self.use_line_types:
-            for i in range(len(decoded)):
-                ax.plot(distances, decoded[i], label=decoded_labels[i])
-
-                for j in range(len(errors[i])):
-                    ax.plot(distances, errors[i][j], label=error_labels[i][j])
-
-        else:
-            for i in range(len(decoded)):
-                ax.plot(distances, decoded[i], label=decoded_labels[i])
-
-                for j in range(len(errors[i])):
-                    ax.plot(distances, errors[i][j], label=error_labels[i][j])
-
-        ax.legend(loc='center left')
-
-        ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
-        ax.grid()
-
-        ax.set_ylim([0, 1])
-        plt.yticks(np.arange(0, 1.1, step=.1))
-
-        ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
-
-        fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
-        plt.close(fig)
-
-    def prepare_results(self, results, now):
+    def prepare_results(self, result_folders, now):
 
         num_processes = self.config["parallel_processes"]
         if num_processes > multiprocessing.cpu_count():
@@ -184,23 +62,26 @@ class Grapher:
             num_processes = multiprocessing.cpu_count() - 1
 
         processed_results = []
-        for folder in results:
+        for folder in result_folders:
             config_name = folder.split("/")[-1]
             self.logger.debug("Generating results from folder: {}".format(folder))
             self.logger.info("Results for config: {}".format(config_name))
             folder_results = []
             files = natsort.natsorted(os.listdir(folder))
 
+            filtered_files = []
             for i in range(len(files)):
-                files[i] = "{}/{}".format(folder, files[i])
+                # Ensures we don't load files passed by accident
+                if ".csv" in files[i]:
+                    filtered_files.append("{}/{}".format(folder, files[i]))
 
             i = 0
-            while i < len(files):
-                if len(files) < num_processes:
-                    num_processes = len(files)
+            while i < len(filtered_files):
+                if len(filtered_files) < num_processes:
+                    num_processes = len(filtered_files)
                 pool = multiprocessing.Pool(processes=num_processes)
 
-                folder_results.append(pool.starmap(self.generate_results, zip(files[i: i + num_processes])))
+                folder_results.append(pool.starmap(self.generate_results, zip(filtered_files[i: i + num_processes])))
 
                 pool.close()
                 pool.join()
@@ -275,7 +156,9 @@ class Grapher:
         distance_df = distance_df[["Time", "NodeID", stat, distance]]
         distance_df = distance_df[distance_df[stat] > -1]
 
-        max_distance = distance_df[distance].max()
+        # Only interested in max 500m simply as it's not all that relevant to go further.
+        # Note that going to the max distance of the file can cause issues with how they are parsed.
+        max_distance = min(510, distance_df[distance].max())
 
         # Get the mean, std, count for each distance
         distance_df = distance_df.groupby(
@@ -327,7 +210,7 @@ class Grapher:
     def across_run_results(self, results, stat, output_csv_dir, merge_col):
 
         df = pd.DataFrame()
-        self.logger.debug("Statistic of interest: {}".format(stat))
+        self.logger.info("Statistic of interest: {}".format(stat))
         for i in range(len(results)):
             if df.empty:
                 df = results[i][stat]
@@ -366,3 +249,119 @@ class Grapher:
         ci = t_value * math.sqrt(s2 / n)
 
         return [xBar, ci]
+
+    ### Graphing utilities
+
+    def distance_graph(self, folders, graph, comparison, configurations, now):
+        means = []
+        cis = []
+        distances = []
+        for folder, config in zip(folders, configurations):
+            df = pd.read_csv("{}/{}.csv".format(folder, graph))
+            means.append(list(df["Mean"]))
+            if self.confidence_intervals:
+                cis.append(list(df["Confidence-Interval"]))
+            distances = (list(range(0, df.shape[0] * 10, 10)))
+
+        if graph in ["PDR-SCI", "PDR-TB"]:
+            self.dist_graph(means, distances, configurations,
+                            "{}-{}".format(comparison, graph), ylabel="Packet Delivery Rate %", now=now,
+                            confidence_intervals=cis, show=False, store=True)
+        elif graph == "IPG":
+            self.dist_graph(means, distances, configurations,
+                            "{}-{}".format(comparison, graph), ylabel="Inter-Packet Gap (ms)", now=now,
+                            legend_pos="upper left", confidence_intervals=cis, show=False, store=True)
+
+    def cbr_graph(self, folders, graph, comparison, configurations, now):
+        # Might change this to time based graph but CBR is fine for now
+        times = []
+        cbr = []
+        cis = []
+        for folder, config in zip(folders, configurations):
+            df = pd.read_csv("{}/CBR.csv".format(folder))
+            times.append(list(df["Time"]))
+            cbr.append(list(df["Mean"]))
+            if self.confidence_intervals:
+                cis.append(list(df["Confidence-Interval"]))
+
+        self.cbr_plot(cbr, times, "{}-{}".format(comparison, graph), configurations, now=now,
+                      confidence_intervals=cis, show=False, store=True)
+
+    def dist_graph(self, means, distances, labels, plot_name, ylabel, now, legend_pos="lower left",
+                   confidence_intervals=None, show=True, store=False):
+        fig, ax = plt.subplots()
+
+        for i in range(len(means)):
+            if confidence_intervals:
+                ax.errorbar(distances, means[i], yerr=confidence_intervals[i], label=labels[i])
+            else:
+                ax.plot(distances, means[i], label=labels[i])
+
+        ax.set(xlabel='Distance (m)', ylabel=ylabel)
+        ax.legend(loc=legend_pos)
+        ax.tick_params(direction='in')
+
+        ax.set_xlim([0, (max(distances) + 1)])
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+
+        if show:
+            fig.show()
+
+        if store:
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
+        plt.close(fig)
+
+    def cbr_plot(self, cbr, times, plot_name, labels, now, confidence_intervals=None, show=True, store=False):
+        fig, ax = plt.subplots()
+
+        for i in range(len(cbr)):
+            if confidence_intervals:
+                ax.errorbar(times[i], cbr[i], yerr=confidence_intervals[i], label=labels[i])
+            else:
+                ax.plot(times[i], cbr[i], label=labels[i])
+
+        ax.legend(loc='upper left')
+        ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
+        ax.tick_params(direction='in')
+
+        ax.set_ylim([0, 100])
+        plt.yticks(np.arange(0, 101, step=10))
+
+        if show:
+            fig.show()
+
+        if store:
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
+        plt.close(fig)
+
+    def errors_dist(self, distances, decoded, decoded_labels, errors, error_labels, plot_name, now):
+        # TODO: Update to allow such graphing to be automatically configured.
+
+        fig, ax = plt.subplots()
+
+        if self.use_markers:
+            for i in range(len(decoded)):
+                if self.use_markers:
+                    ax.plot(distances, decoded[i], label=decoded_labels[i], marker=self.markers[i], markevery=3)
+
+                    for j in range(len(errors[i])):
+                        ax.plot(distances, errors[i][j], label=error_labels[i][j], marker=self.markers[i + j])
+                else:
+                    ax.plot(distances, decoded[i], label=decoded_labels[i])
+
+                    for j in range(len(errors[i])):
+                        ax.plot(distances, errors[i][j], label=error_labels[i][j])
+
+        ax.legend(loc='center left')
+
+        ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
+        ax.grid()
+
+        ax.set_ylim([0, 1])
+        plt.yticks(np.arange(0, 1.1, step=.1))
+
+        ax.set_xlim([0, (max(distances) + 1)])
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+
+        fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
+        plt.close(fig)
