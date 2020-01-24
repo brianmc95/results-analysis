@@ -5,6 +5,7 @@ from subprocess import Popen, PIPE, STDOUT
 import time
 import os
 import re
+import random
 
 
 class ExperimentRunner:
@@ -19,6 +20,7 @@ class ExperimentRunner:
         self.configParser = configparser.ConfigParser()
         self.configParser.optionxform = str
         self.configParser.read(self.ini_file)
+        self.run_number = 0
 
         self.logger = logging.getLogger("ExperimentRunner")
 
@@ -91,6 +93,8 @@ class ExperimentRunner:
 
                 self.update_config(config, current_conf)
 
+                self.configParser.read(self.ini_file)
+
                 i = 0
                 while i < len(configs):
                     if len(configs) < num_processes:
@@ -103,6 +107,8 @@ class ExperimentRunner:
                     pool.map(self.run_experiment, list(range(num_processes)))
                     pool.close()
                     pool.join()
+
+                    self.run_number += num_processes
 
                     self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
 
@@ -135,9 +141,14 @@ class ExperimentRunner:
         name = multiprocessing.current_process().name
         self.logger.info("Starting process {}".format(name))
 
-        self.logger.info("Waiting {}s".format(wait))
-        time.sleep(wait)
-        self.logger.info("Wait complete")
+        if wait != 0:
+            self.logger.info("Waiting {}s".format(5 * wait))
+            time.sleep(5 * wait)
+            self.logger.info("Wait complete")
+
+        self.run_number += wait
+
+        self.update_run_number(random.randint(0, 99999))
 
         orig_loc = os.getcwd()
 
@@ -207,6 +218,33 @@ class ExperimentRunner:
             self.logger.debug("Moved file {} to {}".format(result_file, new_loc))
 
         return os.path.dirname(new_loc)
+
+    def update_run_number(self, run_number):
+        """
+        Allow for th changing of a config to a different configuration of the same type.
+        e.g. change probability of resourceKeep across multiple simulations.
+        :param config_name: Name of the ini file configuration to run.
+        :param config_variant: Variant of the configuration to use, index in list.
+        """
+        self.logger.info("Updating omnetpp.ini seed file in loc: {}".format((run_number), self.ini_file))
+
+        omnet_conf_name = None
+
+        for omnet_name in self.configParser.sections():
+            if "general" == omnet_name.lower():
+                omnet_conf_name = omnet_name
+
+        for param in self.configParser[omnet_conf_name]:
+            self.logger.debug("param in config {}".format(param))
+
+            if "seed-set" == param.lower():
+                self.logger.info("Updating {} with value {}".format(param, run_number))
+                self.configParser[omnet_conf_name][param] = str(run_number)
+                # No need to continue searching
+                continue
+
+        with open(self.ini_file, "w") as omnetpp_ini:
+            self.configParser.write(omnetpp_ini)
 
     def update_config(self, config_name, config_variant):
         """

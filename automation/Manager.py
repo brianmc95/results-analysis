@@ -116,8 +116,8 @@ class Manager:
 
             self.logger.info("Experiment option set, moving into start experiment")
             try:
-                self.config["result-dirs"] = self.runner.start_experiment(now)
-                self.logger.info("result-dirs: {}".format(self.config["result-dirs"]))
+                self.config["omnet-result-dirs"] = self.runner.start_experiment(now)
+                self.logger.info("omnet-result-dirs: {}".format(self.config["omnet-result-dirs"]))
             except Exception as e:
                 self.logger.error("Experiment failed with error: {}".format(e))
                 self.send_slack_message("Experiment phase failed")
@@ -126,7 +126,7 @@ class Manager:
             end = time.time()
             elapsed = self.timer(start, end)
             self.send_slack_message("Experiment phase complete, phase {} of {} in {}".format(current_phase,
-                                                                                              self.phases, elapsed))
+                                                                                             self.phases, elapsed))
             self.logger.info("Experiment phase complete, phase {} of {} in {}".format(current_phase,
                                                                                       self.phases, elapsed))
             current_phase += 1
@@ -139,8 +139,8 @@ class Manager:
 
             self.logger.info("Parsing option set, moving to parse raw data")
             try:
-                self.config["processed-results"] = self.parser.parse_data(self.config["result-dirs"], now)
-                self.logger.info("processed-results: {}".format(self.config["processed-results"]))
+                self.config["parsed-result-dir"] = self.parser.parse_data(self.config["omnet-result-dirs"], now)
+                self.logger.info("parsed-result-dir: {}".format(self.config["parsed-result-dir"]))
             except Exception as e:
                 self.logger.error(traceback.format_exc())
                 self.logger.error("Parse failed with error: {}".format(e))
@@ -163,11 +163,7 @@ class Manager:
 
             self.logger.info("Graph option set, moving into Graphing stage")
             try:
-                individual_graphs, comparison_graphs = self.grapher.generate_graphs(self.config["processed-results"], now)
-                self.config["figures"]["individual"] = individual_graphs
-                self.config["figures"]["comparison"] = comparison_graphs
-                self.logger.info("figures, individual: {}".format(individual_graphs))
-                self.logger.info("figures, comparison: {}".format(comparison_graphs))
+                self.grapher.generate_graphs(self.config["parsed-result-dir"], now)
             except Exception as e:
                 self.logger.error(traceback.format_exc())
                 self.logger.error("Graph failed with error: {}".format(e))
@@ -223,7 +219,7 @@ def str2bool(v):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to raw_data')
+    parser = argparse.ArgumentParser(description='Retrieve results from simulation and store to parsed_data')
     parser.add_argument("-e", "--experiment_type", help="Type of the experiment")
     parser.add_argument("-x", "--experiment", type=str2bool, default=True,  help="Run experiments")
     parser.add_argument("-p", "--parse", type=str2bool, default=True, help="Parse results into graphable format")

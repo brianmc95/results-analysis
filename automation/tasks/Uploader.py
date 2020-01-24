@@ -61,7 +61,7 @@ class Uploader:
         self.logger.info("Original location: {}".format(orig_loc))
         for tar_ball in self.config["raw-results"]:
 
-            os.chdir("data/raw_data/{}/".format(self.experiment_type))
+            os.chdir("data/parsed_data/{}/".format(self.experiment_type))
             self.logger.info("Moved to {}".format(os.getcwd()))
 
             self.logger.info("Tarring up {} folder".format(tar_ball))
