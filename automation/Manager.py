@@ -106,7 +106,7 @@ class Manager:
 
         overall_start = time.time()
 
-        now = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        now = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
 
         if self.experiment:
 
