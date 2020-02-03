@@ -36,27 +36,9 @@
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
-    "omnet-result-dirs": [
-
-    ],
-    "parsed-result-dir": [
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/After-1",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/After-1-high-density",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/After-5",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/After-5-high-density",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/DCC-Enabled",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/DCC-Full-mechanism",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/Highway-fast",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/NO-CC",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/NO-CC-high-density",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/Random-Access-Medium-Density",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/Random-Access-Packet-Dropping-Medium-Density",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/RRI-Adaptation-CR-limit-MD",
-        "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/cv2x/RRI-Adaptation-DCC-MD"
-    ],
-    "processed-result-dir": [
-
-    ],
+    "omnet-result-dirs": [],
+    "parsed-result-dir": [],
+    "processed-result-dir": [],
     "results": {
       "graphs": ["PDR-SCI" , "PDR-TB", "IPG", "CBR"],
       "confidence-interval": 0.95,
