@@ -406,7 +406,7 @@ class DataParser:
 
         os.makedirs(output_csv_dir, exist_ok=True)
 
-        output_csv = "{}/run-{}.csv".format(output_csv_dir, run_num)
+        output_csv = "{}/{}.csv".format(output_csv_dir, run_num)
 
         self.logger.info("Raw output file: {}".format(output_csv))
 
