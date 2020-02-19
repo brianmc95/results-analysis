@@ -32,7 +32,7 @@ class Grapher:
 
     def generate_graphs(self, result_folders, now):
 
-        self.logger.info("Beginning graphing of result file: {}".format(result_folders))
+        self.logger.info("Beginning graphing of result files: {}".format(result_folders))
 
         if not self.config["processed-result-dir"]:
             self.config["processed-result-dir"] = self.prepare_results(result_folders, now)
@@ -64,8 +64,7 @@ class Grapher:
 
         processed_results = []
         for folder in result_folders:
-            config_name = folder.split("/")[-1]
-            self.logger.debug("Generating results from folder: {}".format(folder))
+            config_name = folder.split("/")[-1][:-20]
             self.logger.info("Results for config: {}".format(config_name))
             folder_results = []
             files = natsort.natsorted(os.listdir(folder))
@@ -106,6 +105,8 @@ class Grapher:
                     self.across_run_results(folder_results, stat, output_csv_dir, "txRxDistanceTB")
 
             processed_results.append(output_csv_dir)
+
+        self.logger.info("Folders processed: {}".format(processed_results))
         return processed_results
 
     def generate_results(self, output_csv):

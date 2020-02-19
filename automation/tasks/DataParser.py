@@ -163,7 +163,7 @@ class DataParser:
 
         return temp_file_pt, output_writer
 
-    def read_vector_file(self, output_file, vector_path, stats, chunk_size=4e+8):
+    def read_vector_file(self, output_file, vector_path, stats, chunk_size=1e+9):
         """
         chunk_size: the time between different files 1.5s as default
         """
@@ -186,7 +186,7 @@ class DataParser:
         chunk_info["CurrentChunk"] = {"file": temp_file_pt, "writer": writer}
 
         # Read 100,000 lines
-        tmp_lines = vector_file.readlines(100000)
+        tmp_lines = vector_file.readlines(1000000)
         while tmp_lines:
             new_lines, old_lines, time = self.process_chunk([line for line in tmp_lines], vector_dict,
                                                             no_interest_vectors, stats, last_time, chunk_times)
@@ -211,7 +211,7 @@ class DataParser:
                 for chunk_time in old_lines:
                     chunk_info[chunk_time]["writer"].writerows(old_lines[chunk_time])
             # Read the next 100,000 lines
-            tmp_lines = vector_file.readlines(100000)
+            tmp_lines = vector_file.readlines(1000000)
 
         vector_file.close()
 
@@ -324,6 +324,8 @@ class DataParser:
     def parse_data(self, results_dirs, now):
         combined_results = {}
 
+        results = []
+
         configs = []
         for config in self.config["config_names"]:
             config_data = self.config["config_names"][config]
@@ -342,6 +344,8 @@ class DataParser:
             combined_results[config_name] = {}
 
             orig_loc = os.getcwd()
+
+            results.append("{}/data/parsed_data/{}/{}-{}".format(orig_loc, self.experiment_type, config_name, now))
 
             self.logger.debug("Moving to results dir: {}".format(result_dir))
             os.chdir(result_dir)
@@ -363,7 +367,6 @@ class DataParser:
                 number_of_batches = 1
 
             i = 0
-            results = []
             while i < len(runs):
                 if len(runs) < num_processes:
                     num_processes = len(runs)
@@ -371,11 +374,11 @@ class DataParser:
                     "Starting up processes, batch {}/{}".format((i // num_processes) + 1, number_of_batches))
                 pool = multiprocessing.Pool(processes=num_processes)
 
-                results.append(pool.starmap(self.filter_data,
-                                            zip(runs[i:i + num_processes],
-                                                repeat(config_name),
-                                                repeat(now),
-                                                repeat(orig_loc))))
+                pool.starmap(self.filter_data,
+                             zip(runs[i:i + num_processes],
+                                 repeat(config_name),
+                                 repeat(now),
+                                 repeat(orig_loc)))
 
                 pool.close()
                 pool.join()
@@ -386,6 +389,9 @@ class DataParser:
 
             self.logger.debug("Moving back to original location: {}".format(orig_loc))
             os.chdir(orig_loc)
+
+        self.logger.info("Result folders generated: {}".format(results))
+        return results
 
     @staticmethod
     def combine_results(combined, results):
