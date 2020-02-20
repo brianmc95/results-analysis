@@ -268,7 +268,7 @@ class Grapher:
         if graph in ["PDR-SCI", "PDR-TB"]:
             self.dist_graph(means, distances, configurations,
                             "{}-{}".format(comparison, graph), ylabel="Packet Delivery Rate %", now=now,
-                            confidence_intervals=cis, show=False, store=True)
+                            confidence_intervals=cis, show=False, store=True, percentage=True)
         elif graph == "IPG":
             self.dist_graph(means, distances, configurations,
                             "{}-{}".format(comparison, graph), ylabel="Inter-Packet Gap (ms)", now=now,
@@ -290,7 +290,7 @@ class Grapher:
                       confidence_intervals=cis, show=False, store=True)
 
     def dist_graph(self, means, distances, labels, plot_name, ylabel, now, legend_pos="lower left",
-                   confidence_intervals=None, show=True, store=False):
+                   confidence_intervals=None, show=True, store=False, percentage=False):
         fig, ax = plt.subplots()
 
         for i in range(len(means)):
@@ -305,6 +305,10 @@ class Grapher:
 
         ax.set_xlim([0, (max(distances) + 1)])
         plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+
+        if percentage:
+            ax.set_ylim([0, 100])
+            plt.yticks(np.arange(0, 101, step=10))
 
         if show:
             fig.show()
