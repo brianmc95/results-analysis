@@ -155,16 +155,17 @@ class Grapher:
 
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
-        distance_df = distance_df[["Time", "NodeID", stat, distance]]
+        distance_df = distance_df[["Time", "NodeID", stat, distance, "posX"]]
         distance_df = distance_df[distance_df[stat] > -1]
+        # distance_df = distance_df[(distance_df["posX"] > 1500) & (distance_df["posX"] < 3500)]
 
         # Only interested in max 500m simply as it's not all that relevant to go further.
         # Note that going to the max distance of the file can cause issues with how they are parsed.
-        max_distance = min(510, distance_df[distance].max())
+        max_distance = min(550, distance_df[distance].max())
 
         # Get the mean, std, count for each distance
         distance_df = distance_df.groupby(
-            pd.cut(distance_df[distance], np.arange(0, max_distance, 10))).agg(
+            pd.cut(distance_df[distance], np.arange(0, max_distance, 25))).agg(
             {stat: [np.mean, "count"]})
 
         # Remove over head column
@@ -263,7 +264,7 @@ class Grapher:
             means.append(list(df["Mean"]))
             if self.confidence_intervals:
                 cis.append(list(df["Confidence-Interval"]))
-            distances = (list(range(0, df.shape[0] * 10, 10)))
+            distances = (list(range(0, df.shape[0] * 25, 25)))
 
         if graph in ["PDR-SCI", "PDR-TB"]:
             self.dist_graph(means, distances, configurations,
