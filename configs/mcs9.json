@@ -1,0 +1,123 @@
+{
+  "mcs9" : {
+    "project_path": "/home/brianmccarthy/git_repos/OpenCV2X",
+    "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X/build",
+    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/Validation/omnetpp.ini",
+    "target": "run_simulte-validation",
+    "config_names" : {
+      "MCS9-slow-20dbm": {
+        "repeat": 7,
+        "naming": ["Simulated-MCS9-slow-20dbm"]
+      },
+      "MCS9-slow-23dbm": {
+        "repeat": 7,
+        "naming": ["Simulated-MCS9-slow-23dbm"]
+      },
+      "MCS9-fast-20dbm": {
+        "repeat": 7,
+        "naming": ["Simulated-MCS9-fast-20dbm"]
+      },
+      "MCS9-fast-23dbm": {
+        "repeat": 7,
+        "naming": ["Simulated-MCS9-fast-23dbm"]
+      }
+    },
+    "slack-api-token": "",
+    "parallel_processes" : 7,
+    "omnet-result-dirs": [],
+    "parsed-result-dir": [],
+    "processed-result-dir": [
+      "/hdd/results-analysis/data/processed_data/mcs9/Simulated-2020-01-01-00_00_00",
+      "/hdd/results-analysis/data/processed_data/mcs9/Analytical-2020-01-01-00_00_00"
+    ],
+    "results": {
+      "graphs": ["PDR-TB", "Errors"],
+      "graphs2": ["CBR"],
+      "confidence-interval": 0.95,
+      "graph-confidence-interval": false,
+      "graph-configurations": {
+        "9MCS-23dbm-0.12vpm": ["Simulated", "Analytical"]
+      },
+      "graph-configurations2": {
+        "9MCS-23dbm-0.12vpm": ["Simulated"]
+      },
+      "filtered_vectors": [
+        "sciSent",
+        "tbSent",
+        "txRxDistanceSCI",
+        "txRxDistanceTB",
+        "sciReceived",
+        "sciDecoded",
+        "sciFailedHalfDuplex",
+        "tbReceived",
+        "tbDecoded",
+        "tbFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbFailedButSCIReceived",
+        "sciUnsensed",
+        "missedTransmission",
+        "generatedGrants",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "grantBreak",
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "tbFailedDueToProp",
+        "tbFailedDueToInterference",
+        "sciFailedDueToProp",
+        "sciFailedDueToInterference",
+        "cbr",
+        "subchannelReceived",
+        "subchannelsUsed",
+        "senderID",
+        "subchannelsUsedToSend",
+        "subchannelSent",
+        "grantStartTime",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "posX",
+        "posY",
+        "interPacketDelay"
+      ],
+      "errors": [
+        "sciUnsensed",
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex",
+        "tbFailedDueToProp",
+        "sciFailedDueToProp",
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "unsensed_errors": [
+        "sciUnsensed"
+      ],
+      "hd_errors": [
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex"
+      ],
+      "prop_errors": [
+        "tbFailedDueToProp",
+        "sciFailedDueToProp"
+      ],
+      "interference_errors": [
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "filtered_scalars": [
+        "txRxDistance",
+        "tbAndSCINotReceived",
+        "tbFailedButSCIReceived",
+        "tbsFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbsDecoded",
+        "tbsReceived",
+        "tbsSent",
+        "scisSent",
+        "scisNotDecoded",
+        "scisDecoded",
+        "scisReceived",
+        "cbr"
+      ]
+    }
+  }
+}
