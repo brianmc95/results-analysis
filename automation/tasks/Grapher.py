@@ -54,6 +54,8 @@ class Grapher:
                     self.distance_graph(folders_for_comparison, graph, graph_title, configurations, now)
                 elif graph == "CBR":
                     self.cbr_graph(folders_for_comparison, graph, graph_title, configurations, now)
+                elif graph == "Errors":
+                    self.errors_dist(folders_for_comparison, graph, graph_title, configurations, now)
 
     def prepare_results(self, result_folders, now):
 
@@ -97,12 +99,10 @@ class Grapher:
 
             # Shortcut ensures we get the stats from the parsed results
             for stat in folder_results[0]:
-                if "SCI" in stat:
-                    self.across_run_results(folder_results, stat, output_csv_dir, "txRxDistanceSCI")
-                elif stat == "CBR":
+                if stat == "CBR":
                     self.across_run_results(folder_results, stat, output_csv_dir, "Time")
                 else:
-                    self.across_run_results(folder_results, stat, output_csv_dir, "txRxDistanceTB")
+                    self.across_run_results(folder_results, stat, output_csv_dir, "Distance")
 
             processed_results.append(output_csv_dir)
 
@@ -119,6 +119,15 @@ class Grapher:
         pdr_tb_agg = pd.DataFrame()
         ipg_agg = pd.DataFrame()
         cbr_agg = pd.DataFrame()
+        unsensed_errors = pd.DataFrame()
+        hd_errors = pd.DataFrame()
+        prop_errors = pd.DataFrame()
+        interference_errors = pd.DataFrame()
+
+        error_dfs = {}
+        # Need a new for loop through all the errors and adding them as a stat distance
+        for error in self.results["errors"]:
+            error_dfs[error] = pd.DataFrame()
 
         for chunk in pd.read_csv(output_csv, chunksize=10 ** 6):
 
@@ -144,10 +153,28 @@ class Grapher:
                 # combine_chunks
                 cbr_agg = cbr_agg.append(cbr_df)
 
+            chunk = chunk[chunk["tbReceived"] != -1]
+            for error in error_dfs:
+                if "sci" in error[0:3]:
+                    error_dfs[error] = self.stat_distance(error_dfs[error], chunk, error, "txRxDistanceSCI", True)
+                else:
+                    error_dfs[error] = self.stat_distance(error_dfs[error], chunk, error, "txRxDistanceTB", True)
+
         results["PDR-SCI"] = pdr_sci_agg
         results["PDR-TB"] = pdr_tb_agg
         results["IPG"] = ipg_agg
         results["CBR"] = cbr_agg
+
+        for key, df in zip(["unsensed_errors", "hd_errors", "prop_errors", "interference_errors"],
+                           [unsensed_errors, hd_errors, prop_errors, interference_errors]):
+            for error in self.results[key]:
+                if df.empty:
+                    df = error_dfs[error]
+                else:
+                    # Combine mean errors
+                    df["mean"] = df["mean"] + error_dfs[error]["mean"]
+
+            results[key] = df
 
         return results
 
@@ -155,16 +182,18 @@ class Grapher:
 
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
+        distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
         distance_df = distance_df[["Time", "NodeID", stat, distance]]
         distance_df = distance_df[distance_df[stat] > -1]
+        distance_df = distance_df.rename(columns={"Time": "Time", "NodeID": "NodeID", stat: stat, distance: "Distance"})
 
         # Only interested in max 500m simply as it's not all that relevant to go further.
         # Note that going to the max distance of the file can cause issues with how they are parsed.
-        max_distance = min(510, distance_df[distance].max())
+        max_distance = min(530, distance_df["Distance"].max())
 
         # Get the mean, std, count for each distance
         distance_df = distance_df.groupby(
-            pd.cut(distance_df[distance], np.arange(0, max_distance, 10))).agg(
+            pd.cut(distance_df["Distance"], np.arange(0, max_distance, 10))).agg(
             {stat: [np.mean, "count"]})
 
         # Remove over head column
@@ -177,7 +206,7 @@ class Grapher:
             agg_df = distance_df
         else:
             # combine_chunks
-            agg_df = pd.merge(agg_df, distance_df, on=distance, how='outer')
+            agg_df = pd.merge(agg_df, distance_df, on="Distance", how='outer')
             agg_df = agg_df.apply(self.combine_line, axis=1, result_type='expand')
             agg_df = agg_df.rename({0: "mean", 1: "count"}, axis='columns')
 
@@ -263,7 +292,7 @@ class Grapher:
             means.append(list(df["Mean"]))
             if self.confidence_intervals:
                 cis.append(list(df["Confidence-Interval"]))
-            distances = (list(range(0, df.shape[0] * 10, 10)))
+            distances = (list(range(0, 520, 10)))
 
         if graph in ["PDR-SCI", "PDR-TB"]:
             self.dist_graph(means, distances, configurations,
@@ -340,34 +369,22 @@ class Grapher:
             fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
         plt.close(fig)
 
-    def errors_dist(self, distances, decoded, decoded_labels, errors, error_labels, plot_name, now):
-        # TODO: Update to allow such graphing to be automatically configured.
+    def errors_dist(self, folders, graph, comparison, configurations, now):
 
-        fig, ax = plt.subplots()
+        means = []
+        cis = []
+        distances = []
+        labels = []
 
-        if self.use_markers:
-            for i in range(len(decoded)):
-                if self.use_markers:
-                    ax.plot(distances, decoded[i], label=decoded_labels[i], marker=self.markers[i], markevery=3)
+        for folder, config in zip(folders, configurations):
+            for error in ["hd_errors", "interference_errors", "unsensed_errors", "prop_errors"]:
+                df = pd.read_csv("{}/{}.csv".format(folder, error))
+                means.append(list(df["Mean"]))
+                if self.confidence_intervals:
+                    cis.append(list(df["Confidence-Interval"]))
+                distances = (list(range(0, 520, 10)))
+                labels.append("{}-{}".format(config, error))
 
-                    for j in range(len(errors[i])):
-                        ax.plot(distances, errors[i][j], label=error_labels[i][j], marker=self.markers[i + j])
-                else:
-                    ax.plot(distances, decoded[i], label=decoded_labels[i])
-
-                    for j in range(len(errors[i])):
-                        ax.plot(distances, errors[i][j], label=error_labels[i][j])
-
-        ax.legend(loc='center left')
-
-        ax.set(xlabel='Distance (m)', ylabel='Packet Delivery Rate (PDR) %')
-        ax.grid()
-
-        ax.set_ylim([0, 1])
-        plt.yticks(np.arange(0, 1.1, step=.1))
-
-        ax.set_xlim([0, (max(distances) + 1)])
-        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
-
-        fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
-        plt.close(fig)
+        self.dist_graph(means, distances, labels,
+                        "{}-{}".format(comparison, graph), ylabel="Error Probability %", now=now,
+                        confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left")
