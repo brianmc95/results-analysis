@@ -40,22 +40,20 @@ class Grapher:
         for graph_title in self.results["graph-configurations"]:
             self.logger.info("Graphing configuration: {}".format(graph_title))
             folders_for_comparison = []
-            configurations = []
-            for configuration in self.results["graph-configurations"][graph_title]:
+            graph_info = self.results["graph-configurations"][graph_title]
+            for config_name in graph_info["config_name"]:
                 for folder in self.config["processed-result-dir"]:
-                    config_name = folder.split("/")[-1][:-20]
+                    configuration = folder.split("/")[-1][:-20]
                     if configuration == config_name:
                         folders_for_comparison.append(folder)
-                        configurations.append(configuration)
 
-            for graph in self.results["graphs"]:
-                if graph in ["PDR-SCI", "PDR-TB", "IPG"]:
-                    self.logger.info("Config: {} Graph: {}".format(graph_title, graph))
-                    self.distance_graph(folders_for_comparison, graph, graph_title, configurations, now)
-                elif graph == "CBR":
-                    self.cbr_graph(folders_for_comparison, graph, graph_title, configurations, now)
-                elif graph == "Errors":
-                    self.errors_dist(folders_for_comparison, graph, graph_title, configurations, now)
+            for graph_type in self.results["graphs"]:
+                if graph_type in ["PDR-SCI", "PDR-TB", "IPG"]:
+                    self.distance_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "CBR":
+                    self.cbr_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "Errors":
+                    self.errors_dist(folders_for_comparison, graph_type, graph_title, graph_info, now)
 
     def prepare_results(self, result_folders, now):
 
@@ -117,6 +115,7 @@ class Grapher:
 
         pdr_sci_agg = pd.DataFrame()
         pdr_tb_agg = pd.DataFrame()
+        pdr_tb_ignore_sci_agg = pd.DataFrame()
         ipg_agg = pd.DataFrame()
         cbr_agg = pd.DataFrame()
         unsensed_errors = pd.DataFrame()
@@ -136,6 +135,8 @@ class Grapher:
 
             # TB PDR calculation
             pdr_tb_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecoded", "txRxDistanceTB", True)
+
+            pdr_tb_ignore_sci_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecodedIgnoreSCI", "txRxDistanceTB", True)
 
             # IPG calculation
             ipg_agg = self.stat_distance(ipg_agg, chunk, "interPacketDelay", "txRxDistanceTB", False)
@@ -162,6 +163,7 @@ class Grapher:
 
         results["PDR-SCI"] = pdr_sci_agg
         results["PDR-TB"] = pdr_tb_agg
+        results["PDR-IGNORE-SCI"] = pdr_tb_ignore_sci_agg
         results["IPG"] = ipg_agg
         results["CBR"] = cbr_agg
 
@@ -283,61 +285,73 @@ class Grapher:
 
     ### Graphing utilities
 
-    def distance_graph(self, folders, graph, comparison, configurations, now):
+    def distance_graph(self, folders, graph_type, graph_title, graph_info, now):
         means = []
         cis = []
         distances = []
-        for folder, config in zip(folders, configurations):
-            df = pd.read_csv("{}/{}.csv".format(folder, graph))
+        for folder in folders:
+            df = pd.read_csv("{}/{}.csv".format(folder, graph_type))
             means.append(list(df["Mean"]))
             if self.confidence_intervals:
                 cis.append(list(df["Confidence-Interval"]))
-            distances = (list(range(0, 520, 10)))
+            distances = (list(range(0, df.shape[0] * 10, 10)))
 
-        if graph in ["PDR-SCI", "PDR-TB"]:
-            self.dist_graph(means, distances, configurations,
-                            "{}-{}".format(comparison, graph), ylabel="Packet Delivery Rate %", now=now,
-                            confidence_intervals=cis, show=False, store=True, percentage=True)
-        elif graph == "IPG":
-            self.dist_graph(means, distances, configurations,
-                            "{}-{}".format(comparison, graph), ylabel="Inter-Packet Gap (ms)", now=now,
-                            legend_pos="upper left", confidence_intervals=cis, show=False, store=True)
+        graph_info["means"] = means
+        graph_info["cis"] = cis
 
-    def cbr_graph(self, folders, graph, comparison, configurations, now):
+        if graph_type in ["PDR-SCI", "PDR-TB"]:
+            self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
+                            ylabel="Packet Delivery Rate %", now=now, confidence_intervals=cis, show=False, store=True)
+        elif graph_type == "IPG":
+            self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
+                            ylabel="Inter-Packet Gap (ms)", now=now, legend_pos="upper left",
+                            confidence_intervals=cis, show=False, store=True)
+
+    def cbr_graph(self, folders, graph_type, graph_title, graph_info, now):
         # Might change this to time based graph but CBR is fine for now
         times = []
         cbr = []
         cis = []
-        for folder, config in zip(folders, configurations):
+        for folder in folders:
             df = pd.read_csv("{}/CBR.csv".format(folder))
             times.append(list(df["Time"]))
             cbr.append(list(df["Mean"]))
             if self.confidence_intervals:
                 cis.append(list(df["Confidence-Interval"]))
 
-        self.cbr_plot(cbr, times, "{}-{}".format(comparison, graph), configurations, now=now,
+        graph_info["means"] = cbr
+        graph_info["times"] = times
+        graph_info["cis"] = cis
+
+        self.cbr_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
                       confidence_intervals=cis, show=False, store=True)
 
-    def dist_graph(self, means, distances, labels, plot_name, ylabel, now, legend_pos="lower left",
+    def dist_graph(self, distances, graph_info, plot_name, ylabel, now, legend_pos="lower left",
                    confidence_intervals=None, show=True, store=False, percentage=False):
         fig, ax = plt.subplots()
 
-        for i in range(len(means)):
+        for i in range(len(graph_info["labels"])):
             if confidence_intervals:
-                ax.errorbar(distances, means[i], yerr=confidence_intervals[i], label=labels[i])
+                ax.errorbar(distances, graph_info["means"][i], yerr=confidence_intervals[i], label=graph_info["labels"][i],
+                            fillstyle="none", marker=graph_info["markers"][i], markevery=5,
+                            color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
             else:
-                ax.plot(distances, means[i], label=labels[i])
+                ax.plot(distances, graph_info["means"][i], label=graph_info["labels"][i],
+                        fillstyle="none", marker=graph_info["markers"][i], markevery=5,
+                        color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
 
         ax.set(xlabel='Distance (m)', ylabel=ylabel)
         ax.legend(loc=legend_pos)
         ax.tick_params(direction='in')
 
-        ax.set_xlim([0, (max(distances) + 1)])
+        ax.set_xlim([0, 500])
         plt.xticks(np.arange(0, (max(distances) + 1), step=50))
 
         if percentage:
             ax.set_ylim([0, 100])
             plt.yticks(np.arange(0, 101, step=10))
+
+        plt.grid(b=True, alpha=0.5)
 
         if show:
             fig.show()
@@ -346,14 +360,18 @@ class Grapher:
             fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
         plt.close(fig)
 
-    def cbr_plot(self, cbr, times, plot_name, labels, now, confidence_intervals=None, show=True, store=False):
+    def cbr_plot(self, graph_info, plot_name, now, confidence_intervals=None, show=True, store=False):
+
         fig, ax = plt.subplots()
 
-        for i in range(len(cbr)):
+        for i in range(len(graph_info["config_name"])):
             if confidence_intervals:
-                ax.errorbar(times[i], cbr[i], yerr=confidence_intervals[i], label=labels[i])
+                ax.errorbar(graph_info["times"][i], graph_info["means"][i], yerr=confidence_intervals[i],
+                            label=graph_info["labels"][i],
+                            fillstyle="none", color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
             else:
-                ax.plot(times[i], cbr[i], label=labels[i])
+                ax.plot(graph_info["times"][i], graph_info["means"][i], label=graph_info["labels"][i],
+                        fillstyle="none", color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
 
         ax.legend(loc='upper left')
         ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
@@ -361,6 +379,7 @@ class Grapher:
 
         ax.set_ylim([0, 100])
         plt.yticks(np.arange(0, 101, step=10))
+        plt.grid(b=True, alpha=0.5)
 
         if show:
             fig.show()
@@ -369,22 +388,36 @@ class Grapher:
             fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
         plt.close(fig)
 
-    def errors_dist(self, folders, graph, comparison, configurations, now):
-
+    def errors_dist(self, folders, graph_type, graph_title, graph_info, now):
         means = []
         cis = []
         distances = []
         labels = []
+        markers = []
+        colors = []
+        linestyles = []
 
-        for folder, config in zip(folders, configurations):
-            for error in ["hd_errors", "interference_errors", "unsensed_errors", "prop_errors"]:
-                df = pd.read_csv("{}/{}.csv".format(folder, error))
+        errors = ["hd_errors", "interference_errors", "unsensed_errors", "prop_errors"]
+
+        for i in range(len(folders)):
+            for j in range(len(errors)):
+                df = pd.read_csv("{}/{}.csv".format(folders[i], errors[j]))
                 means.append(list(df["Mean"]))
                 if self.confidence_intervals:
                     cis.append(list(df["Confidence-Interval"]))
                 distances = (list(range(0, 520, 10)))
-                labels.append("{}-{}".format(config, error))
+                labels.append("{}-{}".format(graph_info["labels"][i], errors[j]))
+                linestyles.append(graph_info["linestyles"][i])
+                markers.append(graph_info["error-markers"][j])
+                colors.append(graph_info["error-colors"][j])
 
-        self.dist_graph(means, distances, labels,
-                        "{}-{}".format(comparison, graph), ylabel="Error Probability %", now=now,
+        graph_info["means"] = means
+        graph_info["cis"] = cis
+        graph_info["labels"] = labels
+        graph_info["markers"] = markers
+        graph_info["colors"] = colors
+        graph_info["linestyles"] = linestyles
+
+        self.dist_graph(distances, graph_info,
+                        "{}-{}".format(graph_title, graph_type), ylabel="Error Probability %", now=now,
                         confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left")
