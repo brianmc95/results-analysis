@@ -48,12 +48,14 @@ class Grapher:
                         folders_for_comparison.append(folder)
 
             for graph_type in self.results["graphs"]:
-                if graph_type in ["PDR-SCI", "PDR-TB", "IPG"]:
+                if graph_type in ["PDR-SCI", "PDR-TB", "IPG", "Arrivals"]:
                     self.distance_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "CBR":
                     self.cbr_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "Errors":
                     self.errors_dist(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "GrantBreaks":
+                    self.grant_break_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
 
     def prepare_results(self, result_folders, now):
 
@@ -98,7 +100,13 @@ class Grapher:
             # Shortcut ensures we get the stats from the parsed results
             for stat in folder_results[0]:
                 if stat == "CBR":
-                    self.across_run_results(folder_results, stat, output_csv_dir, "Time")
+                    self.across_run_results_cbr(folder_results, output_csv_dir)
+                elif stat == "GrantBreaks":
+                    grant_breaks = []
+                    for i in range(len(folder_results)):
+                        grant_breaks.append(folder_results[i]["GrantBreaks"])
+                        df = pd.DataFrame({"GrantBreaks": grant_breaks})
+                        df.to_csv("{}/{}.csv".format(output_csv_dir, stat), index=False)
                 else:
                     self.across_run_results(folder_results, stat, output_csv_dir, "Distance")
 
@@ -115,13 +123,16 @@ class Grapher:
 
         pdr_sci_agg = pd.DataFrame()
         pdr_tb_agg = pd.DataFrame()
-        pdr_tb_ignore_sci_agg = pd.DataFrame()
+        # pdr_tb_ignore_sci_agg = pd.DataFrame()
         ipg_agg = pd.DataFrame()
         cbr_agg = pd.DataFrame()
+        arrivals_agg = pd.DataFrame()
         unsensed_errors = pd.DataFrame()
         hd_errors = pd.DataFrame()
         prop_errors = pd.DataFrame()
         interference_errors = pd.DataFrame()
+
+        total_grant_breaks = 0
 
         error_dfs = {}
         # Need a new for loop through all the errors and adding them as a stat distance
@@ -136,23 +147,27 @@ class Grapher:
             # TB PDR calculation
             pdr_tb_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecoded", "txRxDistanceTB", True)
 
-            pdr_tb_ignore_sci_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecodedIgnoreSCI", "txRxDistanceTB", True)
+            # pdr_tb_ignore_sci_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecodedIgnoreSCI", "txRxDistanceTB", True)
+
+            arrivals_agg = self.total_distance(arrivals_agg, chunk, "tbDecoded", "txRxDistanceTB")
 
             # IPG calculation
             ipg_agg = self.stat_distance(ipg_agg, chunk, "interPacketDelay", "txRxDistanceTB", False)
 
             # CBR calculation doesn't aggregate the same way as the above so dealt with separately
+            # CBR calculation doesn't aggregate the same way as the above so dealt with separately
             cbr_df = chunk[chunk["cbr"].notnull()]
             cbr_df = cbr_df[["Time", "cbr"]]
-            cbr_df = cbr_df.groupby("Time").agg({"cbr": [np.mean, np.std, "count"]})
-            cbr_df.columns = cbr_df.columns.droplevel()
-            cbr_df = cbr_df.apply(lambda x: x * 100, axis=1)
+            cbr_df = cbr_df[cbr_df["cbr"].notnull()]
 
             if cbr_agg.empty:
                 cbr_agg = cbr_df
             else:
-                # combine_chunks
                 cbr_agg = cbr_agg.append(cbr_df)
+
+            # Deal with the grant breaking
+            for col in self.results["grantBreaking"]:
+                total_grant_breaks += chunk[col].sum()
 
             chunk = chunk[chunk["tbReceived"] != -1]
             for error in error_dfs:
@@ -163,9 +178,11 @@ class Grapher:
 
         results["PDR-SCI"] = pdr_sci_agg
         results["PDR-TB"] = pdr_tb_agg
-        results["PDR-IGNORE-SCI"] = pdr_tb_ignore_sci_agg
+        # results["PDR-IGNORE-SCI"] = pdr_tb_ignore_sci_agg
         results["IPG"] = ipg_agg
         results["CBR"] = cbr_agg
+        results["Arrivals"] = arrivals_agg
+        results["GrantBreaks"] = total_grant_breaks
 
         for key, df in zip(["unsensed_errors", "hd_errors", "prop_errors", "interference_errors"],
                            [unsensed_errors, hd_errors, prop_errors, interference_errors]):
@@ -185,6 +202,7 @@ class Grapher:
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
         distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
+        distance_df = distance_df[(distance_df["Time"] > 502)]
         distance_df = distance_df[["Time", "NodeID", stat, distance]]
         distance_df = distance_df[distance_df[stat] > -1]
         distance_df = distance_df.rename(columns={"Time": "Time", "NodeID": "NodeID", stat: stat, distance: "Distance"})
@@ -213,6 +231,54 @@ class Grapher:
             agg_df = agg_df.rename({0: "mean", 1: "count"}, axis='columns')
 
         return agg_df
+
+    def total_distance(self, agg_df, df, stat, distance):
+
+        # Reduce the size of the DF to what we're interested in.
+        distance_df = df[df[stat].notnull()]
+        distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
+        distance_df = distance_df[["Time", "NodeID", stat, distance]]
+        distance_df = distance_df[distance_df[stat] > -1]
+        distance_df = distance_df.rename(columns={"Time": "Time", "NodeID": "NodeID", stat: stat, distance: "Distance"})
+
+        # Only interested in max 500m simply as it's not all that relevant to go further.
+        # Note that going to the max distance of the file can cause issues with how they are parsed.
+        max_distance = min(530, distance_df["Distance"].max())
+
+        # Get the mean, std, count for each distance
+        distance_df = distance_df.groupby(
+            pd.cut(distance_df["Distance"], np.arange(0, max_distance, 10))).agg(
+            {stat: ["sum"]})
+
+        # Remove over head column
+        distance_df.columns = distance_df.columns.droplevel()
+
+        if agg_df.empty:
+            agg_df = distance_df
+        else:
+            # combine_chunks
+            agg_df = pd.merge(agg_df, distance_df, on="Distance", how='outer')
+            agg_df = agg_df.apply(self.sum_line, axis=1, result_type='expand')
+            agg_df = agg_df.rename({0: "sum"}, axis='columns')
+
+        return agg_df
+
+    @staticmethod
+    def sum_line(line):
+        sum_a = line["sum_x"]
+
+        sum_b = line["sum_y"]
+
+        if np.isnan(sum_a) and np.isnan(sum_b):
+            return [sum_a]
+        elif np.isnan(sum_a) and not np.isnan(sum_b):
+            return [sum_b]
+        elif np.isnan(sum_b) and not np.isnan(sum_a):
+            return [sum_a]
+        else:
+            overall_sum = sum_a + sum_b
+
+            return [overall_sum]
 
     @staticmethod
     def combine_line(line):
@@ -252,7 +318,10 @@ class Grapher:
                               suffixes=(i, i + 1),
                               copy=True, indicator=False)
 
-        mean_cols = df.filter(regex='mean').columns
+        if stat == "Arrivals":
+            mean_cols = df.filter(regex='sum').columns
+        else:
+            mean_cols = df.filter(regex='mean').columns
 
         n = len(mean_cols) - 1
         t_value = t.ppf(self.p, n)
@@ -260,6 +329,49 @@ class Grapher:
         df = df.apply(self.combine_runs, axis=1, result_type='expand', args=(mean_cols, t_value,))
         df = df.rename({0: "Mean", 1: "Confidence-Interval"}, axis='columns')
         df.to_csv("{}/{}.csv".format(output_csv_dir, stat))
+
+    def across_run_results_cbr(self, results, output_csv_dir):
+        earliest_time = float("inf")
+        latest_time = -float("inf")
+
+        raw_cbr_df = pd.DataFrame()
+        for folder in results:
+
+            start_time = folder["CBR"]["Time"].min()
+            if start_time < earliest_time:
+                earliest_time = start_time
+
+            end_time = folder["CBR"]["Time"].max()
+            if end_time > latest_time:
+                latest_time = end_time
+
+            if raw_cbr_df.empty:
+                raw_cbr_df = folder["CBR"]
+            else:
+                raw_cbr_df.append(folder["CBR"])
+
+        self.logger.debug("Earliest time: {}s Latest time: {}s".format(earliest_time, latest_time))
+
+        cbr_df = pd.DataFrame(columns=["Mean", "Time", "Confidence-Interval"])
+        last_time = earliest_time
+        for i in np.arange(earliest_time, latest_time, 0.1):
+            subsection_df = pd.DataFrame()
+            for folder in results:
+                df = folder["CBR"]
+                if subsection_df.empty:
+                    subsection_df = df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbr"].notnull())]
+                else:
+                    subsection_df.append(df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbr"].notnull())])
+
+            last_time = i
+
+            cbr_df = cbr_df.append({"Mean": subsection_df["cbr"].mean(),
+                                    "Time": (i + last_time) / 2,
+                                    "Confidence-Interval": subsection_df["cbr"].std()
+                                    }, ignore_index=True)
+
+        cbr_df.to_csv("{}/CBR.csv".format(output_csv_dir), index=False)
+        raw_cbr_df.to_csv("{}/raw-CBR.csv".format(output_csv_dir), index=False)
 
     @staticmethod
     def combine_runs(line, mean_cols, t_value):
@@ -301,30 +413,64 @@ class Grapher:
 
         if graph_type in ["PDR-SCI", "PDR-TB"]:
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
-                            ylabel="Packet Delivery Rate %", now=now, confidence_intervals=cis, show=False, store=True)
+                            ylabel="Packet Delivery Rate %", now=now, confidence_intervals=self.confidence_intervals,
+                            show=False, store=True, percentage=True)
         elif graph_type == "IPG":
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
                             ylabel="Inter-Packet Gap (ms)", now=now, legend_pos="upper left",
-                            confidence_intervals=cis, show=False, store=True)
+                            confidence_intervals=self.confidence_intervals, show=False, store=True)
+        elif graph_type == "Arrivals":
+            self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
+                            ylabel="Total Decoded Packets", now=now, legend_pos="upper left",
+                            confidence_intervals=self.confidence_intervals, show=False, store=True)
 
     def cbr_graph(self, folders, graph_type, graph_title, graph_info, now):
         # Might change this to time based graph but CBR is fine for now
         times = []
-        cbr = []
+        cbrs = []
         cis = []
+        box_plot_data = []
         for folder in folders:
             df = pd.read_csv("{}/CBR.csv".format(folder))
-            times.append(list(df["Time"]))
-            cbr.append(list(df["Mean"]))
-            if self.confidence_intervals:
-                cis.append(list(df["Confidence-Interval"]))
+            cbr = list(df["Mean"])
+            ci = list(df["Confidence-Interval"])
 
-        graph_info["means"] = cbr
+            # Transform 0-1 to 0-100
+            for i in range(len(cbr)):
+                cbr[i] = cbr[i] * 100
+                ci[i] = ci[i] * 100
+
+            times.append(list(df["Time"]))
+            cbrs.append(cbr)
+            cis.append(ci)
+
+            cbr_csv = "{}/raw-CBR.csv".format(folder)
+            df = pd.read_csv(cbr_csv)
+            filtered_df = df[df["Time"] > 502]
+            box_plot_data.append(100 * filtered_df["cbr"])
+
+        graph_info["means"] = cbrs
         graph_info["times"] = times
         graph_info["cis"] = cis
+        graph_info["boxplotData"] = box_plot_data
 
         self.cbr_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
-                      confidence_intervals=cis, show=False, store=True)
+                      confidence_intervals=self.confidence_intervals, show=False, store=True)
+
+        self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Channel Busy Ratio %",
+                      percentage=True, show=False, store=True)
+
+    def grant_break_graph(self, folders, graph_type, graph_title, graph_info, now):
+        # Might change this to time based graph but CBR is fine for now
+        box_plot_data = []
+        for folder in folders:
+            df = pd.read_csv("{}/GrantBreaks.csv".format(folder))
+            box_plot_data.append(df["GrantBreaks"])
+
+        graph_info["boxplotData"] = box_plot_data
+
+        self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Total Grant Breaks",
+                      show=False, store=True)
 
     def dist_graph(self, distances, graph_info, plot_name, ylabel, now, legend_pos="lower left",
                    confidence_intervals=None, show=True, store=False, percentage=False):
@@ -332,7 +478,8 @@ class Grapher:
 
         for i in range(len(graph_info["labels"])):
             if confidence_intervals:
-                ax.errorbar(distances, graph_info["means"][i], yerr=confidence_intervals[i], label=graph_info["labels"][i],
+                ax.errorbar(distances, graph_info["means"][i], yerr=graph_info["cis"][i],
+                            label=graph_info["labels"][i],
                             fillstyle="none", marker=graph_info["markers"][i], markevery=5,
                             color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
             else:
@@ -341,7 +488,17 @@ class Grapher:
                         color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
 
         ax.set(xlabel='Distance (m)', ylabel=ylabel)
-        ax.legend(loc=legend_pos)
+
+        handles, labels = plt.gca().get_legend_handles_labels()
+        newLabels, newHandles = [], []
+        for handle, label in zip(handles, labels):
+            if label not in newLabels:
+                newLabels.append(label)
+                newHandles.append(handle)
+
+        ax.legend(newHandles, newLabels, loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=True,
+                  ncol=2)
+
         ax.tick_params(direction='in')
 
         ax.set_xlim([0, 500])
@@ -357,7 +514,7 @@ class Grapher:
             fig.show()
 
         if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=400)
         plt.close(fig)
 
     def cbr_plot(self, graph_info, plot_name, now, confidence_intervals=None, show=True, store=False):
@@ -366,14 +523,15 @@ class Grapher:
 
         for i in range(len(graph_info["config_name"])):
             if confidence_intervals:
-                ax.errorbar(graph_info["times"][i], graph_info["means"][i], yerr=confidence_intervals[i],
+                ax.errorbar(graph_info["times"][i], graph_info["means"][i], yerr=graph_info["cis"][i],
                             label=graph_info["labels"][i],
                             fillstyle="none", color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
             else:
                 ax.plot(graph_info["times"][i], graph_info["means"][i], label=graph_info["labels"][i],
-                        fillstyle="none", color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
+                        marker=graph_info["markers"][i], markevery=5, fillstyle="none",
+                        color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
 
-        ax.legend(loc='upper left')
+        ax.legend(loc='lower left')
         ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
         ax.tick_params(direction='in')
 
@@ -385,7 +543,28 @@ class Grapher:
             fig.show()
 
         if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=300)
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=400)
+        plt.close(fig)
+
+    def box_plot(self, graph_info, plot_name, now, ylabel=None, percentage=False, show=False, store=True):
+
+        fig, ax = plt.subplots()
+        ax.boxplot(graph_info["boxplotData"], labels=graph_info["labels"])
+
+        ax.set(xlabel='Scenario', ylabel=ylabel)
+        ax.tick_params(direction='in')
+
+        if percentage:
+            ax.set_ylim([0, 100])
+            plt.yticks(np.arange(0, 101, step=10))
+
+        plt.grid(b=True, alpha=0.5)
+
+        if show:
+            fig.show()
+
+        if store:
+            fig.savefig("{}/{}-Box-{}.png".format(self.figure_store, plot_name, now), dpi=400)
         plt.close(fig)
 
     def errors_dist(self, folders, graph_type, graph_title, graph_info, now):
@@ -397,19 +576,26 @@ class Grapher:
         colors = []
         linestyles = []
 
-        errors = ["hd_errors", "interference_errors", "unsensed_errors", "prop_errors"]
+        errors = ["hd_errors", "unsensed_errors", "prop_errors", "interference_errors"]
 
-        for i in range(len(folders)):
-            for j in range(len(errors)):
-                df = pd.read_csv("{}/{}.csv".format(folders[i], errors[j]))
+        for i in range(len(errors)):
+            for j in range(len(folders)):
+                df = pd.read_csv("{}/{}.csv".format(folders[j], errors[i]))
                 means.append(list(df["Mean"]))
                 if self.confidence_intervals:
                     cis.append(list(df["Confidence-Interval"]))
                 distances = (list(range(0, 520, 10)))
-                labels.append("{}-{}".format(graph_info["labels"][i], errors[j]))
-                linestyles.append(graph_info["linestyles"][i])
-                markers.append(graph_info["error-markers"][j])
-                colors.append(graph_info["error-colors"][j])
+                if errors[i] == "hd_errors":
+                    labels.append("\u03B4HD")
+                elif errors[i] == "interference_errors":
+                    labels.append("\u03B4COL")
+                elif errors[i] == "unsensed_errors":
+                    labels.append("\u03B4SEN")
+                elif errors[i] == "prop_errors":
+                    labels.append("\u03B4PRO")
+                linestyles.append(graph_info["linestyles"][j])
+                markers.append(graph_info["error-markers"][i])
+                colors.append(graph_info["error-colors"][i])
 
         graph_info["means"] = means
         graph_info["cis"] = cis
@@ -419,5 +605,5 @@ class Grapher:
         graph_info["linestyles"] = linestyles
 
         self.dist_graph(distances, graph_info,
-                        "{}-{}".format(graph_title, graph_type), ylabel="Error Probability %", now=now,
+                        "{}-{}".format(graph_title, graph_type), ylabel="Packet Loss Attribution", now=now,
                         confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left")
