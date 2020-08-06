@@ -6,19 +6,19 @@
     "target": "run_simulte-validation",
     "config_names" : {
       "MCS7-slow-20dbm": {
-        "repeat": 0,
-        "naming": ["Simulated-MCS7-slow-20dbm"]
+        "repeat": 5,
+        "naming": ["Simulated-MCS9-slow"]
       },
       "MCS7-slow-23dbm": {
         "repeat": 0,
         "naming": ["Simulated-MCS7-slow-23dbm"]
       },
       "MCS7-fast-20dbm": {
-        "repeat": 5,
-        "naming": ["Simulated-MCS7-fast-20dbm-shadowing"]
+        "repeat": 0,
+        "naming": ["Simulated-MCS7-20dbm-fast"]
       },
       "MCS7-fast-20dbm-2": {
-        "repeat": 5,
+        "repeat": 0,
         "naming": ["Simulated-MCS7-fast-20dbm-bler"]
       },
       "MCS7-fast-23dbm": {
@@ -29,14 +29,341 @@
     "slack-api-token": "",
     "parallel_processes" : 5,
     "omnet-result-dirs": [],
-    "parsed-result-dir": [],
-    "processed-result-dir": [],
+    "parsed-result-dir": [
+      "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/mcs7/sciChange-006vpm-20dbm-2020-08-05-16_16_46",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/mcs7/sciChange-009vpm-20dbm-2020-08-05-16_15_54",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/mcs7/sciChange-012vpm-20dbm-2020-08-05-16_18_51"
+    ],
+    "processed-result-dir2": [],
+    "processed-result-dir": [
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-006vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-009vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-012vpm-10dbm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-012vpm-20dbm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-012vpm-23dbm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-016vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-02vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-03vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-02vpm-2020-08-05-12_20_36",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-03vpm-2020-08-05-12_20_36",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-006vpm-2020-08-05-12_20_36",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-009vpm-2020-08-05-12_20_36",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-012vpm-10dbm-2020-08-05-12_20_36",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-012vpm-20dbm-2020-08-05-12_20_36",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-012vpm-23dbm-2020-08-05-12_20_36",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-016vpm-2020-08-05-12_35_49",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/new-results-025vpm-2020-08-05-12_35_49",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-03vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-006vpm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-006vpm-v2-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-009vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-012vpm-10dbm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-012vpm-20dbm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-012vpm-23dbm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-012vpm-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-016vpm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-016vpm-v2-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-016vpm-v3-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-025vpm-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/old-results-025vpm-v2-2020-01-01-00_00_00",
+
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/sciChange-006vpm-20dbm-2020-08-06-09_39_06",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/sciChange-009vpm-20dbm-2020-08-06-09_39_06",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/sciChange-012vpm-20dbm-2020-08-06-09_39_06"
+    ],
     "results": {
       "graphs": ["PDR-TB", "Errors"],
       "confidence-interval": 0.95,
       "graph-confidence-interval": false,
       "graph-configurations": {
-        "7MCS-20dbm-0.063vpm": ["shadowing","bler","Analytical","Simulated"]
+        "006vpm": {
+          "config_name": ["analytical-7mcs-006vpm", "sciChange-006vpm-20dbm", "new-results-006vpm", "old-results-006vpm", "old-results-006vpm-v2"],
+          "labels": ["Analytical", "sciResult", "New Result", "Old Result v1", "Old Result v2"],
+          "markers": ["v", "x", "D", "|", "+"],
+          "colors": ["red", "blue", "orange", "green", "purple"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted", "dotted"]
+        },
+        "009vpm": {
+          "config_name": ["analytical-7mcs-009vpm", "sciChange-009vpm-20dbm", "new-results-009vpm", "old-results-009vpm"],
+          "labels": ["Analytical", "sciResult", "New Result", "Old Result"],
+          "markers": ["v", "x", "D", "|"],
+          "colors": ["red", "blue", "orange", "black"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted"]
+        },
+        "012vpm-10dbm": {
+          "config_name": ["analytical-7mcs-012vpm-10dbm", "new-results-012vpm-10dbm", "old-results-012vpm-10dbm"],
+          "labels": ["Analytical", "New Result", "Old Result"],
+          "markers": ["v", "x", "D"],
+          "colors": ["red", "blue", "orange"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted"]
+        },
+        "012vpm-20dbm": {
+          "config_name": ["analytical-7mcs-012vpm-20dbm", "sciChange-012vpm-20dbm", "new-results-012vpm-20dbm", "old-results-012vpm-20dbm"],
+          "labels": ["Analytical", "sciResult", "New Result", "Old Result"],
+          "markers": ["v", "x", "D", "|"],
+          "colors": ["red", "blue", "orange", "black"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted"]
+        },
+        "012vpm-23dbm": {
+          "config_name": ["analytical-7mcs-012vpm-23dbm", "new-results-012vpm-23dbm", "old-results-012vpm-23dbm"],
+          "labels": ["Analytical", "New Result", "Old Result"],
+          "markers": ["v", "x", "D"],
+          "colors": ["red", "blue", "orange"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted"]
+        },
+        "016vpm": {
+          "config_name": ["analytical-7mcs-016vpm", "new-results-016vpm", "old-results-016vpm", "old-results-016vpm-v2", "old-results-016vpm-v3"],
+          "labels": ["Analytical", "New Result", "Old Result v1", "Old Result v2", "Old Result v3"],
+          "markers": ["v", "x", "D", "|", "+"],
+          "colors": ["red", "blue", "orange", "green", "purple"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted", "dotted"]
+        },
+        "02vpm": {
+          "config_name": ["analytical-7mcs-016vpm", "new-results-016vpm", "old-results-016vpm", "old-results-016vpm-v2", "old-results-016vpm-v3"],
+          "labels": ["Analytical", "New Result", "Old Result v1", "Old Result v2", "Old Result v3"],
+          "markers": ["v", "x", "D", "|", "+"],
+          "colors": ["red", "blue", "orange", "green", "purple"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted", "dotted"]
+        },
+        "025vpm": {
+          "config_name": ["analytical-7mcs-016vpm", "new-results-016vpm", "old-results-016vpm", "old-results-016vpm-v2", "old-results-016vpm-v3"],
+          "labels": ["Analytical", "New Result", "Old Result v1", "Old Result v2", "Old Result v3"],
+          "markers": ["v", "x", "D", "|", "+"],
+          "colors": ["red", "blue", "orange", "green", "purple"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted", "dotted"]
+        },
+        "03vpm": {
+          "config_name": ["analytical-7mcs-016vpm", "new-results-016vpm", "old-results-016vpm", "old-results-016vpm-v2", "old-results-016vpm-v3"],
+          "labels": ["Analytical", "New Result", "Old Result v1", "Old Result v2", "Old Result v3"],
+          "markers": ["v", "x", "D", "|", "+"],
+          "colors": ["red", "blue", "orange", "green", "purple"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed", "dotted", "dotted", "dotted"]
+        }
+      },
+      "graph-configurations2": {
+        "Density": {
+          "config_name": [
+            "Analytical-Low", "Simulated-Low",
+            "Analytical-Low", "Simulated-Low",
+            "Analytical-medium-20dbm", "Simulated-medium-20dbm",
+            "Analytical-High", "Simulated-High",
+            "Analytical-Extra-High", "Simulated-03vpm"
+          ],
+          "labels": [
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated"
+          ],
+          "markers": [
+            "", "",
+            "v", "v",
+            "*", "*",
+            "x", "x",
+            "D", "D"
+          ],
+          "colors": [
+            "black", "black",
+            "black", "black",
+            "red", "red",
+            "blue", "blue",
+            "green", "green"
+          ],
+          "linestyles": [
+            "dashed", "solid",
+            "dashed", "solid",
+            "dashed", "solid",
+            "dashed", "solid",
+            "dashed", "solid"
+          ],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"]
+        },
+        "Power": {
+          "config_name": [
+            "Analytical-medium-23dbm", "Simulated-medium-23dbm",
+            "Analytical-medium-23dbm", "Simulated-medium-23dbm",
+            "Analytical-medium-20dbm", "Simulated-medium-20dbm",
+            "Analytical-medium-10dbm", "Simulated-medium-10dbm"
+          ],
+          "labels": [
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated"
+          ],
+          "markers": [
+            "", "",
+            "v", "v",
+            "x", "x",
+            "*", "*"
+          ],
+          "colors": [
+            "black", "black",
+            "black", "black",
+            "red", "red",
+            "blue", "blue"
+          ],
+          "linestyles": [
+            "dashed", "solid",
+            "dashed", "solid",
+            "dashed", "solid",
+            "dashed", "solid"
+          ],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"]
+        },
+        "Frequency": {
+          "config_name": [
+            "Analytical-medium-20dbm", "Simulated-medium-20dbm",
+            "Analytical-medium-20dbm", "Simulated-medium-20dbm",
+            "Analytical-medium-20hz", "Simulated-medium-20hz"
+          ],
+          "labels": [
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated"
+          ],
+          "markers": [
+            "", "",
+            "v", "v",
+            "*", "*"
+          ],
+          "colors": [
+            "black", "black",
+            "black", "black",
+            "red", "red"
+          ],
+          "error-markers": [
+            "v", "x", "*", "D"
+          ],
+          "error-colors": [
+            "red", "blue", "green", "black"
+          ],
+          "linestyles": [
+            "solid", "dashed",
+            "solid", "dashed",
+            "solid", "dashed"
+          ]
+        },
+        "MCS": {
+          "config_name": [
+            "Analytical-MCS9-medium", "Simulated-MCS9",
+            "Analytical-MCS9-medium", "Simulated-MCS9",
+            "Analytical-medium-20dbm", "Simulated-medium-20dbm"
+          ],
+          "labels": [
+            "Analytical", "Simulated",
+            "Analytical", "Simulated",
+            "Analytical", "Simulated"
+          ],
+          "markers": [
+            "", "",
+            "v", "v",
+            "x", "x"
+          ],
+          "colors": [
+            "black", "black",
+            "black", "black",
+            "red", "red"
+          ],
+          "error-markers": [
+            "v", "x", "*", "D"
+          ],
+          "error-colors": [
+            "red", "blue", "green", "black"
+          ],
+          "linestyles": [
+            "dashed", "solid",
+            "dashed", "solid",
+            "dashed", "solid"
+          ]
+        }
+      },
+      "graph_configurations3": {
+        "Error-Low": {
+          "config_name": ["Analytical-Low", "Simulated-Low"],
+          "labels": ["Analytical", "Simulated"],
+          "markers": ["v", "x"],
+          "colors": ["red", "blue"],
+          "error-markers": ["v", "x", "*", "D", ""],
+          "error-colors": ["red", "blue", "green", "black", "black"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "Error-medium": {
+          "config_name": ["Analytical-medium-20dbm", "Simulated-medium-20dbm"],
+          "labels": ["Analytical", "Simulated"],
+          "markers": ["v", "x"],
+          "colors": ["red", "blue"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "Error-high": {
+          "config_name": ["Analytical-High", "Simulated-High"],
+          "labels": ["Analytical", "Simulated"],
+          "markers": ["v", "x"],
+          "colors": ["red", "blue"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "Error-Extra-High": {
+          "config_name": ["Analytical-Extra-High", "Simulated-03vpm"],
+          "labels": ["Analytical", "Simulated"],
+          "markers": ["v", "x"],
+          "colors": ["red", "blue"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "Error-MCS": {
+          "config_name": ["Analytical-MCS9-medium", "Simulated-MCS9"],
+          "labels": ["Analytical", "Simulated"],
+          "markers": ["v", "x"],
+          "colors": ["red", "blue"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "dashed"]
+        }
       },
       "filtered_vectors": [
         "sciSent",
@@ -90,8 +417,7 @@
         "sciUnsensed"
       ],
       "hd_errors": [
-        "sciFailedHalfDuplex",
-        "tbFailedHalfDuplex"
+        "sciFailedHalfDuplex"
       ],
       "prop_errors": [
         "sciFailedDueToProp",
@@ -100,6 +426,10 @@
       "interference_errors": [
         "sciFailedDueToInterference",
         "tbFailedDueToInterference"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize"
       ],
       "filtered_scalars": [
         "txRxDistance",

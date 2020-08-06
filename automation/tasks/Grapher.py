@@ -2,6 +2,8 @@ import logging
 import os
 import math
 import multiprocessing
+import statistics
+from itertools import combinations
 
 from scipy.stats import t
 import numpy as np
@@ -48,14 +50,18 @@ class Grapher:
                         folders_for_comparison.append(folder)
 
             for graph_type in self.results["graphs"]:
-                if graph_type in ["PDR-SCI", "PDR-TB", "IPG", "Arrivals"]:
+                if graph_type in ["PDR-SCI", "PDR-TB", "IPG", "Arrivals", "Collisions"]:
                     self.distance_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "CBR":
                     self.cbr_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "deltaCol":
+                    self.delta_col(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "Errors":
                     self.errors_dist(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "GrantBreaks":
                     self.grant_break_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "ResourceOccupancy":
+                    self.resource_occupancy_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
 
     def prepare_results(self, result_folders, now):
 
@@ -97,6 +103,10 @@ class Grapher:
 
             os.makedirs(output_csv_dir, exist_ok=True)
 
+            goodTransmissions = []
+            unusedTransmissions = []
+            natural_grant_breaks = []
+
             # Shortcut ensures we get the stats from the parsed results
             for stat in folder_results[0]:
                 if stat == "CBR":
@@ -104,11 +114,43 @@ class Grapher:
                 elif stat == "GrantBreaks":
                     grant_breaks = []
                     for i in range(len(folder_results)):
-                        grant_breaks.append(folder_results[i]["GrantBreaks"])
+                        grant_breaks.append(folder_results[i][stat])
                         df = pd.DataFrame({"GrantBreaks": grant_breaks})
                         df.to_csv("{}/{}.csv".format(output_csv_dir, stat), index=False)
+                elif stat == "Collisions":
+                    self.across_run_results(folder_results, stat, output_csv_dir, "CollisionDistance")
+                elif stat == "GoodTransmissions":
+                    for i in range(len(folder_results)):
+                        goodTransmissions.append(folder_results[i][stat])
+                elif stat == "UnusedTransmissions":
+                    for i in range(len(folder_results)):
+                        unusedTransmissions.append(folder_results[i][stat])
+                elif stat == "NaturalGrantBreaks":
+                    for i in range(len(folder_results)):
+                        natural_grant_breaks.append(folder_results[i][stat])
                 else:
                     self.across_run_results(folder_results, stat, output_csv_dir, "Distance")
+
+            good_trans_mean = statistics.mean(goodTransmissions)
+            good_trans_dev = statistics.stdev(goodTransmissions)
+            unused_trans_mean = statistics.mean(unusedTransmissions)
+            unused_trans_dev = statistics.stdev(unusedTransmissions)
+            natural_grant_breaks_mean = statistics.mean(natural_grant_breaks)
+            natural_grant_breaks_dev = statistics.stdev(natural_grant_breaks)
+            total_resources = 3 * 12 * 1000
+
+            df = pd.DataFrame(
+                {
+                    "GoodTransmissions_Mean": good_trans_mean,
+                    "UnusedTransmissions_Mean": unused_trans_mean,
+                    "NaturalGrantBreaks_Mean": natural_grant_breaks_mean,
+                    "GoodTransmissions_std": good_trans_dev,
+                    "UnusedTransmissions_std": unused_trans_dev,
+                    "NaturalGrantBreaks_std": natural_grant_breaks_dev,
+                    "TotalResources": total_resources
+                }, index=[0]
+            )
+            df.to_csv("{}/{}.csv".format(output_csv_dir, "resource_usage"), index=False)
 
             processed_results.append(output_csv_dir)
 
@@ -131,8 +173,12 @@ class Grapher:
         hd_errors = pd.DataFrame()
         prop_errors = pd.DataFrame()
         interference_errors = pd.DataFrame()
+        collisions_agg = pd.DataFrame()
 
         total_grant_breaks = 0
+        good_transmission = 0
+        unused_transmissions = 0
+        natural_grant_breaks = 0
 
         error_dfs = {}
         # Need a new for loop through all the errors and adding them as a stat distance
@@ -148,6 +194,13 @@ class Grapher:
             pdr_tb_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecoded", "txRxDistanceTB", True)
 
             # pdr_tb_ignore_sci_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecodedIgnoreSCI", "txRxDistanceTB", True)
+
+            collisions_agg = self.collisions_distance(collisions_agg, chunk)
+
+            chunk_good_transmission, chunk_unused_transmissions, chunk_natural_grant_breaks = self.resource_usage(chunk)
+            good_transmission += chunk_good_transmission
+            unused_transmissions += chunk_unused_transmissions
+            natural_grant_breaks += chunk_natural_grant_breaks
 
             arrivals_agg = self.total_distance(arrivals_agg, chunk, "tbDecoded", "txRxDistanceTB")
 
@@ -183,6 +236,10 @@ class Grapher:
         results["CBR"] = cbr_agg
         results["Arrivals"] = arrivals_agg
         results["GrantBreaks"] = total_grant_breaks
+        results["Collisions"] = collisions_agg
+        results["GoodTransmissions"] = good_transmission
+        results["UnusedTransmissions"] = unused_transmissions
+        results["NaturalGrantBreaks"] = natural_grant_breaks
 
         for key, df in zip(["unsensed_errors", "hd_errors", "prop_errors", "interference_errors"],
                            [unsensed_errors, hd_errors, prop_errors, interference_errors]):
@@ -202,7 +259,7 @@ class Grapher:
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
         distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
-        distance_df = distance_df[(distance_df["Time"] > 502)]
+        distance_df = distance_df[(distance_df["Time"] > 198)]
         distance_df = distance_df[["Time", "NodeID", stat, distance]]
         distance_df = distance_df[distance_df[stat] > -1]
         distance_df = distance_df.rename(columns={"Time": "Time", "NodeID": "NodeID", stat: stat, distance: "Distance"})
@@ -229,6 +286,76 @@ class Grapher:
             agg_df = pd.merge(agg_df, distance_df, on="Distance", how='outer')
             agg_df = agg_df.apply(self.combine_line, axis=1, result_type='expand')
             agg_df = agg_df.rename({0: "mean", 1: "count"}, axis='columns')
+
+        return agg_df
+
+    def collisions_distance(self, agg_df, df):
+
+        df = df[['NodeID', 'Time', 'grantStartTime', 'selectedSubchannelIndex',
+                 'selectedNumSubchannels', 'posX', 'posY']]
+
+        df = df.dropna(subset=['grantStartTime', 'selectedSubchannelIndex', 'selectedNumSubchannels', 'posX', 'posY'],
+                       how='all')
+
+        df = df.drop_duplicates()
+
+        grant_df = df[["NodeID", "grantStartTime", "selectedSubchannelIndex"]]
+
+        grant_df = grant_df.dropna(subset=['grantStartTime', 'selectedSubchannelIndex'], how='all')
+
+        position_df = df[["NodeID", "Time", "posX", "posY"]]
+
+        position_df = position_df.dropna(subset=['posX', 'posY'], how='all')
+        position_df = position_df.drop_duplicates()
+
+        result_df = pd.merge(grant_df, position_df, left_on=["NodeID", "grantStartTime"], right_on=["NodeID", "Time"],
+                             how='left')
+
+        result_df = result_df[["NodeID", "grantStartTime", "Time", "posX", "posY", "selectedSubchannelIndex"]]
+
+        f = lambda x: pd.DataFrame(list(combinations(x.values, 2)),
+                                   columns=['CoordA', 'CoordB'])
+
+        result_df = result_df.dropna(how="any")
+
+        if not result_df.empty:
+
+            try:
+
+                position_update_df = (result_df.groupby(['Time', 'selectedSubchannelIndex'])['posX', 'posY'].apply(f)
+                                      .reset_index(level=1, drop=True)
+                                      .reset_index())
+
+                position_update_df[['X_a', 'Y_a']] = pd.DataFrame(position_update_df.CoordA.tolist(),
+                                                                  index=position_update_df.index)
+                position_update_df[['X_b', 'Y_b']] = pd.DataFrame(position_update_df.CoordB.tolist(),
+                                                                  index=position_update_df.index)
+                position_update_df = position_update_df.drop(['CoordA', 'CoordB'], axis=1)
+
+                position_update_df = position_update_df.rename(columns={"level_1": "count"})
+
+                position_update_df["CollisionDistance"] = np.sqrt(
+                    np.square(position_update_df["X_a"] - position_update_df["X_b"]) +
+                    np.square(position_update_df["Y_a"] - position_update_df["Y_b"]))
+
+                position_update_df = position_update_df.drop(['X_a', 'Y_a', 'X_b', 'Y_b'], axis=1)
+                position_update_df = position_update_df.reset_index(drop=True)
+
+                max_distance = min(530, position_update_df["CollisionDistance"].max())
+                position_update_df = position_update_df.groupby(
+                    pd.cut(position_update_df["CollisionDistance"], np.arange(0, max_distance, 10))).agg({"count": "count"})
+
+                if agg_df.empty:
+                    agg_df = position_update_df
+                else:
+                    # combine_chunks
+                    agg_df = pd.merge(agg_df, position_update_df, on="CollisionDistance", how='outer')
+                    agg_df = agg_df.apply(self.count_line, axis=1, result_type='expand')
+                    agg_df = agg_df.rename({0: "count"}, axis='columns')
+            except (IndexError, ValueError) as e:
+                self.logger.warning("Data frame could not be read fully for collisions, final time is: {}s".format(result_df["Time"].min()))
+                self.logger.warning(e)
+                return agg_df
 
         return agg_df
 
@@ -263,11 +390,70 @@ class Grapher:
 
         return agg_df
 
+    def resource_usage(self, df):
+        # This function determines the resource usage for chunk being processed.
+
+        df = df[["NodeID", "Time", "grantBreak", "grantBreakMissedTrans", "grantBreakSize", "grantStartTime",
+                 "selectedSubchannelIndex"]]
+
+        df = df.dropna(subset=["grantBreak", "grantBreakMissedTrans", "grantBreakSize", "grantStartTime",
+                               "selectedSubchannelIndex"], how="all")
+
+        grant_description_df = df[df["grantStartTime"].notnull()]
+
+        grant_description_df = grant_description_df[["NodeID", "grantStartTime",
+                                                     "selectedSubchannelIndex"]].reset_index(drop=True)
+
+        grant_breaking_df = df[["NodeID", "Time", "grantBreak", "grantBreakMissedTrans"]]
+
+        grant_breaking_df = grant_breaking_df.dropna(subset=["grantBreak", "grantBreakMissedTrans"], how="all")
+
+        grant_breaking_df["grantBreak"] = np.where(grant_breaking_df["grantBreakMissedTrans"].eq(1), 0,
+                                                   grant_breaking_df["grantBreak"])
+
+        combined_df = pd.merge(grant_description_df, grant_breaking_df, left_on=["NodeID"], right_on=["NodeID"],
+                               how='right')
+
+        combined_df = combined_df[(combined_df["grantStartTime"] < combined_df["Time"])]
+
+        combined_df = combined_df.drop_duplicates(subset=["NodeID", "grantStartTime"], keep="first")
+
+        combined_df = combined_df.reset_index(drop=True)
+
+        combined_df = combined_df.rename(columns={"Time": "grantBreakTime"})
+
+        combined_df["grantTransmissions"] = ((combined_df["grantBreakTime"] - combined_df["grantStartTime"]) // 0.1)
+
+        # Each grant break from a missed transmission is ultimately an unused resource which was shown as occupied.
+        count_unused_transmissions = combined_df["grantBreakMissedTrans"].sum()
+        count_good_transmissions = combined_df["grantTransmissions"].sum()
+        natural_grant_breaks = combined_df["grantBreak"].sum()
+
+        return count_good_transmissions, count_unused_transmissions, natural_grant_breaks
+
+
     @staticmethod
     def sum_line(line):
         sum_a = line["sum_x"]
 
         sum_b = line["sum_y"]
+
+        if np.isnan(sum_a) and np.isnan(sum_b):
+            return [sum_a]
+        elif np.isnan(sum_a) and not np.isnan(sum_b):
+            return [sum_b]
+        elif np.isnan(sum_b) and not np.isnan(sum_a):
+            return [sum_a]
+        else:
+            overall_sum = sum_a + sum_b
+
+            return [overall_sum]
+
+    @staticmethod
+    def count_line(line):
+        sum_a = line["count_x"]
+
+        sum_b = line["count_y"]
 
         if np.isnan(sum_a) and np.isnan(sum_b):
             return [sum_a]
@@ -320,6 +506,8 @@ class Grapher:
 
         if stat == "Arrivals":
             mean_cols = df.filter(regex='sum').columns
+        elif stat == "Collisions":
+            mean_cols = df.filter(regex='count').columns
         else:
             mean_cols = df.filter(regex='mean').columns
 
@@ -423,6 +611,10 @@ class Grapher:
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
                             ylabel="Total Decoded Packets", now=now, legend_pos="upper left",
                             confidence_intervals=self.confidence_intervals, show=False, store=True)
+        elif graph_type == "Collisions":
+            self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
+                            ylabel="Total Colliding Grants", now=now, legend_pos="upper right",
+                            confidence_intervals=self.confidence_intervals, show=False, store=True)
 
     def cbr_graph(self, folders, graph_type, graph_title, graph_info, now):
         # Might change this to time based graph but CBR is fine for now
@@ -439,6 +631,8 @@ class Grapher:
             for i in range(len(cbr)):
                 cbr[i] = cbr[i] * 100
                 ci[i] = ci[i] * 100
+
+            df["Time"] = df["Time"] - df["Time"].min()
 
             times.append(list(df["Time"]))
             cbrs.append(cbr)
@@ -472,8 +666,48 @@ class Grapher:
         self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Total Grant Breaks",
                       show=False, store=True)
 
+    def resource_occupancy_graph(self, folders, graph_type, graph_title, graph_info, now, show=False, store=True):
+
+        natural_grant_breaks = []
+        missed_transmissions = []
+        good_transmissions = []
+        for folder in folders:
+            df = pd.read_csv("{}/resource_usage.csv".format(folder))
+            natural_grant_breaks.append(df["NaturalGrantBreaks_Mean"].sum())
+            missed_transmissions.append(df["UnusedTransmissions_Mean"].sum())
+            good_transmissions.append(df["GoodTransmissions_Mean"].sum())
+
+        fig, ax = plt.subplots()
+
+        labels = graph_info["labels"]
+
+        bar_width = 0.15  # the width of the bars
+
+        r1 = np.arange(len(labels))
+        r2 = [x + bar_width for x in r1]
+        r3 = [x + bar_width for x in r2]
+
+        ax.bar(r1, missed_transmissions, bar_width - .01, label='Unused')
+        ax.bar(r2, good_transmissions,   bar_width - .01, label='Correctly Used')
+        ax.bar(r3, natural_grant_breaks, bar_width - .01, label='Vacated')
+
+        ax.set_ylabel('Resources')
+        ax.set_title('Densities')
+        plt.xticks([r + bar_width for r in range(len(labels))], labels)
+        ax.set_xticklabels(labels)
+        ax.legend()
+
+        fig.tight_layout()
+
+        if show:
+            fig.show()
+
+        if store:
+            fig.savefig("{}/{}-{}.png".format(self.figure_store, "{}-{}".format(graph_title, graph_type), now), dpi=400)
+        plt.close(fig)
+
     def dist_graph(self, distances, graph_info, plot_name, ylabel, now, legend_pos="lower left",
-                   confidence_intervals=None, show=True, store=False, percentage=False):
+                   confidence_intervals=None, show=True, store=False, percentage=False, error=False, delta_col=False):
         fig, ax = plt.subplots()
 
         for i in range(len(graph_info["labels"])):
@@ -496,8 +730,15 @@ class Grapher:
                 newLabels.append(label)
                 newHandles.append(handle)
 
-        ax.legend(newHandles, newLabels, loc='upper center', bbox_to_anchor=(0.5, 1.1), fancybox=True, shadow=True,
-                  ncol=2)
+        if error:
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.86, 0.96, 0.04), loc=legend_pos,
+                            borderaxespad=0, ncol=2, mode="expand")
+        elif delta_col:
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.94, 0.96, 0.04), loc=legend_pos,
+                            borderaxespad=0, ncol=2, mode="expand")
+        else:
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.04, 0.96, 0.04), loc=legend_pos,
+                            borderaxespad=0, ncol=2)
 
         ax.tick_params(direction='in')
 
@@ -531,7 +772,7 @@ class Grapher:
                         marker=graph_info["markers"][i], markevery=5, fillstyle="none",
                         color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
 
-        ax.legend(loc='lower left')
+        ax.legend(loc='upper left')
         ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
         ax.tick_params(direction='in')
 
@@ -586,13 +827,13 @@ class Grapher:
                     cis.append(list(df["Confidence-Interval"]))
                 distances = (list(range(0, 520, 10)))
                 if errors[i] == "hd_errors":
-                    labels.append("\u03B4HD")
+                    labels.append(r'Half Duplex Errors, $\delta_{HD}$')
                 elif errors[i] == "interference_errors":
-                    labels.append("\u03B4COL")
+                    labels.append(r'Packet Collisions, $\delta_{COL}$')
                 elif errors[i] == "unsensed_errors":
-                    labels.append("\u03B4SEN")
+                    labels.append(r'Sensing Errors, $\delta_{SEN}$')
                 elif errors[i] == "prop_errors":
-                    labels.append("\u03B4PRO")
+                    labels.append(r'Propagation Errors, $\delta_{PRO}$')
                 linestyles.append(graph_info["linestyles"][j])
                 markers.append(graph_info["error-markers"][i])
                 colors.append(graph_info["error-colors"][i])
@@ -605,5 +846,38 @@ class Grapher:
         graph_info["linestyles"] = linestyles
 
         self.dist_graph(distances, graph_info,
-                        "{}-{}".format(graph_title, graph_type), ylabel="Packet Loss Attribution", now=now,
-                        confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left")
+                        "{}-{}".format(graph_title, graph_type), ylabel="Packet Loss Attribution %", now=now,
+                        confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left",
+                        error=True)
+
+    def delta_col(self, folders, graph_type, graph_title, graph_info, now):
+        means = []
+        cis = []
+        distances = []
+        labels = []
+        markers = []
+        colors = []
+        linestyles = []
+
+        for i in range(len(folders)):
+            df = pd.read_csv("{}/interference_errors.csv".format(folders[i]))
+            means.append(list(df["Mean"]))
+            if self.confidence_intervals:
+                cis.append(list(df["Confidence-Interval"]))
+            distances = (list(range(0, 520, 10)))
+            labels.append(r'$\delta_{COL}$' + ': {}'.format(graph_info["labels"][i]))
+            linestyles.append(graph_info["linestyles"][i])
+            markers.append(graph_info["error-markers"][i])
+            colors.append(graph_info["error-colors"][i])
+
+        graph_info["means"] = means
+        graph_info["cis"] = cis
+        graph_info["labels"] = labels
+        graph_info["markers"] = markers
+        graph_info["colors"] = colors
+        graph_info["linestyles"] = linestyles
+
+        self.dist_graph(distances, graph_info,
+                        "{}-{}".format(graph_title, graph_type), ylabel="Packet Loss - Collisions %", now=now,
+                        confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left",
+                        error=False, delta_col=True)

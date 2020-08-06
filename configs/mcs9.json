@@ -5,41 +5,86 @@
     "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/Validation/omnetpp.ini",
     "target": "run_simulte-validation",
     "config_names" : {
-      "MCS9-slow-20dbm": {
-        "repeat": 7,
-        "naming": ["Simulated-MCS9-slow-20dbm"]
+      "MCS7-slow-20dbm": {
+        "repeat": 0,
+        "naming": ["Simulated-MCS7-slow-20dbm"]
       },
-      "MCS9-slow-23dbm": {
-        "repeat": 7,
-        "naming": ["Simulated-MCS9-slow-23dbm"]
+      "MCS7-slow-23dbm": {
+        "repeat": 0,
+        "naming": ["Simulated-MCS7-slow-23dbm"]
       },
-      "MCS9-fast-20dbm": {
-        "repeat": 7,
-        "naming": ["Simulated-MCS9-fast-20dbm"]
+      "MCS7-fast-20dbm": {
+        "repeat": 0,
+        "naming": ["Simulated-MCS7-20dbm-fast"]
       },
-      "MCS9-fast-23dbm": {
-        "repeat": 7,
-        "naming": ["Simulated-MCS9-fast-23dbm"]
+      "MCS7-fast-20dbm-2": {
+        "repeat": 0,
+        "naming": ["Simulated-MCS7-fast-20dbm-bler"]
+      },
+      "MCS7-fast-23dbm": {
+        "repeat": 0,
+        "naming": ["Simulated-MCS7-fast-23dbm"]
       }
     },
     "slack-api-token": "",
-    "parallel_processes" : 7,
+    "parallel_processes" : 5,
     "omnet-result-dirs": [],
     "parsed-result-dir": [],
     "processed-result-dir": [
-      "/hdd/results-analysis/data/processed_data/mcs9/Simulated-2020-01-01-00_00_00",
-      "/hdd/results-analysis/data/processed_data/mcs9/Analytical-2020-01-01-00_00_00"
+     "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs9/Analytical-medium-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs9/Analytical-slow-2020-01-01-00_00_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs9/Simulated-MCS9-medium-20dbm-20hz-2020-06-03-15_17_37",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs9/Simulated-MCS9-slow-20dbm-20hz-2020-06-03-13_57_31"
     ],
     "results": {
-      "graphs": ["PDR-TB", "Errors"],
-      "graphs2": ["CBR"],
+      "graphs": ["PDR-TB"],
       "confidence-interval": 0.95,
       "graph-confidence-interval": false,
       "graph-configurations": {
-        "9MCS-23dbm-0.12vpm": ["Simulated", "Analytical"]
-      },
-      "graph-configurations2": {
-        "9MCS-23dbm-0.12vpm": ["Simulated"]
+        "Density": {
+          "config_name": [
+            "Analytical-medium",
+            "Simulated-MCS9-medium-20dbm-20hz",
+            "Analytical-slow",
+            "Simulated-MCS9-slow-20dbm-20hz"
+          ],
+          "labels": [
+            "Analytical Low",
+            "Simulated Low",
+            "Analytical Medium",
+            "Simulated Medium"
+          ],
+          "markers": [
+            "v",
+            "v",
+            "*",
+            "*"
+          ],
+          "colors": [
+            "black",
+            "black",
+            "red",
+            "red"
+          ],
+          "linestyles": [
+            "dashed",
+            "solid",
+            "dashed",
+            "solid"
+          ],
+          "error-markers": [
+            "v",
+            "x",
+            "*",
+            "D"
+          ],
+          "error-colors": [
+            "red",
+            "blue",
+            "green",
+            "black"
+          ]
+        }
       },
       "filtered_vectors": [
         "sciSent",
@@ -85,6 +130,7 @@
         "sciFailedHalfDuplex",
         "tbFailedDueToProp",
         "sciFailedDueToProp",
+        "tbFailedDueToNoSCI",
         "tbFailedDueToInterference",
         "sciFailedDueToInterference"
       ],
@@ -92,16 +138,16 @@
         "sciUnsensed"
       ],
       "hd_errors": [
-        "tbFailedHalfDuplex",
-        "sciFailedHalfDuplex"
+        "sciFailedHalfDuplex",
+        "tbFailedHalfDuplex"
       ],
       "prop_errors": [
-        "tbFailedDueToProp",
-        "sciFailedDueToProp"
+        "sciFailedDueToProp",
+        "tbFailedDueToProp"
       ],
       "interference_errors": [
-        "tbFailedDueToInterference",
-        "sciFailedDueToInterference"
+        "sciFailedDueToInterference",
+        "tbFailedDueToInterference"
       ],
       "filtered_scalars": [
         "txRxDistance",

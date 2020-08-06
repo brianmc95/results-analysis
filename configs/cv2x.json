@@ -5,26 +5,27 @@
     "omnetpp_ini": "/home/brian/git_repos/OpenCV2X/scenarios/cars/omnetpp.ini",
     "target": "run_simulte-cars",
     "config_names" : {
-      "Base": {
-        "repeat": 0
-      },
       "DCC": {
         "repeat": 0,
         "params": {
           "withDccRestriction": ["true"]
         },
-        "naming": ["DCC-Enabled"]
+        "naming": ["No-Congestion-Control"]
       },
-      "PacketDropping": {
-	"repeat": 0,
-	"params": {
-	  "reselectAfter": [1, 2, 5, 9, 1000]
-	},
-	"naming": ["After-1", "After-2", "After-5", "After-9", "After-1000"]
+      "Fast": {
+        "repeat": 0,
+        "naming": ["Fast"]
       },
       "nonPeriodic":
       {
-        "repeat": 0
+        "repeat": 0,
+        "naming": ["Non-Periodic"]
+      },
+      "PacketDropping": {
+	    "repeat": 0
+      },
+      "reschedule-low": {
+        "repeat": 5
       },
       "probKeep": {
         "repeat": 0,
@@ -38,18 +39,454 @@
     "parallel_processes" : 5,
     "omnet-result-dirs": [],
     "parsed-result-dir": [],
-    "processed-result-dir": [],
+    "processed-result-dir2": [],
+    "processed-result-dir": [
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/nonPeriodic-3GPP-02vpm-normal-grant-2020-07-31-11_43_10",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/nonPeriodic-3GPP-006vpm-normal-grant-2020-07-31-11_43_10",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/nonPeriodic-3GPP-012vpm-normal-grant-2020-07-31-11_43_10",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/nonPeriodic-ETSI-02vpm-normal-grant-2020-07-31-11_43_10",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/nonPeriodic-ETSI-006vpm-normal-grant-2020-07-31-11_52_32",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/nonPeriodic-ETSI-012vpm-490-2020-07-31-12_00_21",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/periodic-02vpm-2020-07-31-11_52_32",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/periodic-006vpm-2020-07-31-11_52_32",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/periodic-012vpm-2020-07-31-11_52_32",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/reschedule-006vpm-2020-07-31-11_52_32",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/reschedule-012vpm-2020-07-31-11_52_32",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/cv2x/reschedule-02vpm-2020-07-31-12_13_23"
+    ],
     "results": {
-      "graphs": ["PDR-SCI" , "PDR-TB", "IPG", "CBR"],
+      "graphs": ["PDR-TB", "CBR", "deltaCol"],
       "confidence-interval": 0.95,
       "graph-confidence-interval": false,
-      "graph-configurations": {
-        "Motivation": ["Highway-fast", "NO-CC", "NO-CC-high-density"],
-        "PacketDrop-MD": ["NO-CC", "After-1", "After-5"],
-        "PacketDrop-HD": ["NO-CC-high-density", "After-1-high-density", "After-5-high-density"],
-        "DCC": ["NO-CC", "DCC-Enabled"],
-        "RandomAccess": ["Random-Access-Medium-Density", "After-1", "DCC-Enabled"],
-        "RRI-Adaptation": ["RRI-Adaptation-CR-limit-MD", "RRI-Adaptation-DCC-MD"]
+      "graph-configurations2": {
+         "Medium": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm-normal-grant",
+            "nonPeriodic-ETSI-012vpm-490",
+            "periodic-012vpm",
+            "reschedule-012vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["black", "red", "blue", "green"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        }
+      },
+       "graph-configurations": {
+         "Density-Comparison": {
+            "config_name": [
+              "periodic-006vpm",
+              "periodic-012vpm",
+              "periodic-02vpm"
+            ],
+          "labels": [
+            "Periodic (Default) - 0.06vpm",
+            "Periodic (Default) - 0.12vpm",
+            "Periodic (Default) - 0.2vpm"
+          ],
+          "markers": ["v", "x", "+"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["black", "red", "blue", "green"],
+          "linestyles": ["solid", "solid", "solid"]
+         },
+         "Low": {
+          "config_name": [
+            "nonPeriodic-3GPP-006vpm-normal-grant",
+            "nonPeriodic-ETSI-006vpm-normal-grant",
+            "periodic-006vpm",
+            "reschedule-006vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["black", "red", "blue", "green"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+         "Medium": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm-normal-grant",
+            "nonPeriodic-ETSI-012vpm-490",
+            "periodic-012vpm",
+            "reschedule-012vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["black", "red", "blue", "green"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+         "High": {
+          "config_name": [
+            "nonPeriodic-3GPP-02vpm-normal-grant",
+            "nonPeriodic-ETSI-02vpm-normal-grant",
+            "periodic-02vpm",
+            "reschedule-02vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["black", "red", "blue", "green"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        }
+      },
+      "graph-configurations2": {
+        "periodicVaperiodic-low": {
+          "config_name": [
+            "nonPeriodic-ETSI-006vpm-normal-grant",
+            "nonPeriodic-3GPP-006vpm-normal-grant",
+            "periodic-006vpm",
+            "reschedule-006vpm"
+          ],
+          "labels": [
+            "Non Periodic ETSI",
+            "Non Periodic 3GPP",
+            "Periodic",
+            "One Shot"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+        "periodicVaperiodic-medium": {
+          "config_name": [
+            "nonPeriodic-ETSI-012vpm-normal-grant",
+            "nonPeriodic-3GPP-012vpm-normal-grant",
+            "periodic-012vpm",
+            "random-012vpm"
+          ],
+          "labels": [
+            "Non Periodic ETSI",
+            "Non Periodic 3GPP",
+            "Periodic",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "dotted"]
+        },
+        "periodicVaperiodic-high": {
+          "config_name": [
+            "nonPeriodic-ETSI-02vpm-normal-grant",
+            "nonPeriodic-3GPP-02vpm-normal-grant",
+            "periodic-02vpm",
+            "random-02vpm"
+          ],
+          "labels": [
+            "Non Periodic ETSI",
+            "Non Periodic 3GPP",
+            "Periodic",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "dotted"]
+        },
+        "SensingWindow-ETSI-low": {
+          "config_name": [
+            "nonPeriodic-ETSI-006vpm-normal-grant",
+            "nonPeriodic-ETSI-500-sw-006vpm-normal-grant",
+            "nonPeriodic-ETSI-100-sw-006vpm-normal-grant",
+            "random-006vpm"
+          ],
+          "labels": [
+            "Non Periodic ETSI - 1000ms SW",
+            "Non Periodic ETSI - 500ms SW",
+            "Non Periodic ETSI - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-ETSI-medium": {
+          "config_name": [
+            "nonPeriodic-ETSI-012vpm-normal-grant",
+            "nonPeriodic-ETSI-500-sw-012vpm-normal-grant",
+            "nonPeriodic-ETSI-100-sw-012vpm-normal-grant",
+            "random-012vpm"
+          ],
+          "labels": [
+            "Non Periodic ETSI - 1000ms SW",
+            "Non Periodic ETSI - 500ms SW",
+            "Non Periodic ETSI - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-ETSI-high": {
+          "config_name": [
+            "nonPeriodic-ETSI-02vpm-normal-grant",
+            "nonPeriodic-ETSI-500-sw-02vpm-normal-grant",
+            "nonPeriodic-ETSI-100-sw-02vpm-normal-grant",
+            "random-02vpm"
+          ],
+          "labels": [
+            "Non Periodic ETSI - 1000ms SW",
+            "Non Periodic ETSI - 500ms SW",
+            "Non Periodic ETSI - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-3GPP-low": {
+          "config_name": [
+            "nonPeriodic-3GPP-006vpm-normal-grant",
+            "nonPeriodic-3GPP-500-sw-006vpm-normal-grant",
+            "nonPeriodic-3GPP-100-sw-006vpm-normal-grant",
+            "random-006vpm"
+          ],
+          "labels": [
+            "Non Periodic 3GPP - 1000ms SW",
+            "Non Periodic 3GPP - 500ms SW",
+            "Non Periodic 3GPP - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-3GPP-medium": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm-normal-grant",
+            "nonPeriodic-3GPP-500-sw-012vpm-normal-grant",
+            "nonPeriodic-3GPP-100-sw-012vpm-normal-grant",
+            "random-012vpm"
+          ],
+          "labels": [
+            "Non Periodic 3GPP - 1000ms SW",
+            "Non Periodic 3GPP - 500ms SW",
+            "Non Periodic 3GPP - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-3GPP-high": {
+          "config_name": [
+            "nonPeriodic-3GPP-02vpm-normal-grant",
+            "nonPeriodic-3GPP-500-sw-02vpm-normal-grant",
+            "nonPeriodic-3GPP-100-sw-02vpm-normal-grant",
+            "random-02vpm"
+          ],
+          "labels": [
+            "Non Periodic 3GPP - 1000ms SW",
+            "Non Periodic 3GPP - 500ms SW",
+            "Non Periodic 3GPP - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-periodic-low": {
+          "config_name": [
+            "periodic-006vpm",
+            "periodic-500-sw-006vpm",
+            "periodic-100-sw-006vpm",
+            "random-006vpm"
+          ],
+          "labels": [
+            "Periodic - 1000ms SW",
+            "Periodic - 500ms SW",
+            "Periodic - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-Periodic-medium": {
+          "config_name": [
+            "periodic-012vpm",
+            "periodic-500-sw-012vpm",
+            "periodic-100-sw-012vpm",
+            "random-012vpm"
+          ],
+          "labels": [
+            "Periodic - 1000ms SW",
+            "Periodic - 500ms SW",
+            "Periodic - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "SensingWindow-periodic-high": {
+          "config_name": [
+            "periodic-02vpm",
+            "periodic-500-sw-02vpm",
+            "periodic-100-sw-02vpm",
+            "random-02vpm"
+          ],
+          "labels": [
+            "Periodic - 1000ms SW",
+            "Periodic - 500ms SW",
+            "Periodic - 100ms SW",
+            "Random Scheduling"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "dashed", "dotted"]
+        },
+        "compare-density": {
+          "config_name": [
+            "periodic-006vpm",
+            "periodic-012vpm",
+            "periodic-02vpm"
+          ],
+          "labels": [
+            "periodic - 0.06vpm",
+            "periodic - 0.12vpm",
+            "Periodic - 0.2vpm"
+          ],
+          "markers": ["v", "x", "+"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["solid", "solid", "solid"]
+        },
+        "Low": {
+          "config_name": [
+            "nonPeriodic-ETSI-006vpm-normal-grant",
+            "nonPeriodic-3GPP-006vpm-normal-grant",
+            "periodic-006vpm",
+            "random-006vpm"
+          ],
+          "labels": [
+            "Non Periodic - ETSI",
+            "Non Periodic - 3GPP",
+            "Periodic",
+            "Random"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "dotted"]
+        },
+        "Medium": {
+          "config_name": [
+            "nonPeriodic-ETSI-012vpm-normal-grant",
+            "nonPeriodic-3GPP-012vpm-normal-grant",
+            "periodic-012vpm",
+            "random-012vpm"
+          ],
+          "labels": [
+            "Non Periodic - ETSI",
+            "Non Periodic - 3GPP",
+            "Periodic",
+            "Random"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "dotted"]
+        },
+        "High": {
+          "config_name": [
+            "nonPeriodic-ETSI-02vpm-normal-grant",
+            "nonPeriodic-3GPP-02vpm-normal-grant",
+            "periodic-02vpm",
+            "random-02vpm"
+          ],
+          "labels": [
+            "Non Periodic - ETSI",
+            "Non Periodic - 3GPP",
+            "Periodic",
+            "Random"
+          ],
+          "markers": ["v", "x", "+", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "dotted"]
+        },
+        "Mixed-Density": {
+          "config_name": [
+            "nonPeriodic-ETSI-006vpm-normal-grant",
+            "nonPeriodic-3GPP-006vpm-normal-grant",
+            "periodic-006vpm",
+            "nonPeriodic-ETSI-012vpm-normal-grant",
+            "nonPeriodic-3GPP-012vpm-normal-grant",
+            "periodic-012vpm",
+            "nonPeriodic-ETSI-02vpm-normal-grant",
+            "nonPeriodic-3GPP-02vpm-normal-grant",
+            "periodic-02vpm"
+          ],
+          "labels": [
+            "ETSI-L",
+            "3GPP-L",
+            "Periodic-L",
+            "ETSI-M",
+            "3GPP-M",
+            "Periodic-M",
+            "ETSI-H",
+            "3GPP-H",
+            "Periodic-H"
+          ],
+          "markers": ["v", "x", "+", "D", ">", "|", "v", "x", "+"],
+          "colors": ["black", "red", "blue", "green", "yellow", "orange", "gold", "purple", "cyan"],
+          "error-markers": ["v", "x", "*", "D"],
+          "error-colors": ["red", "blue", "green", "black"],
+          "linestyles": ["dashed", "dashed", "solid", "solid", "solid", "solid", "solid", "solid", "solid"]
+        }
       },
       "filtered_vectors": [
         "sciSent",
@@ -58,13 +495,13 @@
         "txRxDistanceTB",
         "sciReceived",
         "sciDecoded",
-        "sciNotDecoded",
         "sciFailedHalfDuplex",
         "tbReceived",
         "tbDecoded",
         "tbFailedDueToNoSCI",
         "tbFailedHalfDuplex",
         "tbFailedButSCIReceived",
+        "sciUnsensed",
         "missedTransmission",
         "generatedGrants",
         "selectedSubchannelIndex",
@@ -72,6 +509,7 @@
         "grantBreak",
         "grantBreakMissedTrans",
         "grantBreakSize",
+        "grantBreakTiming",
         "tbFailedDueToProp",
         "tbFailedDueToInterference",
         "sciFailedDueToProp",
@@ -88,6 +526,35 @@
         "posX",
         "posY",
         "interPacketDelay"
+      ],
+      "errors": [
+        "sciUnsensed",
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex",
+        "tbFailedDueToProp",
+        "sciFailedDueToProp",
+        "tbFailedDueToNoSCI",
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "unsensed_errors": [
+        "sciUnsensed"
+      ],
+      "hd_errors": [
+        "tbFailedHalfDuplex"
+      ],
+      "prop_errors": [
+        "sciFailedDueToProp",
+        "tbFailedDueToProp"
+      ],
+      "interference_errors": [
+        "sciFailedDueToInterference",
+        "tbFailedDueToInterference"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "grantBreakTiming"
       ],
       "filtered_scalars": [
         "txRxDistance",
@@ -106,5 +573,4 @@
       ]
     }
   }
-
 }
