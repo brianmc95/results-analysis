@@ -31,6 +31,8 @@ class Grapher:
 
         self.p = self.results["confidence-interval"]
         self.confidence_intervals = self.results["graph-confidence-interval"]
+        self.dateTime = self.results["include-date-time"]
+        self.image_format = self.results["image-format"]
 
     def generate_graphs(self, result_folders, now):
 
@@ -50,10 +52,14 @@ class Grapher:
                         folders_for_comparison.append(folder)
 
             for graph_type in self.results["graphs"]:
-                if graph_type in ["PDR-SCI", "PDR-TB", "IPG", "Arrivals", "Collisions"]:
+                if graph_type in ["PDR-SCI", "PDR-TB", "PDR-A", "PDR-P", "IPG", "Arrivals", "Collisions"]:
                     self.distance_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "PeriodicVAperiodic":
+                    self.traffic_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "CBR":
                     self.cbr_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "CBR-PSCCH":
+                    self.cbr_pscch_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "deltaCol":
                     self.delta_col(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "Errors":
@@ -111,6 +117,8 @@ class Grapher:
             for stat in folder_results[0]:
                 if stat == "CBR":
                     self.across_run_results_cbr(folder_results, output_csv_dir)
+                elif stat == "CBR-PSCCH":
+                    self.across_run_results_cbrPscch(folder_results, output_csv_dir)
                 elif stat == "GrantBreaks":
                     grant_breaks = []
                     for i in range(len(folder_results)):
@@ -165,9 +173,12 @@ class Grapher:
 
         pdr_sci_agg = pd.DataFrame()
         pdr_tb_agg = pd.DataFrame()
+        pdr_a_agg = pd.DataFrame()
+        pdr_p_agg = pd.DataFrame()
         # pdr_tb_ignore_sci_agg = pd.DataFrame()
         ipg_agg = pd.DataFrame()
         cbr_agg = pd.DataFrame()
+        cbrPscch_agg = pd.DataFrame()
         arrivals_agg = pd.DataFrame()
         unsensed_errors = pd.DataFrame()
         hd_errors = pd.DataFrame()
@@ -193,6 +204,12 @@ class Grapher:
             # TB PDR calculation
             pdr_tb_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecoded", "txRxDistanceTB", True)
 
+            aperiodic_chunk = chunk[chunk["periodic"] == 0]
+            pdr_a_agg = self.stat_distance(pdr_a_agg, aperiodic_chunk, "tbDecoded", "txRxDistanceTB", True)
+
+            periodic_chunk = chunk[chunk["periodic"] == 1]
+            pdr_p_agg = self.stat_distance(pdr_p_agg, periodic_chunk, "tbDecoded", "txRxDistanceTB", True)
+
             # pdr_tb_ignore_sci_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecodedIgnoreSCI", "txRxDistanceTB", True)
 
             collisions_agg = self.collisions_distance(collisions_agg, chunk)
@@ -207,8 +224,7 @@ class Grapher:
             # IPG calculation
             ipg_agg = self.stat_distance(ipg_agg, chunk, "interPacketDelay", "txRxDistanceTB", False)
 
-            # CBR calculation doesn't aggregate the same way as the above so dealt with separately
-            # CBR calculation doesn't aggregate the same way as the above so dealt with separately
+            # CBR calculation doesn't aggregate the same way as the above so dealt with separatel
             cbr_df = chunk[chunk["cbr"].notnull()]
             cbr_df = cbr_df[["Time", "cbr"]]
             cbr_df = cbr_df[cbr_df["cbr"].notnull()]
@@ -217,6 +233,16 @@ class Grapher:
                 cbr_agg = cbr_df
             else:
                 cbr_agg = cbr_agg.append(cbr_df)
+
+            # CBRPSCCH calculation doesn't aggregate the same way as the above so dealt with separatel
+            cbrPscch_df = chunk[chunk["cbrPscch"].notnull()]
+            cbrPscch_df = cbrPscch_df[["Time", "cbrPscch"]]
+            cbrPscch_df = cbrPscch_df[cbrPscch_df["cbrPscch"].notnull()]
+
+            if cbrPscch_agg.empty:
+                cbrPscch_agg = cbrPscch_df
+            else:
+                cbrPscch_agg = cbrPscch_agg.append(cbrPscch_df)
 
             # Deal with the grant breaking
             for col in self.results["grantBreaking"]:
@@ -231,9 +257,12 @@ class Grapher:
 
         results["PDR-SCI"] = pdr_sci_agg
         results["PDR-TB"] = pdr_tb_agg
+        results["PDR-A"] = pdr_a_agg
+        results["PDR-P"] = pdr_p_agg
         # results["PDR-IGNORE-SCI"] = pdr_tb_ignore_sci_agg
         results["IPG"] = ipg_agg
         results["CBR"] = cbr_agg
+        results["CBR-PSCCH"] = cbrPscch_agg
         results["Arrivals"] = arrivals_agg
         results["GrantBreaks"] = total_grant_breaks
         results["Collisions"] = collisions_agg
@@ -258,8 +287,8 @@ class Grapher:
 
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
-        distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
-        distance_df = distance_df[(distance_df["Time"] > 198)]
+        # distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
+        # distance_df = distance_df[(distance_df["Time"] > 198)]
         distance_df = distance_df[["Time", "NodeID", stat, distance]]
         distance_df = distance_df[distance_df[stat] > -1]
         distance_df = distance_df.rename(columns={"Time": "Time", "NodeID": "NodeID", stat: stat, distance: "Distance"})
@@ -363,7 +392,7 @@ class Grapher:
 
         # Reduce the size of the DF to what we're interested in.
         distance_df = df[df[stat].notnull()]
-        distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
+        # distance_df = distance_df[(distance_df["posX"] > 0) & (distance_df["posX"] < 2000)]
         distance_df = distance_df[["Time", "NodeID", stat, distance]]
         distance_df = distance_df[distance_df[stat] > -1]
         distance_df = distance_df.rename(columns={"Time": "Time", "NodeID": "NodeID", stat: stat, distance: "Distance"})
@@ -561,6 +590,49 @@ class Grapher:
         cbr_df.to_csv("{}/CBR.csv".format(output_csv_dir), index=False)
         raw_cbr_df.to_csv("{}/raw-CBR.csv".format(output_csv_dir), index=False)
 
+    def across_run_results_cbrPscch(self, results, output_csv_dir):
+        earliest_time = float("inf")
+        latest_time = -float("inf")
+
+        raw_cbr_df = pd.DataFrame()
+        for folder in results:
+
+            start_time = folder["CBR-PSCCH"]["Time"].min()
+            if start_time < earliest_time:
+                earliest_time = start_time
+
+            end_time = folder["CBR-PSCCH"]["Time"].max()
+            if end_time > latest_time:
+                latest_time = end_time
+
+            if raw_cbr_df.empty:
+                raw_cbr_df = folder["CBR-PSCCH"]
+            else:
+                raw_cbr_df.append(folder["CBR-PSCCH"])
+
+        self.logger.debug("Earliest time: {}s Latest time: {}s".format(earliest_time, latest_time))
+
+        cbr_df = pd.DataFrame(columns=["Mean", "Time", "Confidence-Interval"])
+        last_time = earliest_time
+        for i in np.arange(earliest_time, latest_time, 0.1):
+            subsection_df = pd.DataFrame()
+            for folder in results:
+                df = folder["CBR-PSCCH"]
+                if subsection_df.empty:
+                    subsection_df = df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbrPscch"].notnull())]
+                else:
+                    subsection_df.append(df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbrPscch"].notnull())])
+
+            last_time = i
+
+            cbr_df = cbr_df.append({"Mean": subsection_df["cbrPscch"].mean(),
+                                    "Time": (i + last_time) / 2,
+                                    "Confidence-Interval": subsection_df["cbrPscch"].std()
+                                    }, ignore_index=True)
+
+        cbr_df.to_csv("{}/CBR-PSCCH.csv".format(output_csv_dir), index=False)
+        raw_cbr_df.to_csv("{}/raw-CBR-PSCCH.csv".format(output_csv_dir), index=False)
+
     @staticmethod
     def combine_runs(line, mean_cols, t_value):
         means = []
@@ -585,6 +657,104 @@ class Grapher:
 
     ### Graphing utilities
 
+    def traffic_graph(self, folders, graph_type, graph_title, graph_info, now):
+        means = []
+        cis = []
+        distances = []
+        for folder in folders:
+            if "periodic-012vpm" in folder:
+                df = pd.read_csv("{}/PDR-P.csv".format(folder))
+                means.append(list(df["Mean"]))
+                if self.confidence_intervals:
+                    cis.append(list(df["Confidence-Interval"]))
+            elif any(substring in folder for substring in ["10pc", "25pc", "50pc"]):
+                for csv_file_name in ["PDR-A", "PDR-P"]:
+                    df = pd.read_csv("{}/{}.csv".format(folder, csv_file_name))
+                    distances = (list(range(0, df.shape[0] * 10, 10)))
+                    means.append(list(df["Mean"]))
+                    if self.confidence_intervals:
+                        cis.append(list(df["Confidence-Interval"]))
+            else:
+                df = pd.read_csv("{}/PDR-A.csv".format(folder))
+                means.append(list(df["Mean"]))
+                if self.confidence_intervals:
+                    cis.append(list(df["Confidence-Interval"]))
+
+        graph_info["means"] = means
+        graph_info["cis"] = cis
+
+        self.dist_graph_traffic(distances, graph_info, "{}-{}".format(graph_title, graph_type),
+                                ylabel="Packet Delivery Rate %", now=now,
+                                confidence_intervals=self.confidence_intervals,
+                                show=False, store=True, percentage=True)
+
+    def dist_graph_traffic(self, distances, graph_info, plot_name, ylabel, now, legend_pos="lower left",
+                           confidence_intervals=None, show=True, store=False, percentage=False, error=False,
+                           delta_col=False):
+
+        fig, ax = plt.subplots()
+
+        for i in range(len(graph_info["labels"])):
+            if "nonPeriodic" == graph_info["labels"][i]:
+                j = 2
+            elif "periodic" == graph_info["labels"][i]:
+                j = 3
+            elif "nonPeriodic" in graph_info["labels"][i]:
+                j = 1
+            else:
+                j = 0
+
+            if confidence_intervals:
+                ax.errorbar(distances, graph_info["means"][i], yerr=graph_info["cis"][i],
+                            label="{}".format(graph_info["labels"][i]),
+                            fillstyle="none", marker=graph_info["markers"][i], markevery=5,
+                            color=graph_info["periodic-colors"][j], linestyle=graph_info["linestyles"][i])
+            else:
+                ax.plot(distances, graph_info["means"][i],
+                        label="{}".format(graph_info["labels"][i],),
+                        fillstyle="none", marker=graph_info["markers"][i], markevery=5,
+                        color=graph_info["periodic-colors"][j], linestyle=graph_info["linestyles"][i])
+
+        ax.set(xlabel='Distance (m)', ylabel=ylabel)
+
+        handles, labels = plt.gca().get_legend_handles_labels()
+        newLabels, newHandles = [], []
+        for handle, label in zip(handles, labels):
+            if label not in newLabels:
+                newLabels.append(label)
+                newHandles.append(handle)
+
+        if error:
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.86, 0.96, 0.04), loc=legend_pos,
+                            borderaxespad=0, ncol=2, mode="expand")
+        elif delta_col:
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.94, 0.96, 0.04), loc=legend_pos,
+                            borderaxespad=0, ncol=2, mode="expand")
+        else:
+            l4 = plt.legend(newHandles, newLabels, loc=legend_pos, handlelength=1,
+                            borderaxespad=0, ncol=2, bbox_to_anchor=(0.02, 0.02, 0.96, 0.02))
+
+        ax.tick_params(direction='in')
+
+        ax.set_xlim([0, 500])
+        plt.xticks(np.arange(0, (max(distances) + 1), step=50))
+
+        if percentage:
+            ax.set_ylim([0, 100])
+            plt.yticks(np.arange(0, 101, step=10))
+
+        plt.grid(b=True, color="#d1d1d1")
+
+        if show:
+            fig.show()
+
+        if store:
+            if self.dateTime:
+                fig.savefig("{}/{}-{}.{}".format(self.figure_store, plot_name, now, self.image_format), dpi=400)
+            else:
+                fig.savefig("{}/{}.{}".format(self.figure_store, plot_name, self.image_format), dpi=400)
+        plt.close(fig)
+
     def distance_graph(self, folders, graph_type, graph_title, graph_info, now):
         means = []
         cis = []
@@ -599,7 +769,7 @@ class Grapher:
         graph_info["means"] = means
         graph_info["cis"] = cis
 
-        if graph_type in ["PDR-SCI", "PDR-TB"]:
+        if graph_type in ["PDR-SCI", "PDR-TB", "PDR-A", "PDR-P"]:
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
                             ylabel="Packet Delivery Rate %", now=now, confidence_intervals=self.confidence_intervals,
                             show=False, store=True, percentage=True)
@@ -651,8 +821,46 @@ class Grapher:
         self.cbr_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
                       confidence_intervals=self.confidence_intervals, show=False, store=True)
 
-        self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Channel Busy Ratio %",
-                      percentage=True, show=False, store=True)
+        # self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Channel Busy Ratio %",
+        #               percentage=True, show=False, store=True)
+
+    def cbr_pscch_graph(self, folders, graph_type, graph_title, graph_info, now):
+        # Might change this to time based graph but CBR is fine for now
+        times = []
+        cbrs = []
+        cis = []
+        box_plot_data = []
+        for folder in folders:
+            df = pd.read_csv("{}/CBR-PSCCH.csv".format(folder))
+            cbr = list(df["Mean"])
+            ci = list(df["Confidence-Interval"])
+
+            # Transform 0-1 to 0-100
+            for i in range(len(cbr)):
+                cbr[i] = cbr[i] * 100
+                ci[i] = ci[i] * 100
+
+            df["Time"] = df["Time"] - df["Time"].min()
+
+            times.append(list(df["Time"]))
+            cbrs.append(cbr)
+            cis.append(ci)
+
+            cbr_csv = "{}/raw-CBR-PSCCH.csv".format(folder)
+            df = pd.read_csv(cbr_csv)
+            filtered_df = df[df["Time"] > 502]
+            box_plot_data.append(100 * filtered_df["cbrPscch"])
+
+        graph_info["means"] = cbrs
+        graph_info["times"] = times
+        graph_info["cis"] = cis
+        graph_info["boxplotData"] = box_plot_data
+
+        self.cbr_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
+                      confidence_intervals=self.confidence_intervals, show=False, store=True)
+
+        # self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Channel Busy Ratio %",
+        #               percentage=True, show=False, store=True)
 
     def grant_break_graph(self, folders, graph_type, graph_title, graph_info, now):
         # Might change this to time based graph but CBR is fine for now
@@ -703,7 +911,12 @@ class Grapher:
             fig.show()
 
         if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, "{}-{}".format(graph_title, graph_type), now), dpi=400)
+            if self.dateTime:
+                fig.savefig("{}/{}-{}.{}".format(self.figure_store, "{}-{}".format(graph_title, graph_type), now,
+                                                 self.image_format), dpi=400)
+            else:
+                fig.savefig("{}/{}.{}".format(self.figure_store, "{}-{}".format(graph_title, graph_type),
+                                              self.image_format))
         plt.close(fig)
 
     def dist_graph(self, distances, graph_info, plot_name, ylabel, now, legend_pos="lower left",
@@ -737,8 +950,8 @@ class Grapher:
             l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.94, 0.96, 0.04), loc=legend_pos,
                             borderaxespad=0, ncol=2, mode="expand")
         else:
-            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.04, 0.96, 0.04), loc=legend_pos,
-                            borderaxespad=0, ncol=2)
+            l4 = plt.legend(newHandles, newLabels, loc=legend_pos, handlelength=1.5,
+                            borderaxespad=0, ncol=2, bbox_to_anchor=(0.02, 0.02, 0.96, 0.02))
 
         ax.tick_params(direction='in')
 
@@ -749,13 +962,16 @@ class Grapher:
             ax.set_ylim([0, 100])
             plt.yticks(np.arange(0, 101, step=10))
 
-        plt.grid(b=True, alpha=0.5)
+        plt.grid(b=True, color="#d1d1d1")
 
         if show:
             fig.show()
 
         if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=400)
+            if self.dateTime:
+                fig.savefig("{}/{}-{}.{}".format(self.figure_store, plot_name, now, self.image_format), dpi=400)
+            else:
+                fig.savefig("{}/{}.{}".format(self.figure_store, plot_name, self.image_format), dpi=400)
         plt.close(fig)
 
     def cbr_plot(self, graph_info, plot_name, now, confidence_intervals=None, show=True, store=False):
@@ -778,13 +994,16 @@ class Grapher:
 
         ax.set_ylim([0, 100])
         plt.yticks(np.arange(0, 101, step=10))
-        plt.grid(b=True, alpha=0.5)
+        plt.grid(b=True, color="#d1d1d1")
 
         if show:
             fig.show()
 
         if store:
-            fig.savefig("{}/{}-{}.png".format(self.figure_store, plot_name, now), dpi=400)
+            if self.dateTime:
+                fig.savefig("{}/{}-{}.{}".format(self.figure_store, plot_name, now, self.image_format), dpi=400)
+            else:
+                fig.savefig("{}/{}.{}".format(self.figure_store, plot_name, self.image_format), dpi=400)
         plt.close(fig)
 
     def box_plot(self, graph_info, plot_name, now, ylabel=None, percentage=False, show=False, store=True):
@@ -799,13 +1018,16 @@ class Grapher:
             ax.set_ylim([0, 100])
             plt.yticks(np.arange(0, 101, step=10))
 
-        plt.grid(b=True, alpha=0.5)
+        plt.grid(b=True, color="#d1d1d1")
 
         if show:
             fig.show()
 
         if store:
-            fig.savefig("{}/{}-Box-{}.png".format(self.figure_store, plot_name, now), dpi=400)
+            if self.dateTime:
+                fig.savefig("{}/{}-Box-{}.{}".format(self.figure_store, plot_name, now, self.image_format), dpi=400)
+            else:
+                fig.savefig("{}/{}-Box.{}".format(self.figure_store, plot_name, self.image_format))
         plt.close(fig)
 
     def errors_dist(self, folders, graph_type, graph_title, graph_info, now):

@@ -2,40 +2,46 @@
   "mcs7" : {
     "project_path": "/home/brianmccarthy/git_repos/OpenCV2X",
     "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X/build",
-    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/Validation/omnetpp.ini",
-    "target": "run_simulte-validation",
+    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/personal-Validation/omnetpp.ini",
+    "target": "run_personal-Validation",
     "config_names" : {
-      "MCS7-slow-20dbm": {
-        "repeat": 5,
-        "naming": ["Simulated-MCS9-slow"]
+      "MCS7-006vpm-20dbm": {
+        "repeat": 0
       },
-      "MCS7-slow-23dbm": {
-        "repeat": 0,
-        "naming": ["Simulated-MCS7-slow-23dbm"]
+      "MCS7-009vpm-20dbm": {
+        "repeat": 0
       },
-      "MCS7-fast-20dbm": {
-        "repeat": 0,
-        "naming": ["Simulated-MCS7-20dbm-fast"]
+      "MCS7-012vpm-10dbm": {
+        "repeat": 0
       },
-      "MCS7-fast-20dbm-2": {
-        "repeat": 0,
-        "naming": ["Simulated-MCS7-fast-20dbm-bler"]
+      "MCS7-012vpm-20dbm": {
+        "repeat": 0
       },
-      "MCS7-fast-23dbm": {
-        "repeat": 0,
-        "naming": ["Simulated-MCS7-fast-23dbm"]
+      "MCS7-012vpm-23dbm": {
+        "repeat": 0
+      },
+      "MCS9-012vpm-20dbm": {
+        "repeat": 0
+      },
+      "MCS7-016vpm-20dbm": {
+        "repeat": 0
+      },
+      "MCS7-02vpm-20dbm": {
+        "repeat": 5
+      },
+      "MCS7-025vpm-20dbm": {
+        "repeat": 5
+      },
+      "MCS7-03vpm-20dbm": {
+        "repeat": 5
       }
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
     "omnet-result-dirs": [],
-    "parsed-result-dir": [
-      "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/mcs7/sciChange-006vpm-20dbm-2020-08-05-16_16_46",
-      "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/mcs7/sciChange-009vpm-20dbm-2020-08-05-16_15_54",
-      "/Users/brianmccarthy/git_repos/results-analysis/data/parsed_data/mcs7/sciChange-012vpm-20dbm-2020-08-05-16_18_51"
-    ],
-    "processed-result-dir2": [],
-    "processed-result-dir": [
+    "parsed-result-dir": [],
+    "processed-result-dir": [],
+    "processed-result-dir2": [
       "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-006vpm-2020-01-01-00_00_00",
 
       "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/mcs7/analytical-7mcs-009vpm-2020-01-01-00_00_00",
@@ -94,15 +100,24 @@
       "graphs": ["PDR-TB", "Errors"],
       "confidence-interval": 0.95,
       "graph-confidence-interval": false,
+      "include-date-time": false,
+      "image-format": "png",
       "graph-configurations": {
         "006vpm": {
-          "config_name": ["analytical-7mcs-006vpm", "sciChange-006vpm-20dbm", "new-results-006vpm", "old-results-006vpm", "old-results-006vpm-v2"],
-          "labels": ["Analytical", "sciResult", "New Result", "Old Result v1", "Old Result v2"],
-          "markers": ["v", "x", "D", "|", "+"],
-          "colors": ["red", "blue", "orange", "green", "purple"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["red", "blue", "green", "black"],
-          "linestyles": ["solid", "dashed", "dotted", "dotted", "dotted"]
+          "config_name": [
+            ""
+          ],
+          "labels": [
+            "Periodic (One Shot Branch)",
+            "Periodic (Counter Branch)",
+            "Periodic (Old)",
+            "Periodic (Master)"
+          ],
+          "markers": ["v", "x", "v", "|"],
+          "colors": ["black", "blue", "red", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "--"]
         },
         "009vpm": {
           "config_name": ["analytical-7mcs-009vpm", "sciChange-009vpm-20dbm", "new-results-009vpm", "old-results-009vpm"],
@@ -378,6 +393,7 @@
         "tbFailedDueToNoSCI",
         "tbFailedHalfDuplex",
         "tbFailedButSCIReceived",
+        "periodic",
         "sciUnsensed",
         "missedTransmission",
         "generatedGrants",
@@ -385,12 +401,16 @@
         "selectedNumSubchannels",
         "grantBreak",
         "grantBreakMissedTrans",
+        "grantBreakTiming",
         "grantBreakSize",
+        "resourceReselectionCounter",
+        "retainGrant",
         "tbFailedDueToProp",
         "tbFailedDueToInterference",
         "sciFailedDueToProp",
         "sciFailedDueToInterference",
         "cbr",
+        "cbrPscch",
         "subchannelReceived",
         "subchannelsUsed",
         "senderID",
@@ -401,7 +421,16 @@
         "selectedNumSubchannels",
         "posX",
         "posY",
-        "interPacketDelay"
+        "interPacketDelay",
+        "oneShot",
+        "oneShotSent",
+        "oneShotReceived",
+        "oneShotDecoded",
+        "oneShotFailedHalfDuplex",
+        "oneShotFailedDueToProp",
+        "oneShotFailedDueToInterference",
+        "oneShotUnsensed",
+        "txRxDistanceOneShot"
       ],
       "errors": [
         "sciUnsensed",
@@ -417,7 +446,12 @@
         "sciUnsensed"
       ],
       "hd_errors": [
-        "sciFailedHalfDuplex"
+        "tbFailedHalfDuplex"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "grantBreakTiming"
       ],
       "prop_errors": [
         "sciFailedDueToProp",
@@ -426,10 +460,6 @@
       "interference_errors": [
         "sciFailedDueToInterference",
         "tbFailedDueToInterference"
-      ],
-      "grantBreaking": [
-        "grantBreakMissedTrans",
-        "grantBreakSize"
       ],
       "filtered_scalars": [
         "txRxDistance",
@@ -444,7 +474,8 @@
         "scisNotDecoded",
         "scisDecoded",
         "scisReceived",
-        "cbr"
+        "cbr",
+        "cbrPssch"
       ]
     }
   }

@@ -102,6 +102,11 @@ class DataParser:
                 self.logger.debug("Pivoting chunk file: {}".format(csv_file))
                 chunk_df = pd.read_csv(csv_file)
 
+                if chunk_df.empty:
+                    self.logger.info("Chunk is empty deleting file: {}".format(csv_file))
+                    os.remove(csv_file)
+                    continue
+
                 chunk_df = chunk_df.infer_objects()
 
                 chunk_df = chunk_df.sort_values(by=["NodeID", "Time"])
