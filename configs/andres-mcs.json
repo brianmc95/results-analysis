@@ -1,0 +1,239 @@
+{
+  "andres-mcs" : {
+    "project_path": "/home/brianmccarthy/git_repos/OpenCV2X",
+    "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X/build",
+    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/personal-andres-experiments/omnetpp.ini",
+    "opp_run": false,
+    "target": "run_personal-andres-experiments",
+    "config_names" : {
+      "MCS6-006vpm": {
+        "repeat": 0
+      },
+      "MCS6-012vpm": {
+        "repeat": 0
+      },
+      "MCS6-016vpm": {
+        "repeat": 0
+      },
+      "MCS11-006vpm": {
+        "repeat": 0
+      },
+      "MCS11-012vpm": {
+        "repeat": 5
+      },
+      "MCS11-016vpm": {
+        "repeat": 0
+      },
+      "MCS12-006vpm": {
+        "repeat": 0
+      },
+      "MCS12-012vpm": {
+        "repeat": 0
+      },
+      "MCS12-016vpm": {
+        "repeat": 0
+      }
+    },
+    "slack-api-token": "",
+    "parallel_processes" : 5,
+    "omnet-result-dirs": [],
+    "parsed-result-dir": [],
+    "processed-result-dir": [],
+    "results": {
+      "graphs": ["PDR-TB", "CBR", "deltaCol"],
+      "confidence-interval": 0.95,
+      "graph-confidence-interval": false,
+      "include-date-time": false,
+      "image-format": "eps",
+      "graph-configurations": {
+        "mcs11-compare-006vpm": {
+          "config_name": [
+            "MCS6-006vpm",
+            "MCS11-006vpm"
+          ],
+          "labels": [
+            "MCS 6",
+            "MCS 11"
+          ],
+          "markers": ["D", "x"],
+          "colors": ["black", "red"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "mcs11-compare-012vpm": {
+          "config_name": [
+            "MCS6-012vpm",
+            "MCS11-012vpm"
+          ],
+          "labels": [
+            "MCS 6",
+            "MCS 11"
+          ],
+          "markers": ["D", "x"],
+          "colors": ["black", "red"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "mcs12-compare-006vpm": {
+          "config_name": [
+            "MCS6-006vpm",
+            "MCS12-006vpm"
+          ],
+          "labels": [
+            "MCS 6",
+            "MCS 12"
+          ],
+          "markers": ["D", "x"],
+          "colors": ["black", "red"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "mcs12-compare-012vpm": {
+          "config_name": [
+            "MCS6-012vpm",
+            "MCS12-012vpm"
+          ],
+          "labels": [
+            "MCS 6",
+            "MCS 12"
+          ],
+          "markers": ["D", "x"],
+          "colors": ["black", "red"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "mcs11-compare-016vpm": {
+          "config_name": [
+            "MCS6-016vpm",
+            "MCS11-016vpm"
+          ],
+          "labels": [
+            "MCS 6",
+            "MCS 11"
+          ],
+          "markers": ["D", "x"],
+          "colors": ["black", "red"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed"]
+        },
+        "mcs12-compare-016vpm": {
+          "config_name": [
+            "MCS6-016vpm",
+            "MCS12-016vpm"
+          ],
+          "labels": [
+            "MCS 6",
+            "MCS 12"
+          ],
+          "markers": ["D", "x"],
+          "colors": ["black", "red"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed"]
+        }
+      },
+      "filtered_vectors": [
+        "sciSent",
+        "tbSent",
+        "txRxDistanceSCI",
+        "txRxDistanceTB",
+        "sciReceived",
+        "sciDecoded",
+        "sciFailedHalfDuplex",
+        "tbReceived",
+        "tbDecoded",
+        "tbFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbFailedButSCIReceived",
+        "periodic",
+        "sciUnsensed",
+        "missedTransmission",
+        "generatedGrants",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "grantBreak",
+        "grantBreakMissedTrans",
+        "grantBreakTiming",
+        "grantBreakSize",
+        "resourceReselectionCounter",
+        "retainGrant",
+        "tbFailedDueToProp",
+        "tbFailedDueToInterference",
+        "sciFailedDueToProp",
+        "sciFailedDueToInterference",
+        "cbr",
+        "cbrPscch",
+        "subchannelReceived",
+        "subchannelsUsed",
+        "senderID",
+        "subchannelsUsedToSend",
+        "subchannelSent",
+        "grantStartTime",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "posX",
+        "posY",
+        "interPacketDelay",
+        "oneShot",
+        "oneShotSent",
+        "oneShotReceived",
+        "oneShotDecoded",
+        "oneShotFailedHalfDuplex",
+        "oneShotFailedDueToProp",
+        "oneShotFailedDueToInterference",
+        "oneShotUnsensed",
+        "txRxDistanceOneShot"
+      ],
+      "errors": [
+        "sciUnsensed",
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex",
+        "tbFailedDueToProp",
+        "sciFailedDueToProp",
+        "tbFailedDueToNoSCI",
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "unsensed_errors": [
+        "sciUnsensed"
+      ],
+      "hd_errors": [
+        "tbFailedHalfDuplex"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "grantBreakTiming"
+      ],
+      "prop_errors": [
+        "sciFailedDueToProp",
+        "tbFailedDueToProp"
+      ],
+      "interference_errors": [
+        "sciFailedDueToInterference",
+        "tbFailedDueToInterference"
+      ],
+      "filtered_scalars": [
+        "txRxDistance",
+        "tbAndSCINotReceived",
+        "tbFailedButSCIReceived",
+        "tbsFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbsDecoded",
+        "tbsReceived",
+        "tbsSent",
+        "scisSent",
+        "scisNotDecoded",
+        "scisDecoded",
+        "scisReceived",
+        "cbr",
+        "cbrPssch"
+      ]
+    }
+  }
+}

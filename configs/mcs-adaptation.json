@@ -1,0 +1,244 @@
+{
+  "non-periodic-denm" : {
+    "project_path": "/home/brianmccarthy/git_repos/OpenCV2X-private",
+    "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X-private/build",
+    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X-private/scenarios/personal-non-periodic/omnetpp.ini",
+    "scenario_folder": "/home/brianmccarthy/git_repos/OpenCV2X-private/scenarios/personal-non-periodic/",
+    "opp_run": true,
+    "project_libraries": [
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/build/src/artery/libartery_core.so",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/build/src/traci/libtraci.so",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/build/extern/libveins.so",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/build/extern/libINET.so",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/build/extern/liblte.so"
+    ],
+    "ned_folders": [
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/src/artery",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/src/traci",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/extern/veins/src/veins",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/extern/inet/src",
+      "/home/brianmccarthy/git_repos/OpenCV2X-private/extern/simulte/src"
+    ],
+    "target": "run_personal-non-periodic",
+    "config_names" : {
+      "DENM-OneShot-012vpm": {
+        "repeat": 0
+      },
+      "DENM-SB-SPS-012vpm": {
+        "repeat": 0
+      },
+      "DENM-Counter-012vpm": {
+        "repeat": 0
+      },
+      "DENM-OneShot-012vpm-10pc": {
+        "repeat": 0
+      },
+      "DENM-OneShot-012vpm-10pc-no-csr-fix": {
+        "repeat": 5
+      },
+      "DENM-SB-SPS-012vpm-10pc": {
+        "repeat": 0
+      },
+      "DENM-Counter-012vpm-10pc": {
+        "repeat": 0
+      }
+    },
+    "slack-api-token": "",
+    "parallel_processes" : 5,
+    "omnet-result-dirs": [],
+    "parsed-result-dir": [],
+    "processed-result-dir": [
+      "/hdd/results-analysis/data/processed_data/non-periodic-denm/DENM-OneShot-012vpm-fixed-10pc-2021-02-05-16_46_38",
+      "/hdd/results-analysis/data/processed_data/non-periodic-denm/DENM-OneShot-012vpm-10pc-2021-02-08-11_19_59",
+      "/hdd/results-analysis/data/processed_data/non-periodic-denm/DENM-OneShot-012vpm-10pc-no-csr-fix-2021-02-08-15_37_49"
+    ],
+    "results": {
+      "graphs": ["PDR-TB", "PeriodicVAperiodic", "deltaColPeriodicBreakdown", "ErrorsPeriodicBreakDown", "PeriodicVAperiodic"],
+      "confidence-interval": 0.95,
+      "graph-confidence-interval": false,
+      "include-date-time": false,
+      "image-format": "png",
+      "graph-configurations": {
+        "DENM-10pc-fix": {
+          "config_name": [
+            "DENM-OneShot-012vpm-fixed-10pc",
+            "DENM-OneShot-012vpm-10pc-no-csr-fix"
+          ],
+          "labels": [
+            "Fixed",
+            "not fixed"
+          ],
+          "markers": [
+            "v",
+            "x"
+          ],
+          "colors": [
+            "black",
+            "red"
+          ],
+          "error-markers": [
+            "v",
+            "x",
+            "*",
+            "D",
+            "|",
+            "."
+          ],
+          "error-colors": [
+            "black",
+            "red",
+            "blue",
+            "green",
+            "orange",
+            "cyan"
+          ],
+          "periodic-colors": [
+            "black",
+            "red",
+            "blue",
+            "green"
+          ],
+          "linestyles": [
+            "solid",
+            "dashed"
+          ]
+        },
+      "DENM-10pc": {
+          "config_name": [
+            "DENM-OneShot-012vpm-fixed-10pc",
+            "DENM-SB-SPS-012vpm-10pc"
+          ],
+          "labels": [
+            "One Shot",
+            "SB SPS"
+          ],
+          "markers": [
+            "v",
+            "x"
+          ],
+          "colors": [
+            "black",
+            "red"
+          ],
+          "error-markers": [
+            "v",
+            "x",
+            "*",
+            "D",
+            "|",
+            "."
+          ],
+          "error-colors": [
+            "black",
+            "red",
+            "blue",
+            "green",
+            "orange",
+            "cyan"
+          ],
+          "periodic-colors": [
+            "black",
+            "red",
+            "blue",
+            "green"
+          ],
+          "linestyles": [
+            "solid",
+            "dashed"
+          ]
+        }
+      },
+      "filtered_vectors": [
+        "messageArrival",
+        "sciSent",
+        "tbSent",
+        "txRxDistanceSCI",
+        "txRxDistanceTB",
+        "sciReceived",
+        "sciDecoded",
+        "sciFailedHalfDuplex",
+        "tbReceived",
+        "tbDecoded",
+        "tbFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbFailedButSCIReceived",
+        "periodic",
+        "sciUnsensed",
+        "missedTransmission",
+        "generatedGrants",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "grantBreak",
+        "grantBreakMissedTrans",
+        "grantBreakTiming",
+        "grantBreakSize",
+        "resourceReselectionCounter",
+        "retainGrant",
+        "tbFailedDueToProp",
+        "tbFailedDueToInterference",
+        "sciFailedDueToProp",
+        "sciFailedDueToInterference",
+        "cbr",
+        "cbrPscch",
+        "subchannelReceived",
+        "subchannelsUsed",
+        "senderID",
+        "subchannelsUsedToSend",
+        "subchannelSent",
+        "grantStartTime",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "posX",
+        "posY",
+        "interPacketDelay",
+        "oneShot",
+        "csrReschedule"
+      ],
+      "errors": [
+        "sciUnsensed",
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex",
+        "tbFailedDueToProp",
+        "sciFailedDueToProp",
+        "tbFailedDueToNoSCI",
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "unsensed_errors": [
+        "sciUnsensed"
+      ],
+      "hd_errors": [
+        "tbFailedHalfDuplex"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "grantBreakTiming"
+      ],
+      "prop_errors": [
+        "sciFailedDueToProp",
+        "tbFailedDueToProp"
+      ],
+      "interference_errors": [
+        "sciFailedDueToInterference",
+        "tbFailedDueToInterference"
+      ],
+      "filtered_scalars": [
+        "txRxDistance",
+        "tbAndSCINotReceived",
+        "tbFailedButSCIReceived",
+        "tbsFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbsDecoded",
+        "tbsReceived",
+        "tbsSent",
+        "scisSent",
+        "scisNotDecoded",
+        "scisDecoded",
+        "scisReceived",
+        "cbr",
+        "cbrPssch"
+      ]
+    }
+  }
+}

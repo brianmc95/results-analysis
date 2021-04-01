@@ -3,6 +3,7 @@
     "project_path": "/home/brianmccarthy/git_repos/OpenCV2X",
     "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X/build",
     "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/personal-non-periodic/omnetpp.ini",
+    "opp_run": false,
     "target": "run_personal-non-periodic",
     "config_names" : {
       "periodic-006vpm": {
@@ -17,106 +18,10 @@
       "periodic-03vpm": {
         "repeat": 0
       },
-      "periodic-100-sw-006vpm": {
-        "repeat": 0
-      },
       "periodic-100-sw-012vpm": {
         "repeat": 0
       },
-      "periodic-100-sw-02vpm": {
-        "repeat": 0
-      },
-      "periodic-500-sw-006vpm": {
-        "repeat": 0
-      },
       "periodic-500-sw-012vpm": {
-        "repeat": 0
-      },
-      "periodic-500-sw-02vpm":{
-        "repeat": 0
-      },
-      "random-006vpm": {
-        "repeat": 0
-      },
-      "random-012vpm": {
-        "repeat": 0
-      },
-      "random-02vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-006vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-3GPP-012vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-3GPP-02vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-3GPP-03vpm": {
-        "repeat": 5
-      },
-       "nonPeriodic-3GPP-100-sw-006vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-100-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-100-sw-02vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-200-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-no-rssi-200-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-500-sw-006vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-500-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-no-rssi-500-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-3GPP-500-sw-02vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-012vpm-490": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-006vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-ETSI-012vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-ETSI-02vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-ETSI-03vpm": {
-        "repeat": 5
-      },
-      "nonPeriodic-ETSI-100-sw-006vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-100-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-100-sw-02vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-200-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-500-sw-006vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-500-sw-012vpm": {
-        "repeat": 0
-      },
-      "nonPeriodic-ETSI-500-sw-02vpm": {
         "repeat": 0
       },
       "reschedule-006vpm": {
@@ -130,6 +35,126 @@
       },
       "reschedule-03vpm": {
         "repeat": 0
+      },
+      "nonPeriodic-3GPP-random-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-random-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-006vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-02vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-03vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-100-sw-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-200-sw-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-500-sw-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-no-rssi-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-006vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-02vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-03vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-100-sw-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-200-sw-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-500-sw-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-no-rssi": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-Counter": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-Counter-10pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-Counter-25pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-Counter-50pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-Counter-75pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-Counter": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-Counter-10pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-Counter-25pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-Counter-50pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-Counter-75pc": {
+        "repeat": 5
+      },
+      "nonPeriodic-3GPP-oneShot-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-oneShot-10pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-oneShot-25pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-oneShot-50pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-oneShot-75pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-oneShot-012vpm": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-oneShot-10pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-oneShot-25pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-oneShot-50pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-oneShot-75pc": {
+        "repeat": 0
+      },
+      "nonPeriodic-ETSI-012vpm-noGrantBreak": {
+        "repeat": 0
+      },
+      "nonPeriodic-3GPP-012vpm-noGrantBreak": {
+        "repeat": 0
       }
     },
     "slack-api-token": "",
@@ -138,172 +163,328 @@
     "parsed-result-dir": [],
     "processed-result-dir2": [],
     "processed-result-dir": [
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-02vpm-normal-grant-2020-08-16-14_00_14",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-006vpm-normal-grant-2020-08-16-13_57_23",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-normal-grant-2020-08-16-13_57_23",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-03vpm-normal-grant-2020-08-20-09_59_56",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-006vpm-2021-01-24-12_13_17",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-2021-01-24-12_12_32",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-02vpm-2021-01-24-12_12_32",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-03vpm-2021-01-24-12_12_32",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-100-sw-02vpm-normal-grant-2020-08-16-17_09_45",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-100-sw-006vpm-normal-grant-2020-08-16-17_09_45",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-100-sw-012vpm-normal-grant-2020-08-16-17_09_45",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-Counter-10pc-2021-01-25-21_17_31",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-Counter-25pc-2021-01-25-21_17_31",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-Counter-50pc-2021-01-25-21_17_31",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-Counter-2021-01-25-13_53_58",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-500-sw-02vpm-normal-grant-2020-08-14-17_38_39",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-500-sw-006vpm-normal-grant-2020-08-14-17_38_39",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-500-sw-012vpm-normal-grant-2020-08-14-17_38_39",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-100-sw-012vpm-2021-01-25-09_38_28",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-200-sw-012vpm-2021-01-26-14_46_27",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-500-sw-012vpm-2021-01-26-14_46_27",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-no-rssi-012vpm-2021-01-26-14_54_20",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-02vpm-normal-grant-2020-08-16-15_10_08",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-006vpm-normal-grant-2020-08-16-15_10_08",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-012vpm-normal-grant-2020-08-16-15_10_08",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-03vpm-normal-grant-2020-08-21-06_58_44",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-oneShot-012vpm-2021-01-25-19_40_34",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-3GPP-012vpm-oneShot-25pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-3GPP-012vpm-oneShot-10pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-3GPP-012vpm-oneShot-50pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-oneShot-75pc-2021-02-08-18_37_21",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-100-sw-02vpm-normal-grant-2020-08-14-17_39_14",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-100-sw-006vpm-normal-grant-2020-08-14-17_39_14",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-100-sw-012vpm-normal-grant-2020-08-14-17_39_14",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-random-012vpm-2021-01-25-21_17_31",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-500-sw-02vpm-normal-grant-2020-08-14-17_39_14",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-500-sw-006vpm-normal-grant-2020-08-14-17_39_14",
-      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-500-sw-012vpm-normal-grant-2020-08-14-17_39_14",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-006vpm-2021-01-24-11_27_16",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-012vpm-2021-01-24-11_27_16",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-02vpm-2021-01-24-11_27_16",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-03vpm-2021-01-24-11_27_16",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-02vpm-2020-08-15-18_54_08",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-006vpm-2020-08-15-18_54_08",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-012vpm-2020-08-15-18_54_08",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-03vpm-2020-08-19-15_07_46",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-012vpm-Counter-2021-01-25-19_40_34",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-100-sw-02vpm-2020-08-16-14_00_14",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-100-sw-006vpm-2020-08-14-17_38_02",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-100-sw-012vpm-2020-08-14-17_38_02",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-012vpm-no-rssi-2021-01-25-08_06_07",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-100-sw-012vpm-2021-01-25-08_06_07",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-200-sw-012vpm-2021-01-25-08_06_07",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-500-sw-012vpm-2021-01-25-08_06_07",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-500-sw-02vpm-2020-08-14-17_38_39",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-500-sw-006vpm-2020-08-14-17_38_39",
-      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-500-sw-012vpm-2020-08-14-17_38_39",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-ETSI-012vpm-oneShot-10pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-ETSI-012vpm-oneShot-25pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-ETSI-012vpm-oneShot-50pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-oneShot-012vpm-2021-01-25-19_40_34",
 
-      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-02vpm-2020-08-15-18_54_45",
-      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-006vpm-2020-08-15-18_54_45",
-      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-012vpm-2020-08-15-18_54_45",
-      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-03vpm-2020-08-19-15_08_32"
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-ETSI-012vpm-oneShot-50pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-ETSI-012vpm-oneShot-25pc-fixed-2021-02-05-17_02_47",
+      "/hdd/results-analysis/data/processed_data/mixed/nonPeriodic-ETSI-012vpm-oneShot-10pc-fixed-2021-02-05-17_02_47",
+
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-oneShot-75pc-2021-02-03-12_33_44",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-012vpm-Counter-75pc-2021-02-03-15_49_56",
+
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-random-012vpm-2021-01-25-19_40_34",
+
+      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-02vpm-2021-01-27-10_09_01",
+      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-03vpm-2020-11-18-10_54_58",
+      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-006vpm-2021-01-27-10_09_01",
+      "/hdd/results-analysis/data/processed_data/non-periodic/periodic-012vpm-2021-01-27-10_09_01",
+
+      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-02vpm-2020-11-18-10_54_58",
+      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-03vpm-2020-11-18-10_54_58",
+      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-012vpm-2020-11-18-12_20_24",
+      "/hdd/results-analysis/data/processed_data/non-periodic/reschedule-006vpm-2021-01-27-10_09_01",
+
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-3GPP-012vpm-noGrantBreak-2021-01-31-16_36_04",
+      "/hdd/results-analysis/data/processed_data/non-periodic/nonPeriodic-ETSI-012vpm-noGrantBreak-2021-01-31-16_43_47"
     ],
     "results": {
-      "graphs": ["PDR-TB", "CBR", "deltaCol"],
+      "graphs": ["PDR-TB"],
       "confidence-interval": 0.95,
       "graph-confidence-interval": false,
       "include-date-time": false,
+      "image-format": "eps",
       "graph-configurations": {
-        "Density-Comparison": {
+        "Mixed-OneShot-3GPP": {
+          "config_name": [
+            "periodic-012vpm",
+            "nonPeriodic-3GPP-oneShot-012vpm",
+            "nonPeriodic-3GPP-012vpm-oneShot-10pc-fixed",
+            "nonPeriodic-3GPP-012vpm-oneShot-25pc-fixed",
+            "nonPeriodic-3GPP-012vpm-oneShot-50pc-fixed",
+            "nonPeriodic-3GPP-012vpm-oneShot-75pc"
+          ],
+          "labels": [
+            "SB-SPS (Periodic)",
+            "Aperiodic 100%",
+            "Aperiodic 10%",
+            "Aperiodic 25%",
+            "Aperiodic 50%",
+            "Aperiodic 75%"
+          ],
+          "markers": ["v", "x", "|", "D", "+", "*"],
+          "colors": ["black", "red", "blue", "green", "orange", "purple"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "periodic-colors": [
+            "black",
+            "red",
+            "blue",
+            "green"
+          ],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dashdot", "dashdot", "dashdot"]
+        },
+        "Mixed-OneShot-ETSI": {
+          "config_name": [
+            "periodic-012vpm",
+            "nonPeriodic-ETSI-oneShot-012vpm",
+            "nonPeriodic-ETSI-012vpm-oneShot-10pc-fixed",
+            "nonPeriodic-ETSI-012vpm-oneShot-25pc-fixed",
+            "nonPeriodic-ETSI-012vpm-oneShot-50pc-fixed"
+          ],
+          "labels": [
+            "SB-SPS (Periodic)",
+            "Aperiodic 100%",
+            "Aperiodic 10%",
+            "Aperiodic 25%",
+            "Aperiodic 50%"
+          ],
+          "markers": ["v", "x", "|", "D", "+"],
+          "colors": ["black", "red", "blue", "green", "orange"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "periodic-colors": [
+            "black",
+            "red",
+            "blue",
+            "green"
+          ],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dashdot", "dashdot"]
+        },
+        "Mixed-Counter-ETSI": {
+          "config_name": [
+            "periodic-012vpm",
+            "nonPeriodic-ETSI-012vpm-Counter",
+            "nonPeriodic-ETSI-012vpm-Counter-10pc",
+            "nonPeriodic-ETSI-012vpm-Counter-25pc",
+            "nonPeriodic-ETSI-012vpm-Counter-50pc"
+          ],
+          "labels": [
+            "SB-SPS (Periodic)",
+            "Aperiodic 100%",
+            "Aperiodic 10%",
+            "Aperiodic 25%",
+            "Aperiodic 50%"
+          ],
+          "markers": ["v", "x", "|", "D", "+"],
+          "colors": ["black", "red", "blue", "green", "orange"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "periodic-colors": [
+            "black",
+            "red",
+            "blue",
+            "green"
+          ],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dashdot", "dashdot"]
+        },
+        "Mixed-Counter-3GPP": {
+          "config_name": [
+            "periodic-012vpm",
+            "nonPeriodic-3GPP-012vpm-Counter",
+            "nonPeriodic-3GPP-012vpm-Counter-10pc",
+            "nonPeriodic-3GPP-012vpm-Counter-25pc",
+            "nonPeriodic-3GPP-012vpm-Counter-50pc"
+          ],
+          "labels": [
+            "SB-SPS (Periodic)",
+            "Aperiodic 100%",
+            "Aperiodic 10%",
+            "Aperiodic 25%",
+            "Aperiodic 50%"
+          ],
+          "markers": ["v", "x", "|", "D", "+"],
+          "colors": ["black", "red", "blue", "green", "orange"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "periodic-colors": [
+            "black",
+            "red",
+            "blue",
+            "green"
+          ],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dashdot", "dashdot"]
+        },
+        "SB-SPS-3GPP-No-GB": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm",
+            "nonPeriodic-3GPP-012vpm-noGrantBreak",
+            "periodic-012vpm",
+            "reschedule-012vpm"
+          ],
+          "labels": [
+            "Aperiodic GB (3GPP)",
+            "Aperiodic No-GB (3GPP)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "--", "dashdot"]
+        },
+        "SB-SPS-ETSI-No-GB": {
+          "config_name": [
+            "nonPeriodic-ETSI-012vpm",
+            "nonPeriodic-ETSI-012vpm-noGrantBreak",
+            "periodic-012vpm",
+            "reschedule-012vpm"
+          ],
+          "labels": [
+            "Aperiodic GB (ETSI)",
+            "Aperiodic No GB (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "--", "dashdot"]
+        },
+        "SB-SPS-3GPP": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm",
+            "nonPeriodic-3GPP-random-012vpm",
+            "nonPeriodic-3GPP-no-rssi-012vpm",
+            "nonPeriodic-3GPP-100-sw-012vpm",
+            "nonPeriodic-3GPP-200-sw-012vpm",
+            "nonPeriodic-3GPP-500-sw-012vpm"
+          ],
+          "labels": [
+            "SB-SPS (3GPP)",
+            "Random (3GPP)",
+            "No RSSI (3GPP)",
+            "SW 100 (3GPP)",
+            "SW 200 (3GPP)",
+            "SW 500 (3GPP)"
+          ],
+          "markers": ["v", "x", "|", "D", "o", "+"],
+          "colors": ["black", "red", "blue", "green", "orange", "purple"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "--", "dashdot", "dashdot", "dashdot"]
+        },
+        "SB-SPS-ETSI": {
+          "config_name": [
+            "nonPeriodic-ETSI-012vpm",
+            "nonPeriodic-ETSI-random-012vpm",
+            "nonPeriodic-ETSI-012vpm-no-rssi",
+            "nonPeriodic-ETSI-100-sw-012vpm",
+            "nonPeriodic-ETSI-200-sw-012vpm",
+            "nonPeriodic-ETSI-500-sw-012vpm"
+          ],
+          "labels": [
+            "SB-SPS  (ETSI)",
+            "Random (ETSI)",
+            "No RSSI (ETSI)",
+            "SW 100 (ETSI)",
+            "SW 200 (ETSI)",
+            "SW 500 (ETSI)"
+          ],
+          "markers": ["v", "x", "|", "D", "o", "+"],
+          "colors": ["black", "red", "blue", "green", "orange", "purple"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "--", "dashdot", "dashdot", "dashdot"]
+        },
+        "Non-SB-SPS-ETSI": {
+          "config_name": [
+            "nonPeriodic-ETSI-012vpm",
+            "nonPeriodic-ETSI-012vpm-Counter",
+            "nonPeriodic-ETSI-random-012vpm",
+            "nonPeriodic-ETSI-oneShot-012vpm"
+          ],
+          "labels": [
+            "SB-SPS",
+            "Random",
+            "Counter",
+            "OneShot"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dashdot"]
+        },
+        "Non-SB-SPS-3GPP": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm",
+            "nonPeriodic-3GPP-012vpm-Counter",
+            "nonPeriodic-3GPP-random-012vpm",
+            "nonPeriodic-3GPP-oneShot-012vpm"
+          ],
+          "labels": [
+            "SB-SPS",
+            "Random",
+            "Counter",
+            "OneShot"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dashdot"]
+        },
+        "Compare-Density": {
           "config_name": [
             "periodic-006vpm",
             "periodic-012vpm",
             "periodic-02vpm"
           ],
           "labels": [
-            "Periodic (Default) - 0.06vpm",
-            "Periodic (Default) - 0.12vpm",
-            "Periodic (Default) - 0.2vpm"
+            "Periodic - 0.06vpm",
+            "Periodic - 0.12vpm",
+            "Periodic - 0.2vpm"
           ],
-          "markers": ["v", "x", "+"],
+          "markers": ["D", "x", "|"],
           "colors": ["black", "red", "blue"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
           "linestyles": ["solid", "solid", "solid"]
         },
-        "Medium": {
+        "aperiodic-006vpm": {
           "config_name": [
-            "nonPeriodic-3GPP-012vpm-normal-grant",
-            "nonPeriodic-ETSI-012vpm-normal-grant",
-            "periodic-012vpm",
-            "reschedule-012vpm"
-          ],
-          "labels": [
-            "Aperiodic (3GPP)",
-            "Aperiodic (ETSI)",
-            "Periodic (Default)",
-            "Periodic (Single Slot Usage)"
-          ],
-          "markers": ["v", "x", "+", "D"],
-          "colors": ["black", "red", "blue", "green"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
-          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
-        },
-        "High": {
-          "config_name": [
-            "nonPeriodic-3GPP-02vpm-normal-grant",
-            "nonPeriodic-ETSI-02vpm-normal-grant",
-            "periodic-02vpm",
-            "reschedule-02vpm"
-          ],
-          "labels": [
-            "Aperiodic (3GPP)",
-            "Aperiodic (ETSI)",
-            "Periodic (Default)",
-            "Periodic (Single Slot Usage)"
-          ],
-          "markers": ["v", "x", "+", "D"],
-          "colors": ["black", "red", "blue", "green"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
-          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
-        },
-        "Extra-High": {
-          "config_name": [
-            "nonPeriodic-3GPP-03vpm-normal-grant",
-            "nonPeriodic-ETSI-03vpm-normal-grant",
-            "periodic-03vpm",
-            "reschedule-03vpm"
-          ],
-          "labels": [
-            "Aperiodic (3GPP)",
-            "Aperiodic (ETSI)",
-            "Periodic (Default)",
-            "Periodic (Single Slot Usage)"
-          ],
-          "markers": ["v", "x", "+", "D"],
-          "colors": ["black", "red", "blue", "green"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
-          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
-        },
-        "Medium-500": {
-          "config_name": [
-            "nonPeriodic-3GPP-500-sw-012vpm-normal-grant",
-            "nonPeriodic-ETSI-500-sw-012vpm-normal-grant",
-            "periodic-500-sw-012vpm",
-            "reschedule-012vpm"
-          ],
-          "labels": [
-            "Aperiodic (3GPP)",
-            "Aperiodic (ETSI)",
-            "Periodic (Default)",
-            "Periodic (Single Slot Usage)"
-          ],
-          "markers": ["v", "x", "+", "D"],
-          "colors": ["black", "red", "blue", "green"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
-          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
-        },
-        "Medium-100": {
-          "config_name": [
-            "nonPeriodic-3GPP-100-sw-012vpm-normal-grant",
-            "nonPeriodic-ETSI-100-sw-012vpm-normal-grant",
-            "periodic-100-sw-012vpm",
-            "reschedule-012vpm"
-          ],
-          "labels": [
-            "Aperiodic (3GPP)",
-            "Aperiodic (ETSI)",
-            "Periodic (Default)",
-            "Periodic (Single Slot Usage)"
-          ],
-          "markers": ["v", "x", "+", "D"],
-          "colors": ["black", "red", "blue", "green"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
-          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
-        },
-        "Low": {
-          "config_name": [
-            "nonPeriodic-3GPP-006vpm-normal-grant",
-            "nonPeriodic-ETSI-006vpm-normal-grant",
+            "nonPeriodic-3GPP-006vpm",
+            "nonPeriodic-ETSI-006vpm",
             "periodic-006vpm",
             "reschedule-006vpm"
           ],
@@ -313,14 +494,95 @@
             "Periodic (Default)",
             "Periodic (Single Slot Usage)"
           ],
-          "markers": ["v", "x", "+", "D"],
+          "markers": ["v", "x", "|", "D"],
           "colors": ["black", "red", "blue", "green"],
-          "error-markers": ["v", "x", "*", "D"],
-          "error-colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
           "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+        "aperiodic-012vpm": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm",
+            "nonPeriodic-ETSI-012vpm",
+            "periodic-012vpm",
+            "reschedule-012vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+        "aperiodic-02vpm": {
+          "config_name": [
+            "nonPeriodic-3GPP-02vpm",
+            "nonPeriodic-ETSI-02vpm",
+            "periodic-02vpm",
+            "reschedule-02vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+        "aperiodic-03vpm": {
+          "config_name": [
+            "nonPeriodic-3GPP-03vpm",
+            "nonPeriodic-ETSI-03vpm",
+            "periodic-03vpm",
+            "reschedule-03vpm"
+          ],
+          "labels": [
+            "Aperiodic (3GPP)",
+            "Aperiodic (ETSI)",
+            "Periodic (Default)",
+            "Periodic (Single Slot Usage)"
+          ],
+          "markers": ["v", "x", "|", "D"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["dashed", "dashed", "solid", "dashdot"]
+        },
+        "PSCCH-CBR": {
+          "config_name": [
+            "nonPeriodic-3GPP-012vpm",
+            "nonPeriodic-ETSI-012vpm",
+            "nonPeriodic-3GPP-012vpm-Counter",
+            "nonPeriodic-3GPP-oneShot-012vpm",
+            "nonPeriodic-ETSI-012vpm-Counter",
+            "nonPeriodic-ETSI-oneShot-012vpm"
+          ],
+          "labels": [
+            "SB-SPS  (3GPP)",
+            "SB-SPS  (ETSI)",
+            "Counter (3GPP)",
+            "OneShot (3GPP)",
+            "Counter (ETSI)",
+            "OneShot (ETSI)"
+          ],
+          "markers": ["v", "x", "|", "D", "+", "*"],
+          "colors": ["black", "red", "blue", "green", "orange", "purple"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "solid", "dashed", "dashed", "dashdot", "dashdot"]
         }
       },
       "filtered_vectors": [
+        "messageArrival",
         "sciSent",
         "tbSent",
         "txRxDistanceSCI",
@@ -333,6 +595,7 @@
         "tbFailedDueToNoSCI",
         "tbFailedHalfDuplex",
         "tbFailedButSCIReceived",
+        "periodic",
         "sciUnsensed",
         "missedTransmission",
         "generatedGrants",
@@ -349,6 +612,7 @@
         "sciFailedDueToProp",
         "sciFailedDueToInterference",
         "cbr",
+        "cbrPscch",
         "subchannelReceived",
         "subchannelsUsed",
         "senderID",
@@ -359,7 +623,9 @@
         "selectedNumSubchannels",
         "posX",
         "posY",
-        "interPacketDelay"
+        "interPacketDelay",
+        "oneShot",
+        "csrReschedule"
       ],
       "errors": [
         "sciUnsensed",
@@ -403,7 +669,8 @@
         "scisNotDecoded",
         "scisDecoded",
         "scisReceived",
-        "cbr"
+        "cbr",
+        "cbrPssch"
       ]
     }
   }

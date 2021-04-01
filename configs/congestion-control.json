@@ -1,0 +1,310 @@
+{
+  "congestion-control" : {
+    "project_path": "/home/brianmccarthy/git_repos/OpenCV2X",
+    "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X/build",
+    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/personal-experiments/omnetpp.ini",
+    "opp_run": false,
+    "target": "run_personal-experiments",
+    "config_names" : {
+      "Congested": {
+        "repeat": 0
+      },
+      "CongestedLong": {
+        "repeat": 0
+      },
+      "PacketDropping-noGB": {
+        "repeat": 0
+      },
+      "PacketDropping-GB": {
+        "repeat": 0
+      },
+      "PacketDroppingLong": {
+        "repeat": 0
+      },
+      "DCC-GB": {
+        "repeat": 0
+      },
+      "DCC-noGB": {
+        "repeat": 0
+      },
+      "DCC-noGB-fsm-state-machine": {
+        "repeat": 0
+      },
+      "DCC-noGB-fsm-gradual-500": {
+        "repeat": 0
+      },
+      "DCC-noGB-fsm-gradual-1ms": {
+        "repeat": 0
+      },
+      "DCC-noGB-fsm-gradual-500-long": {
+        "repeat": 0
+      },
+      "DCC-noGB-fsm-gradual-1ms-long": {
+        "repeat": 0
+      },
+      "DCC-noGB-limeric-long": {
+        "repeat": 0
+      },
+      "DCC-noGB-limeric-long-25pc": {
+        "repeat": 0
+      },
+      "DCC-noGB-fsm-state-machine-long": {
+        "repeat": 0
+      },
+      "DCC-noGB-limeric": {
+        "repeat": 0
+      },
+      "DCC-long": {
+        "repeat": 0
+      },
+      "rriAdaptationCrLimit": {
+        "repeat": 0
+      },
+      "rriAdaptationCrLimitEarlier": {
+        "repeat": 0
+      },
+      "rriAdaptationCrLimitEarliest": {
+        "repeat": 0
+      },
+      "rriAdaptationCrLimitLong": {
+        "repeat": 0
+      },
+      "rriLookup": {
+        "repeat": 0
+      },
+      "rriLookup-DCC-active": {
+        "repeat": 0
+      },
+      "rriLookupLong": {
+        "repeat": 0
+      },
+      "DCC-noGB-limeric-long-40pc": {
+        "repeat": 0
+      },
+      "rriAdaptation-3gpp-long": {
+        "repeat": 0
+      },
+      "PacketDropping-3gpp-long": {
+        "repeat": 0
+      },
+      "PacketDropping-ETSI-long": {
+        "repeat": 0
+      },
+      "rriAdaptation-ETSI-low-long": {
+        "repeat": 0
+      },
+      "rriAdaptation-ETSI-medium-long": {
+        "repeat": 0
+      },
+      "rriAdaptation-ETSI-high-long": {
+        "repeat": 0
+      },
+      "rriAdaptation-long-25pc": {
+        "repeat": 0
+      },
+      "rriAdaptation-long-40pc": {
+        "repeat": 0
+      },
+      "rriAdaptation-short-25pc": {
+        "repeat": 0
+      },
+      "PacketDropping-3gpp-short": {
+        "repeat": 0
+      },
+      "nodeIds": {
+        "repeat": 0
+      },
+      "vector-precision-10": {
+        "repeat": 0
+      },
+      "vector-precision-5": {
+        "repeat": 0
+      },
+      "vector-precision-3": {
+        "repeat": 0
+      },
+      "size-all-ints": {
+        "repeat": 0
+      }
+    },
+    "slack-api-token": "",
+    "parallel_processes" : 5,
+    "omnet-result-dirs": [],
+    "parsed-result-dir": [],
+    "processed-result-dir": [
+     "/hdd/results-analysis/data/processed_data/cc-old/PacketDropping-ETSI-long-2021-03-25-11_51_53",
+     "/hdd/results-analysis/data/processed_data/cc-old/PacketDropping-3gpp-long-2021-03-25-11_50_20",
+     "/hdd/results-analysis/data/processed_data/cc-old/PacketDropping-noGB-aggresive-2021-03-15-17_04_16,",
+     "/hdd/results-analysis/data/processed_data/congestion-control/DCC-noGB-limeric-long-25pc-2021-03-31-21_05_27",
+     "/hdd/results-analysis/data/processed_data/congestion-control/CongestedLong-2021-03-13-11_05_27",
+     "/hdd/results-analysis/data/processed_data/congestion-control/DCC-long-2021-03-31-21_05_27"
+    ],
+    "results": {
+      "graphs": ["PDR-TB", "CBR", "deltaCol", "IPG"],
+      "confidence-interval": 0.95,
+      "graph-confidence-interval": false,
+      "include-date-time": false,
+      "image-format": "eps",
+      "graph-configurations": {
+        "Congestion-Control-25pc": {
+          "config_name": [
+            "CongestedLong",
+            "DCC-noGB-limeric-long-25pc",
+            "DCC-long",
+            "PacketDroppingLong",
+            "rriAdaptation-long-25pc",
+            "rriLookupLong"
+          ],
+          "labels": [
+            "No CC",
+            "DCC (Adapt 25%)",
+            "DCC (React)",
+            "Packet Drop",
+            "RRI Adapt (25%)",
+            "RRI Lookup"
+          ],
+          "markers": ["D", "x", "|", "o", "D", "*"],
+          "colors": ["black", "red", "blue", "green", "darkorange", "cyan"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dotted", "--", "-."]
+        },
+        "DCC-variants": {
+          "config_name": [
+            "CongestedLong",
+            "DCC-long-noGB",
+            "DCC-noGB-limeric-long",
+            "DCC-noGB-limeric-long-25pc"
+          ],
+          "labels": [
+            "No CC",
+            "DCC (React)",
+            "DCC (Adapt)",
+            "DCC (Adapt - 25%)"
+          ],
+          "markers": ["D", "x", "|", "v", "*", "o", "+"],
+          "colors": ["black", "blue", "darkorange", "cyan"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "--"]
+        },
+        "DCC-issue": {
+          "config_name": [
+            "CongestedLong",
+            "DCC-long",
+            "DCC-long-noGB"
+          ],
+          "labels": [
+            "No CC",
+            "GB",
+            "No GB"
+          ],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        }
+      },
+      "filtered_vectors": [
+        "sciSent",
+        "tbSent",
+        "txRxDistanceSCI",
+        "txRxDistanceTB",
+        "sciReceived",
+        "sciDecoded",
+        "sciFailedHalfDuplex",
+        "tbReceived",
+        "tbDecoded",
+        "tbFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbFailedButSCIReceived",
+        "periodic",
+        "sciUnsensed",
+        "missedTransmission",
+        "generatedGrants",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "grantBreak",
+        "grantBreakMissedTrans",
+        "grantBreakTiming",
+        "grantBreakSize",
+        "resourceReselectionCounter",
+        "retainGrant",
+        "tbFailedDueToProp",
+        "tbFailedDueToInterference",
+        "sciFailedDueToProp",
+        "sciFailedDueToInterference",
+        "cbr",
+        "cbrPscch",
+        "subchannelReceived",
+        "subchannelsUsed",
+        "senderID",
+        "subchannelsUsedToSend",
+        "subchannelSent",
+        "grantStartTime",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "macNodeID",
+        "posX",
+        "posY",
+        "interPacketDelay",
+        "oneShot",
+        "oneShotSent",
+        "oneShotReceived",
+        "oneShotDecoded",
+        "oneShotFailedHalfDuplex",
+        "oneShotFailedDueToProp",
+        "oneShotFailedDueToInterference",
+        "oneShotUnsensed",
+        "txRxDistanceOneShot",
+        "rriChange"
+      ],
+      "errors": [
+        "sciUnsensed",
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex",
+        "tbFailedDueToProp",
+        "sciFailedDueToProp",
+        "tbFailedDueToNoSCI",
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "unsensed_errors": [
+        "sciUnsensed"
+      ],
+      "hd_errors": [
+        "tbFailedHalfDuplex"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "grantBreakTiming"
+      ],
+      "prop_errors": [
+        "sciFailedDueToProp",
+        "tbFailedDueToProp"
+      ],
+      "interference_errors": [
+        "sciFailedDueToInterference",
+        "tbFailedDueToInterference"
+      ],
+      "filtered_scalars": [
+        "txRxDistance",
+        "tbAndSCINotReceived",
+        "tbFailedButSCIReceived",
+        "tbsFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbsDecoded",
+        "tbsReceived",
+        "tbsSent",
+        "scisSent",
+        "scisNotDecoded",
+        "scisDecoded",
+        "scisReceived",
+        "cbr",
+        "cbrPssch"
+      ]
+    }
+  }
+}

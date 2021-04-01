@@ -6,6 +6,8 @@
 .idea/
 .ipynb_checkpoints/
 
+*.zip
+*.eps
 *.png
 *.svg
 
