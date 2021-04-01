@@ -116,7 +116,10 @@ class Manager:
 
             self.logger.info("Experiment option set, moving into start experiment")
             try:
-                self.config["omnet-result-dirs"] = self.runner.start_experiment(now)
+                if self.config["opp_run"]:
+                    self.config["omnet-result-dirs"] = self.runner.start_experiment_opp_run(now)
+                else:
+                    self.config["omnet-result-dirs"] = self.runner.start_experiment(now)
                 self.logger.info("omnet-result-dirs: {}".format(self.config["omnet-result-dirs"]))
             except Exception as e:
                 self.logger.error("Experiment failed with error: {}".format(e))

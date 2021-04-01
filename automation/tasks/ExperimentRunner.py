@@ -13,6 +13,7 @@ class ExperimentRunner:
     def __init__(self, config, experiment_type):
         self.processors = multiprocessing.cpu_count()
         self.config = config
+        self.experiment_to_run = ""
         self.experiment_type = experiment_type
 
         # Setup config parser to change experiment parameters.
@@ -23,6 +24,88 @@ class ExperimentRunner:
         self.run_number = 0
 
         self.logger = logging.getLogger("ExperimentRunner")
+
+    def start_experiment_opp_run(self, now):
+        result_dirs = []
+
+        for config in self.config["config_names"]:
+
+            if self.config["config_names"][config]["repeat"] <= 0:
+                continue
+
+            output_data_path = "{}/data/omnet/{}/{}-{}".format(os.getcwd(), self.experiment_type, config, now)
+
+            os.makedirs(output_data_path, exist_ok=True)
+
+            num_processes = self.config["parallel_processes"]
+            if num_processes > self.processors:
+                self.logger.warn("Too many processes, going to revert to total - 1")
+                num_processes = self.processors - 1
+
+            self.logger.info("Beginning simulation of config: {}, total of {} runs of this configuration"
+                             .format(config, self.config["config_names"][config]))
+
+            configs = []
+            for _ in range(self.config["config_names"][config]["repeat"]):
+                configs.append(config)
+
+            self.logger.debug("Configurations list: {}".format(configs))
+            number_of_batches = len(configs) // num_processes
+            if number_of_batches == 0:
+                number_of_batches = 1
+
+            conf_count = 1
+            named = False
+            if "naming" in self.config["config_names"][config]:
+                # This simulation has multiple different runs, so need to update each.
+                conf_count = len(self.config["config_names"][config]["naming"])
+                self.logger.info("Number of sub-configurations of {} is {}".format(config, conf_count))
+                named = True
+
+            current_conf = 0
+
+            while current_conf < conf_count:
+
+                self.update_config(config, current_conf)
+
+                self.configParser.read(self.ini_file)
+
+                i = 0
+                while i < len(configs):
+                    if len(configs) < num_processes:
+                        num_processes = len(configs)
+
+                    self.logger.info(
+                        "Starting up processes, batch {}/{} of {} processes".format((i // num_processes) + 1,
+                                                                                    number_of_batches,
+                                                                                    num_processes))
+                    self.experiment_to_run = config
+                    pool = multiprocessing.Pool(processes=num_processes)
+                    pool.map(self.run_experiment_opp_run, list(range(num_processes)))
+                    pool.close()
+                    pool.join()
+
+                    self.run_number += num_processes
+
+                    self.logger.info("Batch {}/{} complete".format((i // num_processes) + 1, number_of_batches))
+
+                    if named:
+                        result_dirs.append(self.store_results(config, i, now,
+                                                              self.config["config_names"][config]["naming"][
+                                                                  current_conf]))
+                    else:
+                        result_dirs.append(self.store_results(config, i, now))
+
+                    i += num_processes
+
+                self.logger.info("Removing {} dir from results".format(config))
+
+                old_output = "{}/data/omnet/{}/{}".format(os.getcwd(), self.experiment_type, config)
+                os.removedirs(old_output)
+
+                current_conf += 1
+
+        return result_dirs
 
     def start_experiment(self, now):
 
@@ -160,6 +243,60 @@ class ExperimentRunner:
 
         run_command = ["cmake", "--build", self.config["cmake_dir"], "--target", self.config["target"]]
         process = Popen(run_command, stdout=PIPE, stderr=STDOUT)
+        with process.stdout:
+            self.log_subprocess_output(process.stdout)
+        exitcode = process.wait()  # 0 means success
+
+        if exitcode != 0:
+            self.logger.error("Non-Zero exit code for simulation run, code is {}".format(exitcode))
+
+        self.logger.info("Completed simulation run.")
+
+        os.chdir(orig_loc)
+
+        self.logger.debug("Moved backed to original location {}".format(os.getcwd()))
+
+    def run_experiment_opp_run(self, wait):
+
+        name = multiprocessing.current_process().name
+        self.logger.info("Starting process {}".format(name))
+
+        if wait != 0:
+            self.logger.info("Waiting {}s".format(5 * wait))
+            time.sleep(5 * wait)
+            self.logger.info("Wait complete")
+
+        self.run_number += wait
+
+        self.update_run_number(random.randint(0, 99999))
+
+        orig_loc = os.getcwd()
+
+        os.chdir(self.config["scenario_folder"])
+
+        self.logger.debug("Moved into the project directory {}".format(os.getcwd()))
+
+        self.logger.info("Beginning simulation run")
+
+        run_command = "/home/brianmccarthy/omnetpp-5.6/bin/opp_run -u Cmdenv -c {}".format(self.experiment_to_run)
+
+        for library in self.config["project_libraries"]:
+            run_command += " -l {}".format(library)
+
+        ned_folders = " -n "
+        first = True
+        for ned_folder in self.config["ned_folders"]:
+            if first:
+                ned_folders += "{}".format(ned_folder)
+                first = False
+            else:
+                ned_folders += ":{}".format(ned_folder)
+
+        run_command += ned_folders
+
+        run_command += " omnetpp.ini"
+        self.logger.debug(run_command)
+        process = Popen(run_command, stdout=PIPE, stderr=STDOUT, shell=True)
         with process.stdout:
             self.log_subprocess_output(process.stdout)
         exitcode = process.wait()  # 0 means success

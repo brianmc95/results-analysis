@@ -34,6 +34,14 @@ class Grapher:
         self.dateTime = self.results["include-date-time"]
         self.image_format = self.results["image-format"]
 
+        plt.rc("font", size=14)
+        plt.rc("axes", titlesize=14)
+        plt.rc("axes", labelsize=14)
+        plt.rc("xtick", labelsize=14)
+        plt.rc("ytick", labelsize=14)
+        plt.rc("legend", fontsize=14)
+        plt.rc("figure", titlesize=14)
+
     def generate_graphs(self, result_folders, now):
 
         self.logger.info("Beginning graphing of result files: {}".format(result_folders))
@@ -62,8 +70,12 @@ class Grapher:
                     self.cbr_pscch_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "deltaCol":
                     self.delta_col(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "deltaColPeriodicBreakdown":
+                    self.delta_col_traffic_pattern(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "Errors":
                     self.errors_dist(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "ErrorsPeriodicBreakDown":
+                    self.errors_dist_traffic_pattern(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "GrantBreaks":
                     self.grant_break_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "ResourceOccupancy":
@@ -125,8 +137,8 @@ class Grapher:
                         grant_breaks.append(folder_results[i][stat])
                         df = pd.DataFrame({"GrantBreaks": grant_breaks})
                         df.to_csv("{}/{}.csv".format(output_csv_dir, stat), index=False)
-                elif stat == "Collisions":
-                    self.across_run_results(folder_results, stat, output_csv_dir, "CollisionDistance")
+                # elif stat == "Collisions":
+                #     self.across_run_results(folder_results, stat, output_csv_dir, "CollisionDistance")
                 elif stat == "GoodTransmissions":
                     for i in range(len(folder_results)):
                         goodTransmissions.append(folder_results[i][stat])
@@ -184,7 +196,17 @@ class Grapher:
         hd_errors = pd.DataFrame()
         prop_errors = pd.DataFrame()
         interference_errors = pd.DataFrame()
-        collisions_agg = pd.DataFrame()
+
+        aperiodic_unsensed_errors = pd.DataFrame()
+        aperiodic_hd_errors = pd.DataFrame()
+        aperiodic_prop_errors = pd.DataFrame()
+        aperiodic_interference_errors = pd.DataFrame()
+
+        periodic_unsensed_errors = pd.DataFrame()
+        periodic_hd_errors = pd.DataFrame()
+        periodic_prop_errors = pd.DataFrame()
+        periodic_interference_errors = pd.DataFrame()
+        # collisions_agg = pd.DataFrame()
 
         total_grant_breaks = 0
         good_transmission = 0
@@ -192,11 +214,19 @@ class Grapher:
         natural_grant_breaks = 0
 
         error_dfs = {}
+        aperiodic_errors = {}
+        periodic_errors = {}
         # Need a new for loop through all the errors and adding them as a stat distance
         for error in self.results["errors"]:
             error_dfs[error] = pd.DataFrame()
+            aperiodic_errors[error] = pd.DataFrame()
+            periodic_errors[error] = pd.DataFrame()
 
         for chunk in pd.read_csv(output_csv, chunksize=10 ** 6):
+
+            chunk = chunk[chunk["Time"] >= 500]
+            if chunk.empty:
+                continue
 
             # SCI PDR calculation
             pdr_sci_agg = self.stat_distance(pdr_sci_agg, chunk, "sciDecoded", "txRxDistanceSCI", True)
@@ -212,7 +242,7 @@ class Grapher:
 
             # pdr_tb_ignore_sci_agg = self.stat_distance(pdr_tb_agg, chunk, "tbDecodedIgnoreSCI", "txRxDistanceTB", True)
 
-            collisions_agg = self.collisions_distance(collisions_agg, chunk)
+            # collisions_agg = self.collisions_distance(collisions_agg, chunk)
 
             chunk_good_transmission, chunk_unused_transmissions, chunk_natural_grant_breaks = self.resource_usage(chunk)
             good_transmission += chunk_good_transmission
@@ -255,6 +285,20 @@ class Grapher:
                 else:
                     error_dfs[error] = self.stat_distance(error_dfs[error], chunk, error, "txRxDistanceTB", True)
 
+            aperiodic_loss = aperiodic_chunk[aperiodic_chunk["tbReceived"] != -1]
+            for error in aperiodic_errors:
+                if "sci" in error[0:3]:
+                    aperiodic_errors[error] = self.stat_distance(aperiodic_errors[error], aperiodic_loss, error, "txRxDistanceSCI", True)
+                else:
+                    aperiodic_errors[error] = self.stat_distance(aperiodic_errors[error], aperiodic_loss, error, "txRxDistanceTB", True)
+
+            periodic_loss = periodic_chunk[periodic_chunk["tbReceived"] != -1]
+            for error in periodic_errors:
+                if "sci" in error[0:3]:
+                    periodic_errors[error] = self.stat_distance(periodic_errors[error], aperiodic_loss, error, "txRxDistanceSCI", True)
+                else:
+                    periodic_errors[error] = self.stat_distance(periodic_errors[error], periodic_loss, error, "txRxDistanceTB", True)
+
         results["PDR-SCI"] = pdr_sci_agg
         results["PDR-TB"] = pdr_tb_agg
         results["PDR-A"] = pdr_a_agg
@@ -265,7 +309,7 @@ class Grapher:
         results["CBR-PSCCH"] = cbrPscch_agg
         results["Arrivals"] = arrivals_agg
         results["GrantBreaks"] = total_grant_breaks
-        results["Collisions"] = collisions_agg
+        # results["Collisions"] = collisions_agg
         results["GoodTransmissions"] = good_transmission
         results["UnusedTransmissions"] = unused_transmissions
         results["NaturalGrantBreaks"] = natural_grant_breaks
@@ -280,6 +324,56 @@ class Grapher:
                     df["mean"] = df["mean"] + error_dfs[error]["mean"]
 
             results[key] = df
+
+        for key, df in zip(["aperiodic_unsensed_errors", "aperiodic_hd_errors",
+                            "aperiodic_prop_errors", "aperiodic_interference_errors"],
+                           [aperiodic_unsensed_errors, aperiodic_hd_errors,
+                            aperiodic_prop_errors, aperiodic_interference_errors]):
+
+            sub_key = key
+
+            if "unsensed" in key:
+                sub_key = "unsensed_errors"
+            elif "hd" in key:
+                sub_key = "hd_errors"
+            elif "prop" in key:
+                sub_key = "prop_errors"
+            else:
+                sub_key = "interference_errors"
+
+            for error in self.results[sub_key]:
+                if df.empty:
+                    df = aperiodic_errors[error]
+                else:
+                    # Combine mean errors
+                    df["mean"] = df["mean"] + aperiodic_errors[error]["mean"]
+
+                results[key] = df
+
+        for key, df in zip(["periodic_unsensed_errors", "periodic_hd_errors",
+                            "periodic_prop_errors", "periodic_interference_errors"],
+                           [periodic_unsensed_errors, periodic_hd_errors,
+                            periodic_prop_errors, periodic_interference_errors]):
+
+            sub_key = key
+
+            if "unsensed" in key:
+                sub_key = "unsensed_errors"
+            elif "hd" in key:
+                sub_key = "hd_errors"
+            elif "prop" in key:
+                sub_key = "prop_errors"
+            else:
+                sub_key = "interference_errors"
+
+            for error in self.results[sub_key]:
+                if df.empty:
+                    df = periodic_errors[error]
+                else:
+                    # Combine mean errors
+                    df["mean"] = df["mean"] + periodic_errors[error]["mean"]
+
+                results[key] = df
 
         return results
 
@@ -525,6 +619,34 @@ class Grapher:
 
         df = pd.DataFrame()
         self.logger.info("Statistic of interest: {}".format(stat))
+
+        aperiodic = False
+        periodic = False
+        if stat == "aperiodic_unsensed_errors":
+            stat = "unsensed_errors"
+            aperiodic = True
+        elif stat == "periodic_unsensed_errors":
+            stat = "unsensed_errors"
+            periodic = True
+        elif stat == "aperiodic_hd_errors":
+            stat = "hd_errors"
+            aperiodic = True
+        elif stat == "periodic_hd_errors":
+            stat = "hd_errors"
+            periodic = True
+        elif stat == "aperiodic_prop_errors":
+            stat = "prop_errors"
+            aperiodic = True
+        elif stat == "periodic_prop_errors":
+            stat = "prop_errors"
+            periodic = True
+        elif stat == "aperiodic_interference_errors":
+            stat = "interference_errors"
+            aperiodic = True
+        elif stat == "periodic_interference_errors":
+            stat = "interference_errors"
+            periodic = True
+
         for i in range(len(results)):
             if df.empty:
                 df = results[i][stat]
@@ -545,7 +667,12 @@ class Grapher:
 
         df = df.apply(self.combine_runs, axis=1, result_type='expand', args=(mean_cols, t_value,))
         df = df.rename({0: "Mean", 1: "Confidence-Interval"}, axis='columns')
-        df.to_csv("{}/{}.csv".format(output_csv_dir, stat))
+        if aperiodic:
+            df.to_csv("{}/aperiodic-{}.csv".format(output_csv_dir, stat))
+        elif periodic:
+            df.to_csv("{}/periodic-{}.csv".format(output_csv_dir, stat))
+        else:
+            df.to_csv("{}/{}.csv".format(output_csv_dir, stat))
 
     def across_run_results_cbr(self, results, output_csv_dir):
         earliest_time = float("inf")
@@ -661,32 +788,59 @@ class Grapher:
         means = []
         cis = []
         distances = []
-        for folder in folders:
-            if "periodic-012vpm" in folder:
-                df = pd.read_csv("{}/PDR-P.csv".format(folder))
+        labels = []
+        linestyles = []
+        markers = []
+
+        orig_labels = graph_info["labels"]
+        orig_linestyles = graph_info["linestyles"]
+        orig_markers = graph_info["markers"]
+
+        for i in range(len(folders)):
+            if "periodic-012vpm" in folders[i]:
+                df = pd.read_csv("{}/PDR-P.csv".format(folders[i]))
                 means.append(list(df["Mean"]))
                 if self.confidence_intervals:
                     cis.append(list(df["Confidence-Interval"]))
-            elif any(substring in folder for substring in ["10pc", "25pc", "50pc"]):
+            # elif any(substring in folders[i] for substring in ["10pc", "25pc", "50pc"]):
+            #     for csv_file_name in ["PDR-A", "PDR-P"]:
+            #         df = pd.read_csv("{}/{}.csv".format(folders[i], csv_file_name))
+            #         distances = (list(range(0, df.shape[0] * 10, 10)))
+            #         means.append(list(df["Mean"]))
+            #         if self.confidence_intervals:
+            #             cis.append(list(df["Confidence-Interval"]))
+            else:
                 for csv_file_name in ["PDR-A", "PDR-P"]:
-                    df = pd.read_csv("{}/{}.csv".format(folder, csv_file_name))
+                    df = pd.read_csv("{}/{}.csv".format(folders[i], csv_file_name))
+
+                    if csv_file_name == "PDR-A":
+                        labels.append("{} - {}".format(graph_info["labels"][i], "Aperiodic"))
+                    else:
+                        labels.append("{} - {}".format(graph_info["labels"][i], "Periodic"))
+
+                    markers.append(graph_info["markers"][i])
+                    linestyles.append(graph_info["linestyles"][i])
                     distances = (list(range(0, df.shape[0] * 10, 10)))
                     means.append(list(df["Mean"]))
                     if self.confidence_intervals:
                         cis.append(list(df["Confidence-Interval"]))
-            else:
-                df = pd.read_csv("{}/PDR-A.csv".format(folder))
-                means.append(list(df["Mean"]))
-                if self.confidence_intervals:
-                    cis.append(list(df["Confidence-Interval"]))
 
         graph_info["means"] = means
         graph_info["cis"] = cis
+        graph_info["labels"] = labels
+        graph_info["linestyles"] = linestyles
+        graph_info["markers"] = markers
 
         self.dist_graph_traffic(distances, graph_info, "{}-{}".format(graph_title, graph_type),
                                 ylabel="Packet Delivery Rate %", now=now,
                                 confidence_intervals=self.confidence_intervals,
                                 show=False, store=True, percentage=True)
+
+        graph_info["means"] = []
+        graph_info["cis"] = []
+        graph_info["labels"] = orig_labels
+        graph_info["linestyles"] = orig_linestyles
+        graph_info["markers"] = orig_markers
 
     def dist_graph_traffic(self, distances, graph_info, plot_name, ylabel, now, legend_pos="lower left",
                            confidence_intervals=None, show=True, store=False, percentage=False, error=False,
@@ -695,25 +849,16 @@ class Grapher:
         fig, ax = plt.subplots()
 
         for i in range(len(graph_info["labels"])):
-            if "nonPeriodic" == graph_info["labels"][i]:
-                j = 2
-            elif "periodic" == graph_info["labels"][i]:
-                j = 3
-            elif "nonPeriodic" in graph_info["labels"][i]:
-                j = 1
-            else:
-                j = 0
-
             if confidence_intervals:
                 ax.errorbar(distances, graph_info["means"][i], yerr=graph_info["cis"][i],
                             label="{}".format(graph_info["labels"][i]),
                             fillstyle="none", marker=graph_info["markers"][i], markevery=5,
-                            color=graph_info["periodic-colors"][j], linestyle=graph_info["linestyles"][i])
+                            color=graph_info["periodic-colors"][i], linestyle=graph_info["linestyles"][i])
             else:
                 ax.plot(distances, graph_info["means"][i],
                         label="{}".format(graph_info["labels"][i],),
                         fillstyle="none", marker=graph_info["markers"][i], markevery=5,
-                        color=graph_info["periodic-colors"][j], linestyle=graph_info["linestyles"][i])
+                        color=graph_info["periodic-colors"][i], linestyle=graph_info["linestyles"][i])
 
         ax.set(xlabel='Distance (m)', ylabel=ylabel)
 
@@ -728,11 +873,11 @@ class Grapher:
             l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.86, 0.96, 0.04), loc=legend_pos,
                             borderaxespad=0, ncol=2, mode="expand")
         elif delta_col:
-            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.94, 0.96, 0.04), loc=legend_pos,
-                            borderaxespad=0, ncol=2, mode="expand")
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.96, 0.96, 0.04), loc=legend_pos,
+                            borderaxespad=0, ncol=3, mode="expand")
         else:
             l4 = plt.legend(newHandles, newLabels, loc=legend_pos, handlelength=1,
-                            borderaxespad=0, ncol=2, bbox_to_anchor=(0.02, 0.02, 0.96, 0.02))
+                            borderaxespad=0, ncol=3, bbox_to_anchor=(0.02, 0.02, 0.96, 0.02))
 
         ax.tick_params(direction='in')
 
@@ -776,10 +921,10 @@ class Grapher:
         elif graph_type == "IPG":
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
                             ylabel="Inter-Packet Gap (ms)", now=now, legend_pos="upper left",
-                            confidence_intervals=self.confidence_intervals, show=False, store=True)
+                            confidence_intervals=self.confidence_intervals, error=True, show=False, store=True)
         elif graph_type == "Arrivals":
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
-                            ylabel="Total Decoded Packets", now=now, legend_pos="upper left",
+                            ylabel="Total Decoded Packets", now=now, legend_pos="upper right",
                             confidence_intervals=self.confidence_intervals, show=False, store=True)
         elif graph_type == "Collisions":
             self.dist_graph(distances, graph_info, "{}-{}".format(graph_title, graph_type),
@@ -802,16 +947,14 @@ class Grapher:
                 cbr[i] = cbr[i] * 100
                 ci[i] = ci[i] * 100
 
-            df["Time"] = df["Time"] - df["Time"].min()
-
             times.append(list(df["Time"]))
             cbrs.append(cbr)
             cis.append(ci)
 
             cbr_csv = "{}/raw-CBR.csv".format(folder)
             df = pd.read_csv(cbr_csv)
-            filtered_df = df[df["Time"] > 502]
-            box_plot_data.append(100 * filtered_df["cbr"])
+            # filtered_df = df[df["Time"] > 502]
+            box_plot_data.append(100 * df["cbr"])
 
         graph_info["means"] = cbrs
         graph_info["times"] = times
@@ -840,16 +983,14 @@ class Grapher:
                 cbr[i] = cbr[i] * 100
                 ci[i] = ci[i] * 100
 
-            df["Time"] = df["Time"] - df["Time"].min()
-
             times.append(list(df["Time"]))
             cbrs.append(cbr)
             cis.append(ci)
 
             cbr_csv = "{}/raw-CBR-PSCCH.csv".format(folder)
             df = pd.read_csv(cbr_csv)
-            filtered_df = df[df["Time"] > 502]
-            box_plot_data.append(100 * filtered_df["cbrPscch"])
+            #filtered_df = df[df["Time"] > 502]
+            box_plot_data.append(100 * df["cbrPscch"])
 
         graph_info["means"] = cbrs
         graph_info["times"] = times
@@ -944,14 +1085,14 @@ class Grapher:
                 newHandles.append(handle)
 
         if error:
-            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.86, 0.96, 0.04), loc=legend_pos,
+            l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.94, 0.96, 0.04), loc=legend_pos,
                             borderaxespad=0, ncol=2, mode="expand")
         elif delta_col:
             l4 = plt.legend(newHandles, newLabels, bbox_to_anchor=(0.02, 0.94, 0.96, 0.04), loc=legend_pos,
-                            borderaxespad=0, ncol=2, mode="expand")
+                            borderaxespad=0, ncol=1, mode="expand")
         else:
-            l4 = plt.legend(newHandles, newLabels, loc=legend_pos, handlelength=1.5,
-                            borderaxespad=0, ncol=2, bbox_to_anchor=(0.02, 0.02, 0.96, 0.02))
+            l4 = plt.legend(newHandles, newLabels, loc=legend_pos, handlelength=1,
+                            borderaxespad=0, ncol=2, bbox_to_anchor=(0.01, 0.02, 0.96, 0.02))
 
         ax.tick_params(direction='in')
 
@@ -988,7 +1129,30 @@ class Grapher:
                         marker=graph_info["markers"][i], markevery=5, fillstyle="none",
                         color=graph_info["colors"][i], linestyle=graph_info["linestyles"][i])
 
-        ax.legend(loc='upper left')
+        # ax.plot(graph_info["times"][0], [29] * len(graph_info["times"][0]), fillstyle="none",
+        #         color="Black", linestyle="dashed")
+        #
+        # ax.plot(graph_info["times"][0], [51] * len(graph_info["times"][0]), fillstyle="none",
+        #         color="Red", linestyle="dashed")
+        #
+        # ax.plot(graph_info["times"][0], [73] * len(graph_info["times"][0]), fillstyle="none",
+        #         color="Blue", linestyle="dashed")
+        #
+        # ax.plot(graph_info["times"][0], [86] * len(graph_info["times"][0]), fillstyle="none",
+        #         color="Green", linestyle="dashed")
+
+        handles, labels = plt.gca().get_legend_handles_labels()
+        newLabels, newHandles = [], []
+        for handle, label in zip(handles, labels):
+            if label not in newLabels:
+                newLabels.append(label)
+                newHandles.append(handle)
+
+
+        l4 = plt.legend(newHandles, newLabels, loc="upper left", handlelength=1,
+                        borderaxespad=0, ncol=2, bbox_to_anchor=(0.06, 0.96, 0.02, 0.02))
+
+        # ax.legend(loc='upper left')
         ax.set(xlabel='Time (s)', ylabel='Channel Busy Ratio %')
         ax.tick_params(direction='in')
 
@@ -1039,6 +1203,11 @@ class Grapher:
         colors = []
         linestyles = []
 
+        orig_labels = graph_info["labels"]
+        orig_colors = graph_info["colors"]
+        orig_linestyles = graph_info["linestyles"]
+        orig_markers = graph_info["markers"]
+
         errors = ["hd_errors", "unsensed_errors", "prop_errors", "interference_errors"]
 
         for i in range(len(errors)):
@@ -1072,6 +1241,69 @@ class Grapher:
                         confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left",
                         error=True)
 
+        graph_info["means"] = []
+        graph_info["cis"] = []
+        graph_info["labels"] = orig_labels
+        graph_info["linestyles"] = orig_linestyles
+        graph_info["colors"] = orig_colors
+        graph_info["markers"] = orig_markers
+
+    def errors_dist_traffic_pattern(self, folders, graph_type, graph_title, graph_info, now):
+        means = []
+        cis = []
+        distances = []
+        labels = []
+        markers = []
+        colors = []
+        linestyles = []
+
+        orig_labels = graph_info["labels"]
+        orig_colors = graph_info["colors"]
+        orig_linestyles = graph_info["linestyles"]
+        orig_markers = graph_info["markers"]
+
+        errors = ["hd_errors", "unsensed_errors", "prop_errors", "interference_errors"]
+
+        for traffic_pattern in ["aperiodic", "periodic"]:
+            for i in range(len(errors)):
+                for j in range(len(folders)):
+                    df = pd.read_csv("{}/{}-{}.csv".format(folders[j], traffic_pattern, errors[i]))
+                    means.append(list(df["Mean"]))
+                    if self.confidence_intervals:
+                        cis.append(list(df["Confidence-Interval"]))
+                    distances = (list(range(0, 520, 10)))
+                    if errors[i] == "hd_errors":
+                        labels.append(r'Half Duplex Errors, $\delta_{HD}$')
+                    elif errors[i] == "interference_errors":
+                        labels.append(r'Packet Collisions, $\delta_{COL}$')
+                    elif errors[i] == "unsensed_errors":
+                        labels.append(r'Sensing Errors, $\delta_{SEN}$')
+                    elif errors[i] == "prop_errors":
+                        labels.append(r'Propagation Errors, $\delta_{PRO}$')
+                    linestyles.append(graph_info["linestyles"][j])
+                    markers.append(graph_info["error-markers"][i])
+                    colors.append(graph_info["error-colors"][i])
+
+                graph_info["means"] = means
+                graph_info["cis"] = cis
+                graph_info["labels"] = labels
+                graph_info["markers"] = markers
+                graph_info["colors"] = colors
+                graph_info["linestyles"] = linestyles
+
+                self.dist_graph(distances, graph_info,
+                                "{}-{}-{}".format(graph_title, traffic_pattern, graph_type),
+                                ylabel="Packet Loss Attribution %", now=now,
+                                confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left",
+                                error=True)
+
+            graph_info["means"] = []
+            graph_info["cis"] = []
+            graph_info["labels"] = orig_labels
+            graph_info["linestyles"] = orig_linestyles
+            graph_info["colors"] = orig_colors
+            graph_info["markers"] = orig_markers
+
     def delta_col(self, folders, graph_type, graph_title, graph_info, now):
         means = []
         cis = []
@@ -1080,6 +1312,11 @@ class Grapher:
         markers = []
         colors = []
         linestyles = []
+
+        orig_labels = graph_info["labels"]
+        orig_colors = graph_info["colors"]
+        orig_linestyles = graph_info["linestyles"]
+        orig_markers = graph_info["markers"]
 
         for i in range(len(folders)):
             df = pd.read_csv("{}/interference_errors.csv".format(folders[i]))
@@ -1103,3 +1340,56 @@ class Grapher:
                         "{}-{}".format(graph_title, graph_type), ylabel="Packet Loss - Collisions %", now=now,
                         confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left",
                         error=False, delta_col=True)
+
+        graph_info["means"] = []
+        graph_info["cis"] = []
+        graph_info["labels"] = orig_labels
+        graph_info["linestyles"] = orig_linestyles
+        graph_info["colors"] = orig_colors
+        graph_info["markers"] = orig_markers
+
+    def delta_col_traffic_pattern(self, folders, graph_type, graph_title, graph_info, now):
+        means = []
+        cis = []
+        distances = []
+        labels = []
+        markers = []
+        colors = []
+        linestyles = []
+
+        orig_labels = graph_info["labels"]
+        orig_colors = graph_info["colors"]
+        orig_linestyles = graph_info["linestyles"]
+        orig_markers = graph_info["markers"]
+
+        for traffic_pattern in ["aperiodic", "periodic"]:
+            for i in range(len(folders)):
+                df = pd.read_csv("{}/{}-interference_errors.csv".format(folders[i], traffic_pattern))
+                means.append(list(df["Mean"]))
+                if self.confidence_intervals:
+                    cis.append(list(df["Confidence-Interval"]))
+                distances = (list(range(0, 520, 10)))
+                labels.append(r'$\delta_{COL}$' + ': {}'.format(graph_info["labels"][i]))
+                linestyles.append(graph_info["linestyles"][i])
+                markers.append(graph_info["error-markers"][i])
+                colors.append(graph_info["error-colors"][i])
+
+            graph_info["means"] = means
+            graph_info["cis"] = cis
+            graph_info["labels"] = labels
+            graph_info["markers"] = markers
+            graph_info["colors"] = colors
+            graph_info["linestyles"] = linestyles
+
+            self.dist_graph(distances, graph_info,
+                            "{}-{}-{}".format(graph_title, traffic_pattern, graph_type),
+                            ylabel="Packet Loss - Collisions %", now=now,
+                            confidence_intervals=cis, show=False, store=True, percentage=True, legend_pos="upper left",
+                            error=False, delta_col=True)
+
+            graph_info["means"] = []
+            graph_info["cis"] = []
+            graph_info["labels"] = orig_labels
+            graph_info["linestyles"] = orig_linestyles
+            graph_info["colors"] = orig_colors
+            graph_info["markers"] = orig_markers
