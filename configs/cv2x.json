@@ -489,6 +489,7 @@
         }
       },
       "filtered_vectors": [
+        "messageArrival",
         "sciSent",
         "tbSent",
         "txRxDistanceSCI",

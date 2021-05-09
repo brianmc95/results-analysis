@@ -6,181 +6,194 @@
     "opp_run": false,
     "target": "run_personal-experiments",
     "config_names" : {
-      "Congested": {
+      "extra-Congested-short": {
         "repeat": 0
       },
-      "CongestedLong": {
+      "extra-Congested-short-fast": {
         "repeat": 0
       },
-      "PacketDropping-noGB": {
+      "DCC-limeric-60pc-aware": {
         "repeat": 0
       },
-      "PacketDropping-GB": {
+      "DCC-limeric-60pc-notAware": {
         "repeat": 0
       },
-      "PacketDroppingLong": {
+      "extra-Congested": {
+        "repeat": 0
+      },
+      "PacketDropping-ETSI": {
+        "repeat": 0
+      },
+      "PacketDropping-3GPP": {
+        "repeat": 0
+      },
+      "PacketDropping-aggressive": {
+        "repeat": 0
+      },
+      "DCC": {
         "repeat": 0
       },
       "DCC-GB": {
         "repeat": 0
       },
-      "DCC-noGB": {
+      "DCC-limeric": {
         "repeat": 0
       },
-      "DCC-noGB-fsm-state-machine": {
+      "DCC-limeric-20pc": {
         "repeat": 0
       },
-      "DCC-noGB-fsm-gradual-500": {
+      "DCC-limeric-25pc": {
         "repeat": 0
       },
-      "DCC-noGB-fsm-gradual-1ms": {
+      "DCC-limeric-40pc": {
         "repeat": 0
       },
-      "DCC-noGB-fsm-gradual-500-long": {
+      "DCC-limeric-60pc": {
         "repeat": 0
       },
-      "DCC-noGB-fsm-gradual-1ms-long": {
+      "rri-lookup": {
         "repeat": 0
       },
-      "DCC-noGB-limeric-long": {
+      "rri-crlimit-20pc": {
         "repeat": 0
       },
-      "DCC-noGB-limeric-long-25pc": {
+      "rri-crlimit-25pc": {
         "repeat": 0
       },
-      "DCC-noGB-fsm-state-machine-long": {
+      "rri-crlimit-40pc": {
         "repeat": 0
       },
-      "DCC-noGB-limeric": {
-        "repeat": 0
-      },
-      "DCC-long": {
-        "repeat": 0
-      },
-      "rriAdaptationCrLimit": {
-        "repeat": 0
-      },
-      "rriAdaptationCrLimitEarlier": {
-        "repeat": 0
-      },
-      "rriAdaptationCrLimitEarliest": {
-        "repeat": 0
-      },
-      "rriAdaptationCrLimitLong": {
-        "repeat": 0
-      },
-      "rriLookup": {
-        "repeat": 0
-      },
-      "rriLookup-DCC-active": {
-        "repeat": 0
-      },
-      "rriLookupLong": {
-        "repeat": 0
-      },
-      "DCC-noGB-limeric-long-40pc": {
-        "repeat": 0
-      },
-      "rriAdaptation-3gpp-long": {
-        "repeat": 0
-      },
-      "PacketDropping-3gpp-long": {
-        "repeat": 0
-      },
-      "PacketDropping-ETSI-long": {
-        "repeat": 0
-      },
-      "rriAdaptation-ETSI-low-long": {
-        "repeat": 0
-      },
-      "rriAdaptation-ETSI-medium-long": {
-        "repeat": 0
-      },
-      "rriAdaptation-ETSI-high-long": {
-        "repeat": 0
-      },
-      "rriAdaptation-long-25pc": {
-        "repeat": 0
-      },
-      "rriAdaptation-long-40pc": {
-        "repeat": 0
-      },
-      "rriAdaptation-short-25pc": {
-        "repeat": 0
-      },
-      "PacketDropping-3gpp-short": {
-        "repeat": 0
-      },
-      "nodeIds": {
-        "repeat": 0
-      },
-      "vector-precision-10": {
-        "repeat": 0
-      },
-      "vector-precision-5": {
-        "repeat": 0
-      },
-      "vector-precision-3": {
-        "repeat": 0
-      },
-      "size-all-ints": {
+      "rri-crlimit-60pc": {
         "repeat": 0
       }
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
     "omnet-result-dirs": [],
-    "parsed-result-dir": [],
-    "processed-result-dir": [
-     "/hdd/results-analysis/data/processed_data/cc-old/PacketDropping-ETSI-long-2021-03-25-11_51_53",
-     "/hdd/results-analysis/data/processed_data/cc-old/PacketDropping-3gpp-long-2021-03-25-11_50_20",
-     "/hdd/results-analysis/data/processed_data/cc-old/PacketDropping-noGB-aggresive-2021-03-15-17_04_16,",
-     "/hdd/results-analysis/data/processed_data/congestion-control/DCC-noGB-limeric-long-25pc-2021-03-31-21_05_27",
-     "/hdd/results-analysis/data/processed_data/congestion-control/CongestedLong-2021-03-13-11_05_27",
-     "/hdd/results-analysis/data/processed_data/congestion-control/DCC-long-2021-03-31-21_05_27"
+    "parsed-result-dir": [
+      "/hdd/results-analysis/data/parsed_data/congestion-control/rri-crlimit-60pc-2021-05-08-17_16_49"
     ],
+    "processed-result-dir2 ": [
+      "/hdd/results-analysis/data/processed_data/congestion-control/DCC-2021-05-04-13_56_04",
+      "/hdd/results-analysis/data/processed_data/congestion-control/DCC-limeric-20pc-2021-05-04-13_56_04",
+      "/hdd/results-analysis/data/processed_data/congestion-control/DCC-limeric-60pc-2021-05-04-13_56_04",
+      "/hdd/results-analysis/data/processed_data/congestion-control/extra-Congested-2021-05-04-13_56_04",
+      "/hdd/results-analysis/data/processed_data/congestion-control/PacketDropping-aggressive-2021-05-04-13_56_04",
+      "/hdd/results-analysis/data/processed_data/congestion-control/rri-crlimit-20pc-2021-05-04-13_56_04",
+      "/hdd/results-analysis/data/processed_data/congestion-control/rri-crlimit-60pc-2021-05-05-19_25_49",
+      "/hdd/results-analysis/data/processed_data/congestion-control/rri-lookup-2021-05-04-13_56_04"
+    ],
+    "processed-result-dir": [],
     "results": {
-      "graphs": ["PDR-TB", "CBR", "deltaCol", "IPG"],
+      "graphs": ["CBR", "Awareness"],
       "confidence-interval": 0.95,
       "graph-confidence-interval": false,
       "include-date-time": false,
       "image-format": "eps",
       "graph-configurations": {
-        "Congestion-Control-25pc": {
+        "Awareness": {
           "config_name": [
-            "CongestedLong",
-            "DCC-noGB-limeric-long-25pc",
-            "DCC-long",
-            "PacketDroppingLong",
-            "rriAdaptation-long-25pc",
-            "rriLookupLong"
+            "extra-Congested-short",
+            "DCC-limeric-60pc-aware",
+            "rri-crlimit-60pc-test"
           ],
           "labels": [
-            "No CC",
-            "DCC (Adapt 25%)",
-            "DCC (React)",
-            "Packet Drop",
-            "RRI Adapt (25%)",
-            "RRI Lookup"
+            "C-V2X-No DCC",
+            "DCC Adaptive",
+            "RRI$_{CR\\_Limit}$"
           ],
-          "markers": ["D", "x", "|", "o", "D", "*"],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        },
+        "Congestion-Control-20pc": {
+          "config_name": [
+            "extra-Congested",
+            "DCC-limeric-20pc",
+            "DCC",
+            "PacketDropping-aggressive",
+            "rri-crlimit-20pc",
+            "rri-lookup"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Adaptive",
+            "DCC Reactive",
+            "Packet Dropping\n(Aggressive)",
+            "RRI$_{CR\\_Limit}$",
+            "RRI$_{Lookup}$"
+          ],
+          "markers": ["D", "x", "|", "o", "v", "*"],
           "colors": ["black", "red", "blue", "green", "darkorange", "cyan"],
           "error-markers": ["v", "x", "*", "D", "|", "."],
           "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
           "linestyles": ["solid", "dashed", "dashdot", "dotted", "--", "-."]
         },
-        "DCC-variants": {
+        "Congestion-Control-60pc": {
           "config_name": [
-            "CongestedLong",
-            "DCC-long-noGB",
-            "DCC-noGB-limeric-long",
-            "DCC-noGB-limeric-long-25pc"
+            "extra-Congested",
+            "DCC-limeric-60pc",
+            "rri-crlimit-60pc"
           ],
           "labels": [
-            "No CC",
-            "DCC (React)",
-            "DCC (Adapt)",
-            "DCC (Adapt - 25%)"
+            "C-V2X-No DCC",
+            "DCC Adaptive",
+            "RRI$_{CR\\_Limit}$"
+          ],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        },
+        "DCC-issue-2018": {
+          "config_name": [
+            "extra-Congested",
+            "DCC-GB",
+            "DCC"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Reactive (GB)",
+            "DCC Reactive (No GB)"
+          ],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        },
+        "Congestion-Control-40pc": {
+          "config_name": [
+            "CongestedLong",
+            "DCC-noGB-limeric-long-40pc",
+            "rriAdaptation-long-40pc"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Adaptive",
+            "RRI$_{CR\\_Limit}$"
+          ],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        },
+        "DCC-variants-2018": {
+          "config_name": [
+            "extra-Congested",
+            "DCC",
+            "DCC-limeric",
+            "DCC-limeric-20pc"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Reactive",
+            "DCC Adaptive (68%)",
+            "DCC Adaptive (20%)"
           ],
           "markers": ["D", "x", "|", "v", "*", "o", "+"],
           "colors": ["black", "blue", "darkorange", "cyan"],
@@ -188,25 +201,28 @@
           "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
           "linestyles": ["solid", "dashed", "dashdot", "--"]
         },
-        "DCC-issue": {
+        "Pdrop-variants": {
           "config_name": [
-            "CongestedLong",
-            "DCC-long",
-            "DCC-long-noGB"
+            "extra-Congested",
+            "PacketDropping-3GPP",
+            "PacketDropping-ETSI",
+            "PacketDropping-aggressive"
           ],
           "labels": [
-            "No CC",
-            "GB",
-            "No GB"
+            "C-V2X-No DCC",
+            "Packet Dropping\n(3GPP)",
+            "Packet Dropping\n(ETSI)",
+            "Packet Dropping\n(Aggressive)"
           ],
-          "markers": ["D", "x", "|"],
-          "colors": ["black", "red", "blue"],
+          "markers": ["D", "x", "|", "v"],
+          "colors": ["black", "red", "blue", "green"],
           "error-markers": ["v", "x", "*", "D", "|", "."],
           "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
-          "linestyles": ["solid", "dashed", "dashdot"]
+          "linestyles": ["solid", "dashed", "dashdot", "--"]
         }
       },
       "filtered_vectors": [
+        "messageArrival",
         "sciSent",
         "tbSent",
         "txRxDistanceSCI",
@@ -243,6 +259,10 @@
         "subchannelsUsedToSend",
         "subchannelSent",
         "grantStartTime",
+        "takingReservedGrant",
+        "awareness1sStat",
+        "awareness500msStat",
+        "awareness200msStat",
         "selectedSubchannelIndex",
         "selectedNumSubchannels",
         "macNodeID",

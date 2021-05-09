@@ -19,24 +19,26 @@
         "repeat": 0
       },
       "MCS11-012vpm": {
-        "repeat": 5
+        "repeat": 0
       },
       "MCS11-016vpm": {
         "repeat": 0
       },
-      "MCS12-006vpm": {
+      "mcs11": {
+        "repeat": 1
+      },
+      "mcs6": {
         "repeat": 0
       },
-      "MCS12-012vpm": {
-        "repeat": 0
-      },
-      "MCS12-016vpm": {
+      "adaptive": {
         "repeat": 0
       }
     },
     "slack-api-token": "",
     "parallel_processes" : 5,
-    "omnet-result-dirs": [],
+    "omnet-result-dirs": [
+      "/hdd/results-analysis/data/omnet/andres-mcs/mcs11"
+    ],
     "parsed-result-dir": [],
     "processed-result-dir": [],
     "results": {
@@ -46,10 +48,10 @@
       "include-date-time": false,
       "image-format": "eps",
       "graph-configurations": {
-        "mcs11-compare-006vpm": {
+        "mcs11-compare-012vpm": {
           "config_name": [
-            "MCS6-006vpm",
-            "MCS11-006vpm"
+            "MCS6-012vpm",
+            "MCS11-012vpm"
           ],
           "labels": [
             "MCS 6",
@@ -61,10 +63,10 @@
           "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
           "linestyles": ["solid", "dashed"]
         },
-        "mcs11-compare-012vpm": {
+        "mcs11-compare-006vpm": {
           "config_name": [
-            "MCS6-012vpm",
-            "MCS11-012vpm"
+            "MCS6-006vpm",
+            "MCS11-006vpm"
           ],
           "labels": [
             "MCS 6",

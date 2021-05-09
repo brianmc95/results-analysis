@@ -65,9 +65,13 @@ class Grapher:
                 elif graph_type == "PeriodicVAperiodic":
                     self.traffic_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "CBR":
-                    self.cbr_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                    self.percentage_graph("CBR", folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "CBR-PSCCH":
-                    self.cbr_pscch_graph(folders_for_comparison, graph_type, graph_title, graph_info, now)
+                    self.percentage_graph("CBR-PSCCH", folders_for_comparison, graph_type, graph_title, graph_info, now)
+                elif graph_type == "Awareness":
+                    self.percentage_graph("Awareness-1s", folders_for_comparison, graph_type, "Awareness-1s", graph_info, now)
+                    self.percentage_graph("Awareness-500ms", folders_for_comparison,  graph_type, "Awareness-500ms", graph_info, now)
+                    self.percentage_graph("Awareness-200ms", folders_for_comparison,  graph_type, "Awareness-200ms", graph_info, now)
                 elif graph_type == "deltaCol":
                     self.delta_col(folders_for_comparison, graph_type, graph_title, graph_info, now)
                 elif graph_type == "deltaColPeriodicBreakdown":
@@ -128,9 +132,13 @@ class Grapher:
             # Shortcut ensures we get the stats from the parsed results
             for stat in folder_results[0]:
                 if stat == "CBR":
-                    self.across_run_results_cbr(folder_results, output_csv_dir)
+                    self.time_series("CBR", "cbr", folder_results, output_csv_dir)
                 elif stat == "CBR-PSCCH":
-                    self.across_run_results_cbrPscch(folder_results, output_csv_dir)
+                    self.time_series("CBR-PSCCH", "cbrPscch", folder_results, output_csv_dir)
+                elif "Awareness" in stat:
+                    self.time_series("Awareness-1s", "awareness1sStat", folder_results, output_csv_dir)
+                    self.time_series("Awareness-500ms", "awareness500msStat", folder_results, output_csv_dir)
+                    self.time_series("Awareness-200ms", "awareness200msStat", folder_results, output_csv_dir)
                 elif stat == "GrantBreaks":
                     grant_breaks = []
                     for i in range(len(folder_results)):
@@ -190,6 +198,9 @@ class Grapher:
         # pdr_tb_ignore_sci_agg = pd.DataFrame()
         ipg_agg = pd.DataFrame()
         cbr_agg = pd.DataFrame()
+        awareness_1s_agg = pd.DataFrame()
+        awareness_500ms_agg = pd.DataFrame()
+        awareness_200ms_agg = pd.DataFrame()
         cbrPscch_agg = pd.DataFrame()
         arrivals_agg = pd.DataFrame()
         unsensed_errors = pd.DataFrame()
@@ -254,17 +265,37 @@ class Grapher:
             # IPG calculation
             ipg_agg = self.stat_distance(ipg_agg, chunk, "interPacketDelay", "txRxDistanceTB", False)
 
-            # CBR calculation doesn't aggregate the same way as the above so dealt with separatel
-            cbr_df = chunk[chunk["cbr"].notnull()]
-            cbr_df = cbr_df[["Time", "cbr"]]
-            cbr_df = cbr_df[cbr_df["cbr"].notnull()]
+            # Awareness calculation doesn't aggregate the same way as the above so dealt with separately
+            awareness_1s_df = chunk[chunk["awareness1sStat"].notnull()]
+            awareness_1s_df = awareness_1s_df[["Time", "awareness1sStat"]]
+            awareness_1s_df = awareness_1s_df[awareness_1s_df["awareness1sStat"].notnull()]
 
-            if cbr_agg.empty:
-                cbr_agg = cbr_df
+            if awareness_1s_agg.empty:
+                awareness_1s_agg = awareness_1s_df
             else:
-                cbr_agg = cbr_agg.append(cbr_df)
+                awareness_1s_agg = awareness_1s_agg.append(awareness_1s_df)
 
-            # CBRPSCCH calculation doesn't aggregate the same way as the above so dealt with separatel
+            # Awareness calculation doesn't aggregate the same way as the above so dealt with separately
+            awareness_500ms_df = chunk[chunk["awareness500msStat"].notnull()]
+            awareness_500ms_df = awareness_500ms_df[["Time", "awareness500msStat"]]
+            awareness_500ms_df = awareness_500ms_df[awareness_500ms_df["awareness500msStat"].notnull()]
+
+            if awareness_500ms_agg.empty:
+                awareness_500ms_agg = awareness_500ms_df
+            else:
+                awareness_500ms_agg = awareness_1s_agg.append(awareness_500ms_df)
+
+            # Awareness calculation doesn't aggregate the same way as the above so dealt with separately
+            awareness_200ms_df = chunk[chunk["awareness200msStat"].notnull()]
+            awareness_200ms_df = awareness_200ms_df[["Time", "awareness200msStat"]]
+            awareness_200ms_df = awareness_200ms_df[awareness_200ms_df["awareness200msStat"].notnull()]
+
+            if awareness_200ms_agg.empty:
+                awareness_200ms_agg = awareness_200ms_df
+            else:
+                awareness_200ms_agg = awareness_200ms_agg.append(awareness_200ms_df)
+
+            # CBRPSCCH calculation doesn't aggregate the same way as the above so dealt with separately
             cbrPscch_df = chunk[chunk["cbrPscch"].notnull()]
             cbrPscch_df = cbrPscch_df[["Time", "cbrPscch"]]
             cbrPscch_df = cbrPscch_df[cbrPscch_df["cbrPscch"].notnull()]
@@ -273,6 +304,16 @@ class Grapher:
                 cbrPscch_agg = cbrPscch_df
             else:
                 cbrPscch_agg = cbrPscch_agg.append(cbrPscch_df)
+
+            # Awareness calculation doesn't aggregate the same way as the above so dealt with separately
+            cbr_df = chunk[chunk["cbr"].notnull()]
+            cbr_df = cbr_df[["Time", "cbr"]]
+            cbr_df = cbr_df[cbr_df["cbr"].notnull()]
+
+            if cbr_agg.empty:
+                cbr_agg = cbr_df
+            else:
+                cbr_agg = cbr_agg.append(cbr_df)
 
             # Deal with the grant breaking
             for col in self.results["grantBreaking"]:
@@ -307,6 +348,9 @@ class Grapher:
         results["IPG"] = ipg_agg
         results["CBR"] = cbr_agg
         results["CBR-PSCCH"] = cbrPscch_agg
+        results["Awareness-1s"] = awareness_1s_agg
+        results["Awareness-500ms"] = awareness_500ms_agg
+        results["Awareness-200ms"] = awareness_200ms_agg
         results["Arrivals"] = arrivals_agg
         results["GrantBreaks"] = total_grant_breaks
         # results["Collisions"] = collisions_agg
@@ -674,25 +718,25 @@ class Grapher:
         else:
             df.to_csv("{}/{}.csv".format(output_csv_dir, stat))
 
-    def across_run_results_cbr(self, results, output_csv_dir):
+    def time_series(self, label, column_name, results, output_csv_dir):
         earliest_time = float("inf")
         latest_time = -float("inf")
 
         raw_cbr_df = pd.DataFrame()
         for folder in results:
 
-            start_time = folder["CBR"]["Time"].min()
+            start_time = folder[label]["Time"].min()
             if start_time < earliest_time:
                 earliest_time = start_time
 
-            end_time = folder["CBR"]["Time"].max()
+            end_time = folder[label]["Time"].max()
             if end_time > latest_time:
                 latest_time = end_time
 
             if raw_cbr_df.empty:
-                raw_cbr_df = folder["CBR"]
+                raw_cbr_df = folder[label]
             else:
-                raw_cbr_df.append(folder["CBR"])
+                raw_cbr_df.append(folder[label])
 
         self.logger.debug("Earliest time: {}s Latest time: {}s".format(earliest_time, latest_time))
 
@@ -701,64 +745,21 @@ class Grapher:
         for i in np.arange(earliest_time, latest_time, 0.1):
             subsection_df = pd.DataFrame()
             for folder in results:
-                df = folder["CBR"]
+                df = folder[label]
                 if subsection_df.empty:
-                    subsection_df = df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbr"].notnull())]
+                    subsection_df = df[(df["Time"] < i) & (df["Time"] >= last_time) & (df[column_name].notnull())]
                 else:
-                    subsection_df.append(df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbr"].notnull())])
+                    subsection_df.append(df[(df["Time"] < i) & (df["Time"] >= last_time) & (df[column_name].notnull())])
 
             last_time = i
 
-            cbr_df = cbr_df.append({"Mean": subsection_df["cbr"].mean(),
+            cbr_df = cbr_df.append({"Mean": subsection_df[column_name].mean(),
                                     "Time": (i + last_time) / 2,
-                                    "Confidence-Interval": subsection_df["cbr"].std()
+                                    "Confidence-Interval": subsection_df[column_name].std()
                                     }, ignore_index=True)
 
-        cbr_df.to_csv("{}/CBR.csv".format(output_csv_dir), index=False)
-        raw_cbr_df.to_csv("{}/raw-CBR.csv".format(output_csv_dir), index=False)
-
-    def across_run_results_cbrPscch(self, results, output_csv_dir):
-        earliest_time = float("inf")
-        latest_time = -float("inf")
-
-        raw_cbr_df = pd.DataFrame()
-        for folder in results:
-
-            start_time = folder["CBR-PSCCH"]["Time"].min()
-            if start_time < earliest_time:
-                earliest_time = start_time
-
-            end_time = folder["CBR-PSCCH"]["Time"].max()
-            if end_time > latest_time:
-                latest_time = end_time
-
-            if raw_cbr_df.empty:
-                raw_cbr_df = folder["CBR-PSCCH"]
-            else:
-                raw_cbr_df.append(folder["CBR-PSCCH"])
-
-        self.logger.debug("Earliest time: {}s Latest time: {}s".format(earliest_time, latest_time))
-
-        cbr_df = pd.DataFrame(columns=["Mean", "Time", "Confidence-Interval"])
-        last_time = earliest_time
-        for i in np.arange(earliest_time, latest_time, 0.1):
-            subsection_df = pd.DataFrame()
-            for folder in results:
-                df = folder["CBR-PSCCH"]
-                if subsection_df.empty:
-                    subsection_df = df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbrPscch"].notnull())]
-                else:
-                    subsection_df.append(df[(df["Time"] < i) & (df["Time"] >= last_time) & (df["cbrPscch"].notnull())])
-
-            last_time = i
-
-            cbr_df = cbr_df.append({"Mean": subsection_df["cbrPscch"].mean(),
-                                    "Time": (i + last_time) / 2,
-                                    "Confidence-Interval": subsection_df["cbrPscch"].std()
-                                    }, ignore_index=True)
-
-        cbr_df.to_csv("{}/CBR-PSCCH.csv".format(output_csv_dir), index=False)
-        raw_cbr_df.to_csv("{}/raw-CBR-PSCCH.csv".format(output_csv_dir), index=False)
+        cbr_df.to_csv("{}/{}.csv".format(output_csv_dir, label), index=False)
+        raw_cbr_df.to_csv("{}/raw-{}.csv".format(output_csv_dir, label), index=False)
 
     @staticmethod
     def combine_runs(line, mean_cols, t_value):
@@ -906,6 +907,8 @@ class Grapher:
         distances = []
         for folder in folders:
             df = pd.read_csv("{}/{}.csv".format(folder, graph_type))
+            if graph_type == "IPG":
+                df["Mean"] = df["Mean"].apply(lambda x: x * 1000)
             means.append(list(df["Mean"]))
             if self.confidence_intervals:
                 cis.append(list(df["Confidence-Interval"]))
@@ -931,77 +934,31 @@ class Grapher:
                             ylabel="Total Colliding Grants", now=now, legend_pos="upper right",
                             confidence_intervals=self.confidence_intervals, show=False, store=True)
 
-    def cbr_graph(self, folders, graph_type, graph_title, graph_info, now):
+    def percentage_graph(self, stat, folders, graph_type, graph_title, graph_info, now):
         # Might change this to time based graph but CBR is fine for now
         times = []
-        cbrs = []
+        means = []
         cis = []
-        box_plot_data = []
         for folder in folders:
-            df = pd.read_csv("{}/CBR.csv".format(folder))
-            cbr = list(df["Mean"])
+            df = pd.read_csv("{}/{}.csv".format(folder, stat))
+            mean = list(df["Mean"])
             ci = list(df["Confidence-Interval"])
 
             # Transform 0-1 to 0-100
-            for i in range(len(cbr)):
-                cbr[i] = cbr[i] * 100
+            for i in range(len(mean)):
+                mean[i] = mean[i] * 100
                 ci[i] = ci[i] * 100
 
             times.append(list(df["Time"]))
-            cbrs.append(cbr)
+            means.append(mean)
             cis.append(ci)
 
-            cbr_csv = "{}/raw-CBR.csv".format(folder)
-            df = pd.read_csv(cbr_csv)
-            # filtered_df = df[df["Time"] > 502]
-            box_plot_data.append(100 * df["cbr"])
-
-        graph_info["means"] = cbrs
+        graph_info["means"] = means
         graph_info["times"] = times
         graph_info["cis"] = cis
-        graph_info["boxplotData"] = box_plot_data
 
-        self.cbr_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
-                      confidence_intervals=self.confidence_intervals, show=False, store=True)
-
-        # self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Channel Busy Ratio %",
-        #               percentage=True, show=False, store=True)
-
-    def cbr_pscch_graph(self, folders, graph_type, graph_title, graph_info, now):
-        # Might change this to time based graph but CBR is fine for now
-        times = []
-        cbrs = []
-        cis = []
-        box_plot_data = []
-        for folder in folders:
-            df = pd.read_csv("{}/CBR-PSCCH.csv".format(folder))
-            cbr = list(df["Mean"])
-            ci = list(df["Confidence-Interval"])
-
-            # Transform 0-1 to 0-100
-            for i in range(len(cbr)):
-                cbr[i] = cbr[i] * 100
-                ci[i] = ci[i] * 100
-
-            times.append(list(df["Time"]))
-            cbrs.append(cbr)
-            cis.append(ci)
-
-            cbr_csv = "{}/raw-CBR-PSCCH.csv".format(folder)
-            df = pd.read_csv(cbr_csv)
-            #filtered_df = df[df["Time"] > 502]
-            box_plot_data.append(100 * df["cbrPscch"])
-
-        graph_info["means"] = cbrs
-        graph_info["times"] = times
-        graph_info["cis"] = cis
-        graph_info["boxplotData"] = box_plot_data
-
-        self.cbr_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
-                      confidence_intervals=self.confidence_intervals, show=False, store=True)
-
-        # self.box_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now, ylabel="Channel Busy Ratio %",
-        #               percentage=True, show=False, store=True)
+        self.percentage_plot(graph_info, "{}-{}".format(graph_title, graph_type), now=now,
+                             confidence_intervals=self.confidence_intervals, show=False, store=True)
 
     def grant_break_graph(self, folders, graph_type, graph_title, graph_info, now):
         # Might change this to time based graph but CBR is fine for now
@@ -1103,6 +1060,10 @@ class Grapher:
             ax.set_ylim([0, 100])
             plt.yticks(np.arange(0, 101, step=10))
 
+        if "IPG" in plot_name:
+            ax.set_ylim([0, 1000])
+            plt.yticks(np.arange(0, 1001, step=100))
+
         plt.grid(b=True, color="#d1d1d1")
 
         if show:
@@ -1115,7 +1076,7 @@ class Grapher:
                 fig.savefig("{}/{}.{}".format(self.figure_store, plot_name, self.image_format), dpi=400)
         plt.close(fig)
 
-    def cbr_plot(self, graph_info, plot_name, now, confidence_intervals=None, show=True, store=False):
+    def percentage_plot(self, graph_info, plot_name, now, confidence_intervals=None, show=True, store=False):
 
         fig, ax = plt.subplots()
 
