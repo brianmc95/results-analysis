@@ -1,0 +1,367 @@
+{
+  "congestion-control" : {
+    "project_path": "/home/brianmccarthy/git_repos/OpenCV2X",
+    "cmake_dir": "/home/brianmccarthy/git_repos/OpenCV2X/build",
+    "omnetpp_ini": "/home/brianmccarthy/git_repos/OpenCV2X/scenarios/personal-experiments/omnetpp.ini",
+    "opp_run": false,
+    "target": "run_personal-experiments",
+    "config_names" : {
+      "extra-Congested-short": {
+        "repeat": 0
+      },
+      "extra-Congested-short-fast": {
+        "repeat": 0
+      },
+      "DCC-limeric-60pc-aware": {
+        "repeat": 0
+      },
+      "DCC-limeric-60pc-notAware": {
+        "repeat": 0
+      },
+      "extra-Congested": {
+        "repeat": 0
+      },
+      "PacketDropping-ETSI": {
+        "repeat": 0
+      },
+      "PacketDropping-3GPP": {
+        "repeat": 0
+      },
+      "PacketDropping-aggressive": {
+        "repeat": 0
+      },
+      "DCC": {
+        "repeat": 0
+      },
+      "DCC-GB": {
+        "repeat": 0
+      },
+      "DCC-limeric": {
+        "repeat": 0
+      },
+      "DCC-limeric-20pc": {
+        "repeat": 0
+      },
+      "DCC-limeric-25pc": {
+        "repeat": 0
+      },
+      "DCC-limeric-40pc": {
+        "repeat": 0
+      },
+      "DCC-limeric-60pc": {
+        "repeat": 0
+      },
+      "rri-lookup": {
+        "repeat": 0
+      },
+      "rri-crlimit-20pc": {
+        "repeat": 0
+      },
+      "rri-crlimit-25pc": {
+        "repeat": 0
+      },
+      "rri-crlimit-40pc": {
+        "repeat": 0
+      },
+      "rri-crlimit-60pc": {
+        "repeat": 0
+      }
+    },
+    "slack-api-token": "",
+    "parallel_processes" : 5,
+    "omnet-result-dirs": [],
+    "parsed-result-dir": [],
+    "processed-result-dir": [
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/DCC-2021-05-04-13_56_04",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/DCC-limeric-20pc-2021-05-04-13_56_04",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/DCC-limeric-60pc-2021-05-08-18_04_16",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/extra-Congested-2021-05-09-14_18_53",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/PacketDropping-3GPP-2021-04-26-16_35_52",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/PacketDropping-aggressive-2021-05-04-13_56_04",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/PacketDropping-ETSI-2021-04-27-07_51_00",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/rri-crlimit-20pc-2021-05-04-13_56_04",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/rri-crlimit-60pc-2021-05-09-12_44_50",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/rri-lookup-2021-05-04-13_56_04",
+      "/Users/brianmccarthy/git_repos/results-analysis/data/processed_data/congestion-control/DCC-limeric-2021-04-26-11_08_59"
+    ],
+    "results": {
+      "graphs": ["PDR-TB", "IPG"],
+      "confidence-interval": 0.95,
+      "graph-confidence-interval": false,
+      "include-date-time": false,
+      "image-format": "eps",
+      "graph-configurations": {
+        "Congestion-Control-20pc": {
+          "config_name": [
+            "extra-Congested",
+            "DCC-limeric-20pc",
+            "DCC",
+            "PacketDropping-aggressive",
+            "rri-crlimit-20pc",
+            "rri-lookup"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Adaptive",
+            "DCC Reactive",
+            "Packet Dropping\n(Aggressive)",
+            "RRI$_{CR\\_Limit}$",
+            "RRI$_{Lookup}$"
+          ],
+          "markers": ["D", "x", "|", "o", "v", "*"],
+          "colors": ["black", "forestgreen", "blue", "red", "darkorange", "navy"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dotted", "--", "-."]
+        },
+        "Congestion-Control-60pc": {
+          "config_name": [
+            "extra-Congested",
+            "DCC-limeric-60pc",
+            "rri-crlimit-60pc"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Adaptive",
+            "RRI$_{CR\\_Limit}$"
+          ],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "forestgreen", "darkorange"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        },
+        "DCC-variants-2018": {
+          "config_name": [
+            "extra-Congested",
+            "DCC",
+            "DCC-limeric",
+            "DCC-limeric-20pc"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Reactive",
+            "DCC Adaptive (68%)",
+            "DCC Adaptive (20%)"
+          ],
+          "markers": ["", "", "", "", "", "", ""],
+          "colors": ["black", "blue", "forestgreen", "forestgreen"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "dotted"]
+        },
+        "Pdrop-variants": {
+          "config_name": [
+            "extra-Congested",
+            "PacketDropping-3GPP",
+            "PacketDropping-ETSI",
+            "PacketDropping-aggressive"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "Packet Dropping\n(3GPP)",
+            "Packet Dropping\n(ETSI)",
+            "Packet Dropping\n(Aggressive)"
+          ],
+          "markers": ["D", "x", "|", "v"],
+          "colors": ["black", "red", "blue", "green"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot", "--"]
+        },
+        "DCC-issue-2018": {
+          "config_name": [
+            "extra-Congested",
+            "DCC-GB",
+            "DCC"
+          ],
+          "labels": [
+            "C-V2X-No DCC",
+            "DCC Reactive (GB)",
+            "DCC Reactive (No GB)"
+          ],
+          "markers": ["D", "x", "|"],
+          "colors": ["black", "red", "blue"],
+          "error-markers": ["v", "x", "*", "D", "|", "."],
+          "error-colors": ["black", "red", "blue", "green", "orange", "cyan"],
+          "linestyles": ["solid", "dashed", "dashdot"]
+        }
+      },
+      "filtered_vectors": [
+        "messageArrival",
+        "sciSent",
+        "tbSent",
+        "txRxDistanceSCI",
+        "txRxDistanceTB",
+        "sciReceived",
+        "sciDecoded",
+        "sciFailedHalfDuplex",
+        "tbReceived",
+        "tbDecoded",
+        "tbFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbFailedButSCIReceived",
+        "periodic",
+        "sciUnsensed",
+        "missedTransmission",
+        "generatedGrants",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "grantBreak",
+        "grantBreakMissedTrans",
+        "grantBreakTiming",
+        "grantBreakSize",
+        "resourceReselectionCounter",
+        "retainGrant",
+        "tbFailedDueToProp",
+        "tbFailedDueToInterference",
+        "sciFailedDueToProp",
+        "sciFailedDueToInterference",
+        "cbr",
+        "cbrPscch",
+        "subchannelReceived",
+        "subchannelsUsed",
+        "senderID",
+        "subchannelsUsedToSend",
+        "subchannelSent",
+        "grantStartTime",
+        "takingReservedGrant",
+        "awareness1sStat",
+        "awareness500msStat",
+        "awareness200msStat",
+        "selectedSubchannelIndex",
+        "selectedNumSubchannels",
+        "macNodeID",
+        "posX",
+        "posY",
+        "interPacketDelay",
+        "oneShot",
+        "oneShotSent",
+        "oneShotReceived",
+        "oneShotDecoded",
+        "oneShotFailedHalfDuplex",
+        "oneShotFailedDueToProp",
+        "oneShotFailedDueToInterference",
+        "oneShotUnsensed",
+        "txRxDistanceOneShot",
+        "rriChange"
+      ],
+      "errors": [
+        "sciUnsensed",
+        "tbFailedHalfDuplex",
+        "sciFailedHalfDuplex",
+        "tbFailedDueToProp",
+        "sciFailedDueToProp",
+        "tbFailedDueToNoSCI",
+        "tbFailedDueToInterference",
+        "sciFailedDueToInterference"
+      ],
+      "unsensed_errors": [
+        "sciUnsensed"
+      ],
+      "hd_errors": [
+        "tbFailedHalfDuplex"
+      ],
+      "grantBreaking": [
+        "grantBreakMissedTrans",
+        "grantBreakSize",
+        "grantBreakTiming"
+      ],
+      "prop_errors": [
+        "sciFailedDueToProp",
+        "tbFailedDueToProp"
+      ],
+      "interference_errors": [
+        "sciFailedDueToInterference",
+        "tbFailedDueToInterference"
+      ],
+      "filtered_scalars": [
+        "txRxDistance",
+        "tbAndSCINotReceived",
+        "tbFailedButSCIReceived",
+        "tbsFailedDueToNoSCI",
+        "tbFailedHalfDuplex",
+        "tbsDecoded",
+        "tbsReceived",
+        "tbsSent",
+        "scisSent",
+        "scisNotDecoded",
+        "scisDecoded",
+        "scisReceived",
+        "cbr",
+        "cbrPssch"
+      ],
+      "Groups": {
+        "grant_info" : [
+          "missedTransmission",
+          "generatedGrants",
+          "selectedSubchannelIndex",
+          "selectedNumSubchannels",
+          "grantBreak",
+          "grantBreakMissedTrans",
+          "grantBreakTiming",
+          "grantBreakSize",
+          "resourceReselectionCounter",
+          "retainGrant",
+          "grantStartTime",
+          "takingReservedGrant",
+          "selectedSubchannelIndex",
+          "selectedNumSubchannels",
+          "rriChange"
+        ],
+        "reception_info" : [
+          "txRxDistanceSCI",
+          "txRxDistanceTB",
+          "sciReceived",
+          "sciDecoded",
+          "sciFailedHalfDuplex",
+          "tbReceived",
+          "tbDecoded",
+          "tbFailedDueToNoSCI",
+          "tbFailedHalfDuplex",
+          "tbFailedButSCIReceived",
+          "periodic",
+          "sciUnsensed",
+          "tbFailedDueToProp",
+          "tbFailedDueToInterference",
+          "sciFailedDueToProp",
+          "sciFailedDueToInterference",
+          "subchannelReceived",
+          "subchannelsUsed",
+          "senderID",
+          "oneShot",
+          "oneShotSent",
+          "oneShotReceived",
+          "oneShotDecoded",
+          "oneShotFailedHalfDuplex",
+          "oneShotFailedDueToProp",
+          "oneShotFailedDueToInterference",
+          "oneShotUnsensed",
+          "txRxDistanceOneShot"
+        ],
+        "send_info" : [
+          "sciSent",
+          "tbSent",
+          "subchannelsUsedToSend",
+          "subchannelSent"
+        ],
+        "misc" : [
+          "messageArrival",
+          "macNodeID",
+          "interPacketDelay",
+          "awareness1sStat",
+          "awareness500msStat",
+          "awareness200msStat"
+        ],
+        "cbr" : [
+          "cbr",
+          "cbrPscch"
+        ],
+        "position" : [
+          "posX",
+          "posY"
+        ]
+      }
+    }
+  }
+}
